@@ -46,13 +46,17 @@ export function analyzeMnemonic(input: string) {
   let entropyBinary: string | null = null;
   let checksumBinary: string | null = null;
   let mnemonicBinary: string | null = null;
+  const wordIndices = valid ? tokens.map((word, position) => {
+    const index = wordlist.indexOf(word);
+    return { position: position + 1, word, index, githubLine: index + 1, binary: index.toString(2).padStart(11, '0') };
+  }) : [];
   let patterns: PatternFinding[] = [];
   if (valid) {
     const entropy = mnemonicToEntropy(normalized, wordlist);
     try {
       entropyHex = Array.from(entropy, byte => byte.toString(16).padStart(2, '0')).join('');
       entropyBinary = Array.from(entropy, byte => byte.toString(2).padStart(8, '0')).join('');
-      mnemonicBinary = tokens.map(word => wordlist.indexOf(word).toString(2).padStart(11, '0')).join('');
+      mnemonicBinary = wordIndices.map(item => item.binary).join('');
       checksumBinary = mnemonicBinary.slice(entropyBinary.length);
       patterns = findPatterns(entropy, tokens);
     }
@@ -62,7 +66,7 @@ export function analyzeMnemonic(input: string) {
     ...structure,
     encodedEntropyBits: valid ? tokens.length / 3 * 32 : null,
     checksumBits: validLength ? tokens.length / 3 : null,
-    entropyHex, entropyBinary, checksumBinary, mnemonicBinary, patterns,
+    entropyHex, entropyBinary, checksumBinary, mnemonicBinary, wordIndices, patterns,
     repeatedWordCount: tokens.length - new Set(tokens).size,
     knownPublic: known.has(normalized),
   };

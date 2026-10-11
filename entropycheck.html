@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="referrer" content="no-referrer">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-hU4e47pq+cXh0nLXDWTTv54s0DEmlIy3IBI7ToegGFo='; style-src 'sha256-fF9AT+EklfFZBK5kD2YB260RPujYlq6NPMSr+7x++FE='; img-src data:; connect-src 'none'; form-action 'none'; base-uri 'none'; object-src 'none'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-EfH6+YAZc/d0Uq/OgIr+m7bwqYAFF4Kv/j53tFKebjg='; style-src 'sha256-ooCedPJu2rq7zOQ006yhgTbnnI8EUqTS/sVWhCk/Ghw='; img-src data:; connect-src 'none'; form-action 'none'; base-uri 'none'; object-src 'none'">
   <meta name="description" content="Understand BIP39 seed phrases, explore entropy, and derive Bitcoin addresses. A self-contained tool that also works offline.">
   <title>EntropyCheck | Understand your Bitcoin seed</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='10' fill='%23c94d20'/%3E%3Cpath d='M12 11h16v5H17v3h9v4h-9v3h11v4H12z' fill='white'/%3E%3C/svg%3E">
@@ -43,7 +43,7 @@
 }
 html {
   scroll-behavior: smooth;
-  scroll-padding-top: 30px;
+  scroll-padding-top: 110px;
 }
 body {
   margin: 0;
@@ -138,6 +138,11 @@ footer {
   padding: 25px 30px;
   border-bottom: 1px solid var(--line);
   gap: 25px;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: #f7f7f2f5;
+  backdrop-filter: blur(14px);
 }
 .brand {
   display: inline-flex;
@@ -179,7 +184,9 @@ footer {
 .site-header nav a {
   text-decoration: none;
   color: #546058;
+  padding: 12px 0;
 }
+.site-header nav a span { color: var(--accent); font-size: 10px; margin-right: 5px; }
 .site-header nav a:hover {
   color: var(--accent);
 }
@@ -230,6 +237,8 @@ main {
   font-size: 15px;
   color: var(--muted);
 }
+.hero-facts { display: flex; flex-wrap: wrap; gap: 10px 22px; margin-top: 20px; color: var(--muted); font-size: 12px; }
+.hero-facts span::before { content: '✓'; color: var(--accent); margin-right: 7px; }
 .hero-aside {
   padding-right: 25px;
   transform: rotate(5deg);
@@ -306,14 +315,14 @@ main {
   align-items: center;
   justify-content: center;
   gap: 12px;
-  min-height: 43px;
+  min-height: 46px;
   border: 1px solid #d4d8cd;
   border-radius: 6px;
   background: #fff;
   color: var(--ink);
   padding: 11px 16px;
   text-decoration: none;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   white-space: nowrap;
 }
@@ -342,9 +351,10 @@ main {
   background: transparent;
   border: 0;
   color: var(--accent);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
-  padding: 6px 0;
+  padding: 10px 0;
+  min-height: 44px;
   line-height: 1.5;
 }
 .text-button:hover {
@@ -356,19 +366,20 @@ main {
 }
 .muted {
   color: var(--muted);
-  font-size: 12px;
+  font-size: 13px;
 }
 .analysis-grid {
   display: grid;
-  grid-template-columns: 1.12fr 1fr;
+  grid-template-columns: minmax(0, 1.12fr) minmax(0, 1fr);
   gap: 22px;
   align-items: stretch;
 }
 .panel {
   background: var(--white);
   border: 1px solid var(--line);
-  border-radius: 10px;
-  padding: 26px;
+  border-radius: 14px;
+  padding: 28px;
+  min-width: 0;
 }
 .label-row {
   display: flex;
@@ -379,7 +390,7 @@ main {
 }
 label,
 legend {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
   line-height: 1.5;
 }
@@ -396,8 +407,8 @@ input {
 textarea {
   width: 100%;
   resize: vertical;
-  min-height: 128px;
-  font-size: 14px;
+  min-height: 150px;
+  font-size: 16px;
   line-height: 1.8;
   display: block;
 }
@@ -406,11 +417,11 @@ input::placeholder {
   color: #8a928a;
 }
 select {
-  font-size: 12px;
-  min-height: 42px;
+  font-size: 14px;
+  min-height: 46px;
 }
 input {
-  font-size: 13px;
+  font-size: 16px;
   min-width: 0;
 }
 textarea:focus,
@@ -419,7 +430,7 @@ select:focus {
   border-color: #b66c46;
 }
 .field-help {
-  font-size: 11px;
+  font-size: 13px;
   color: var(--muted);
   margin-top: 8px;
   line-height: 1.65;
@@ -453,15 +464,14 @@ select:focus {
   display: flex;
   align-items: center;
   gap: 9px;
-  padding: 13px 0 20px;
-  border-bottom: 1px solid #eceee5;
+  padding: 8px 0 0;
   flex-wrap: wrap;
 }
 .example-row select {
   padding: 4px 6px;
-  min-height: 27px;
+  min-height: 44px;
   margin-left: auto;
-  font-size: 10px;
+  font-size: 12px;
 }
 .source-field {
   margin: 19px 0;
@@ -475,8 +485,8 @@ select:focus {
   margin-top: 0;
 }
 .optional {
-  color: #818a80;
-  font-size: 10px;
+  color: var(--muted);
+  font-size: 12px;
   font-weight: 400;
   margin-left: 5px;
 }
@@ -490,6 +500,10 @@ select:focus {
 .assessment-panel {
   background: #fcfcf8;
 }
+.explore-tools { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--line); }
+.explore-tools .generate-row { margin-top: 10px; }
+.assessment-next { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line); }
+.assessment-next a { color: var(--accent); font-size: 13px; padding: 8px 0; }
 .status-dot {
   width: 6px;
   height: 6px;
@@ -526,7 +540,7 @@ select:focus {
 }
 .metric-label {
   display: block;
-  font-size: 11px;
+  font-size: 13px;
   color: var(--muted);
   font-weight: 500;
   margin-bottom: 9px;
@@ -547,7 +561,7 @@ select:focus {
   padding-left: 14px;
 }
 .source-assessment p {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--muted);
   margin-top: 8px;
 }
@@ -568,12 +582,12 @@ select:focus {
 details {
   border-top: 1px solid var(--line);
   padding-top: 15px;
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.7;
 }
 summary {
   cursor: pointer;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 550;
   color: #54614f;
 }
@@ -739,31 +753,32 @@ details p {
   padding: 21px 5px 0;
 }
 .small-label {
-  font-size: 9px;
+  font-size: 11px;
   letter-spacing: 1.2px;
   line-height: 1.8;
-  color: #838d79;
+  color: #626d59;
 }
 .learning-note p {
-  font-size: 11px;
+  font-size: 13px;
   color: var(--muted);
 }
 .learning-note a {
   color: var(--accent);
 }
 .section-copy {
-  font-size: 13px;
+  font-size: 15px;
   color: var(--muted);
   max-width: 750px;
   margin-top: -10px;
   margin-bottom: 22px;
 }
+.section-heading .section-copy { margin: 10px 0 0; max-width: 650px; }
 .path-reference {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 10px;
 }
-.path-reference > div {
+.path-reference > button {
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -771,7 +786,10 @@ details p {
   border: 1px solid var(--line);
   border-radius: 7px;
   background: #fdfdf9;
+  text-align: left;
+  color: var(--ink);
 }
+.path-reference > button:hover { border-color: var(--accent); background: #fbf4e9; }
 .path-reference span {
   font-size: 12px;
   font-weight: 600;
@@ -788,12 +806,13 @@ details p {
 .path-reference code {
   font-size: 11px;
 }
-.path-reference > div > small {
+.path-reference > button > small {
   font-size: 10px;
   color: var(--muted);
 }
 .path-reference .selected-reference {
-  border-color: #cbbb9e;
+  border-color: var(--accent);
+  box-shadow: inset 0 3px 0 var(--accent);
   background: #fbf4e9;
 }
 .derivation-panel {
@@ -801,7 +820,7 @@ details p {
 }
 .derivation-controls {
   display: grid;
-  grid-template-columns: 1.1fr 1.4fr .7fr 1.1fr .85fr .75fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
 }
 .derivation-controls input {
@@ -841,7 +860,8 @@ details p {
 .password-input button {
   background: transparent;
   border: 0;
-  font-size: 11px;
+  font-size: 13px;
+  min-height: 44px;
   color: var(--muted);
   padding: 0 13px;
 }
@@ -915,7 +935,7 @@ tbody tr:hover {
   font-size: 34px;
 }
 .offline-section p {
-  font-size: 12px;
+  font-size: 14px;
   color: #626f56;
   margin: 15px 0 20px;
   max-width: 340px;
@@ -945,12 +965,12 @@ tbody tr:hover {
   color: #768967;
 }
 .offline-section li strong {
-  font-size: 13px;
+  font-size: 15px;
   display: block;
   margin-bottom: 6px;
 }
 .offline-section li span {
-  font-size: 11px;
+  font-size: 13px;
   line-height: 1.7;
   display: block;
   color: #626f56;
@@ -1208,7 +1228,7 @@ footer .brand {
   .path-reference {
     gap: 8px;
   }
-  .path-reference > div {
+  .path-reference > button {
     padding: 14px 11px;
     gap: 8px;
   }
@@ -1329,7 +1349,7 @@ footer .brand {
 .perspective-facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
 .perspective-facts article { padding: 18px; border: 1px solid var(--line); border-radius: 9px; background: #fff; }
 .perspective-facts article p:last-child { margin: 7px 0 0; font-size: 1.02rem; line-height: 1.55; }
-.lottery-analogy { margin: 14px 0 0; padding: 18px 20px; border-left: 3px solid var(--orange); background: #f5eee1; font-style: italic; line-height: 1.65; }
+.lottery-analogy { margin: 14px 0 0; padding: 18px 20px; border-left: 3px solid var(--accent); background: #f5eee1; font-style: italic; line-height: 1.65; }
 .crack-disclosures { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 22px; }
 .crack-disclosures details { margin: 0; padding: 15px 17px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
 .crack-disclosures details[hidden] { display: none; }
@@ -1346,38 +1366,128 @@ footer .brand {
   .crack-section { padding: 24px; }
   .crack-result-card { padding: 19px; gap: 20px; }
 }
+
+/* Give technical material its own workspace, separate from the verdict. */
+.entropy-panel { margin-top: 18px; padding: 0; overflow: hidden; }
+.entropy-panel > summary { padding: 22px 26px; font-size: 16px; color: var(--ink); }
+.entropy-panel[open] > summary { margin-bottom: 0; border-bottom: 1px solid var(--line); background: #fafaf6; }
+.summary-hint { margin-left: 14px; color: var(--muted); font-size: 13px; font-weight: 400; }
+.entropy-panel > :not(summary) { margin: 24px 26px; }
+.entropy-intro p { max-width: 760px; color: var(--muted); margin-bottom: 0; }
+.index-guide { padding: 18px 20px; background: #f5eee1; border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; }
+.index-guide p { margin: 6px 0 0; }
+.word-indices { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; padding: 0; list-style: none; }
+.word-indices:empty { display: none; }
+.word-indices li { padding: 15px; border: 1px solid var(--line); border-radius: 9px; background: #fdfdfb; min-width: 0; }
+.word-index-heading { display: flex; flex-direction: column; gap: 2px; }
+.word-position { color: var(--muted); font-size: 11px; }
+.word-index-heading strong { font-size: 17px; font-weight: 650; }
+.word-index-number { margin: 10px 0 6px; font-size: 13px; }
+.word-index-number strong { font-family: ui-monospace, monospace; color: var(--accent); }
+.word-indices code { display: block; font-size: 13px; letter-spacing: .06em; }
+.word-github-line { display: block; font-size: 11px; color: var(--muted); margin-top: 6px; }
+.entropy-raw-grid, .structure-checks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; border-top: 1px solid var(--line); padding-top: 24px; }
+.entropy-raw-grid .break-code { display: block; font-size: 13px; line-height: 1.8; border: 1px solid var(--line); border-radius: 7px; padding: 14px; background: var(--pale); }
+.entropy-raw-grid h4, .structure-checks h4 { margin-bottom: 14px; }
+.structure-checks .technical-list { grid-template-columns: 1fr 1fr; font-size: 13px; }
+.structure-checks .technical-list dd { text-align: right; }
+.structure-checks ul { padding-left: 20px; }
+.risk-summary .assessment-kicker { margin: 0 0 8px; color: #695943; }
+.risk-summary { margin-top: 16px; }
+.risk-summary p:last-child { font-size: 14px; }
+.phrase-input[data-state="valid"] .input-validation { background: #f0f3ec; }
+.phrase-perspective .big-number { font-variant-numeric: tabular-nums; letter-spacing: -.045em; }
+.subtle-tag { line-height: 1.5; }
+.path-reference button span { font-size: 14px; }
+.path-reference button > small { font-size: 12px; }
+.path-reference button code { font-size: 12px; }
+.table-scroll:focus-visible { outline-offset: 3px; }
+@media (max-width: 950px) {
+  .analysis-grid { grid-template-columns: 1fr; }
+  .word-indices { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 700px) {
+  html { scroll-padding-top: 140px; }
+  .site-header { display: grid; grid-template-columns: 1fr auto; gap: 10px; padding: 12px 20px 0; }
+  .site-header nav { display: flex; grid-row: 2; grid-column: 1 / -1; justify-content: space-between; gap: 16px; border-top: 1px solid var(--line); }
+  .site-header nav a { font-size: 13px; min-height: 44px; }
+  .site-header .button { min-height: 40px; font-size: 11px; }
+  .hero { padding: 22px 0 26px; }
+  .hero-copy { font-size: 15px; }
+  .hero .eyebrow { font-size: 10px; }
+  .environment-strip { font-size: 9px; padding: 14px 0; }
+  .environment-strip > span:last-child { font-size: 9px; }
+  .notice { font-size: 13px; }
+  .section-heading { align-items: flex-start; }
+  #clear-all { white-space: nowrap; }
+  .section-copy { font-size: 14px; }
+  .generate-row { flex-wrap: wrap; }
+  .generate-row .button { font-size: 13px; }
+  select { font-size: 16px; }
+  .example-row select { font-size: 13px; }
+  .source-field select { width: 100%; }
+  .entropy-panel > summary { padding: 20px; }
+  .summary-hint { display: block; margin: 4px 0 0; }
+  .entropy-panel > :not(summary) { margin: 20px; }
+  .word-indices { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+  .word-indices li { padding: 12px; }
+  .word-indices code { font-size: 12px; letter-spacing: 0; }
+  .entropy-raw-grid, .structure-checks { grid-template-columns: 1fr; }
+  .entropy-raw-grid > div + div, .structure-checks > div + div { border-top: 1px solid var(--line); padding-top: 24px; }
+  .path-reference button code { font-size: 11px; }
+  .derivation-controls { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .derivation-controls .field:nth-child(-n+2) { grid-column: 1 / -1; }
+  .perspective-lead, .crack-section { padding: 20px; }
+  .crack-result-card { padding: 16px; }
+  .perspective-summary, .plain-language p:last-child { font-size: 15px; }
+  .crack-result-copy > :last-child { font-size: 14px; }
+  .crack-section #crack-basis { font-size: 11px; }
+  .offline-section p { max-width: none; }
+}
+@media (max-width: 360px) {
+  main { padding: 0 14px; }
+  .site-header { padding-left: 14px; padding-right: 14px; }
+  .word-indices { grid-template-columns: 1fr; }
+  .generate-row .button { flex-basis: 100%; }
+  .path-reference { grid-template-columns: 1fr; }
+  .segmented span { padding: 9px 6px; }
+}
+@media print {
+  .site-header { position: static; }
+  #word-indices { display: none !important; }
+}
 </style>
 </head>
 <body>
   <a class="skip-link" href="#analyze">Skip to tool</a>
   <header class="site-header">
     <a class="brand" href="#top" aria-label="EntropyCheck home"><span class="brand-mark" aria-hidden="true">E<span>·</span></span>EntropyCheck<span class="version">v1.0</span></a>
-    <nav aria-label="Main navigation"><a href="#analyze">Analyze</a><a href="#understand">Understand</a><a href="#addresses">Addresses</a></nav>
+    <nav aria-label="Main navigation"><a href="#analyze"><span aria-hidden="true">01</span> Analyze</a><a href="#understand"><span aria-hidden="true">02</span> Understand</a><a href="#addresses"><span aria-hidden="true">03</span> Addresses</a></nav>
     <a class="button small download-link" href="./entropycheck.html" download="entropycheck.html">Download offline <span aria-hidden="true">↗</span></a>
   </header>
   <main id="top">
     <div class="environment-strip"><span id="environment">BROWSER-LOCAL COMPUTATION</span><span>Bitcoin only <span aria-hidden="true">/</span> English BIP39</span></div>
     <section class="hero" aria-labelledby="hero-title">
-      <div><p class="eyebrow">A LITTLE CLARITY. A LOT OF POSSIBILITIES.</p><h1 id="hero-title">Understand the strength<br>behind your seed.</h1><p class="hero-copy">Check its structure. Explore the numbers. Follow its Bitcoin paths.<br class="desktop-break"> Learn what your words can tell you and what they can’t.</p></div>
+      <div><p class="eyebrow">YOUR BITCOIN SEED, EXPLAINED.</p><h1 id="hero-title">Understand the strength<br>behind your seed.</h1><p class="hero-copy">From recovery words to risk, randomness, and Bitcoin addresses.<br class="desktop-break"> A private, browser-local workspace for learning how it all fits together.</p><div class="hero-facts"><span>No accounts</span><span>No data uploads</span><span>Works offline</span></div></div>
       <div class="hero-aside" aria-hidden="true"><div class="bit-grid"><span>0</span><span>1</span><span>0</span><span>1</span><span>1</span><span>0</span><span>1</span><span>0</span><span>0</span><span>0</span><span>1</span><span>1</span><span>1</span><span>0</span><span>0</span><span>1</span></div><p>RANDOMNESS → WORDS</p></div>
     </section>
     <aside class="notice" id="usage-notice"><span class="notice-icon" aria-hidden="true">!</span><p><strong id="notice-title">For testing and learning.</strong> <span id="notice-copy">Use public examples or disposable test phrases here. Handle real recovery phrases only with a verified offline copy on a trusted, disconnected device.</span> <a href="#offline">Offline guide <span aria-hidden="true">↗</span></a></p></aside>
     <noscript><p class="notice">JavaScript is required for this local calculator. Nothing is submitted to a server.</p></noscript>
 
     <section id="analyze" class="section" aria-labelledby="analyze-title">
-      <div class="section-heading"><div><p class="eyebrow">01 / THE PHRASE</p><h2 id="analyze-title">Start with the words.</h2></div><button id="clear-all" class="text-button" type="button">Clear all <span aria-hidden="true">↺</span></button></div>
+      <div class="section-heading"><div><p class="eyebrow">01 / THE PHRASE</p><h2 id="analyze-title">Start with the words.</h2><p class="section-copy">Paste a test phrase to check it, or explore with a generated example.</p></div><button id="clear-all" class="text-button" type="button">Clear all <span aria-hidden="true">↺</span></button></div>
       <div class="analysis-grid">
         <div class="panel input-panel">
           <div class="label-row"><label for="mnemonic">BIP39 recovery phrase</label><span id="word-counter" class="muted">0 words</span></div>
           <div id="phrase-input" class="phrase-input"><textarea id="mnemonic" rows="4" placeholder="Paste a test phrase, or generate one below to explore." spellcheck="false" autocomplete="off" autocapitalize="off" autocorrect="off" aria-describedby="input-validation phrase-help normalization" aria-invalid="false"></textarea><p id="input-validation" class="input-validation" role="status" aria-live="polite">Enter a phrase to check its structure.</p></div>
           <p id="phrase-help" class="field-help">English · 12, 15, 18, 21, or 24 words. All calculations happen in this page.</p>
           <p id="normalization" class="field-help"></p>
-          <div class="generate-row"><label class="sr-only" for="generate-length">Generated phrase length</label><select id="generate-length"><option value="12">12 words</option><option value="15">15 words</option><option value="18">18 words</option><option value="21">21 words</option><option value="24">24 words</option></select><button class="button" id="generate" type="button"><span aria-hidden="true">＋</span> Generate test phrase</button></div>
-          <p id="generation-error" class="field-error" role="status"></p>
-          <div class="example-row"><span class="muted">Just exploring?</span><button class="text-button" id="load-example" type="button">Load a public example <span aria-hidden="true">→</span></button><select id="example-length" aria-label="Public example length"><option value="12">12 words</option><option value="24">24 words</option></select></div>
           <div class="field source-field"><label for="source">How was it generated? <span class="optional">Optional</span></label><select id="source"><option value="unknown">I don’t know / prefer not to say</option><option value="wallet">A wallet’s random generator</option><option value="browser">A browser’s cryptographic random generator</option><option value="physical">Physical randomness (dice, coins, etc.)</option><option value="human">Words chosen by a person</option><option value="public">A public example</option></select><p class="field-help">This context is self-reported. The phrase cannot verify its source.</p></div>
           <button id="analyze-button" type="button" class="button primary">Analyze phrase <span aria-hidden="true">→</span></button>
           <p id="analysis-feedback" class="field-help" role="status"></p>
+          <div class="explore-tools"><p class="small-label">OR TRY IT WITH A TEST PHRASE</p><div class="generate-row"><label class="sr-only" for="generate-length">Generated phrase length</label><select id="generate-length"><option value="12">12 words</option><option value="15">15 words</option><option value="18">18 words</option><option value="21">21 words</option><option value="24">24 words</option></select><button class="button" id="generate" type="button"><span aria-hidden="true">＋</span> Generate test phrase</button></div>
+          <p id="generation-error" class="field-error" role="status"></p>
+          <div class="example-row"><button class="text-button" id="load-example" type="button">Load a public example <span aria-hidden="true">→</span></button><select id="example-length" aria-label="Public example length"><option value="12">12 words</option><option value="24">24 words</option></select></div></div>
         </div>
         <div class="panel assessment-panel" id="assessment" tabindex="-1" aria-labelledby="assessment-title">
           <div class="label-row"><h3 id="assessment-title">What we can tell you</h3><span class="status-dot" aria-hidden="true"></span></div>
@@ -1387,9 +1497,22 @@ footer .brand {
           <p class="field-help">Capacity is the encoded entropy length, not a measurement of actual randomness.</p>
           <div id="source-assessment" class="source-assessment"><h4 id="source-title">Randomness has a backstory.</h4><p id="source-detail">A valid phrase tells us how many bits it encodes. It doesn’t tell us how unpredictably those bits were chosen.</p></div>
           <p class="field-help" id="repetition"></p>
-          <details id="technical-details"><summary>Inspect the BIP39 structure and pattern checks</summary><p class="field-help">These checks recognize a limited set of simple constructions. Passing them cannot certify a generator or establish secrecy.</p><ul id="pattern-findings"></ul><dl class="technical-list"><dt>Word count</dt><dd id="check-length">Waiting</dd><dt>English wordlist</dt><dd id="check-words">Waiting</dd><dt>Checksum</dt><dd id="check-checksum">Waiting</dd></dl><p class="field-help">Raw entropy is secret material, equivalent to the recovery phrase. The checksum detects some mistakes; it does not add randomness.</p><p class="small-label">RAW ENTROPY · HEXADECIMAL</p><code id="raw-entropy" class="break-code">No valid phrase loaded.</code><p class="small-label">RAW BINARY · ENTROPY BITS ONLY</p><code id="raw-binary" class="break-code">No valid phrase loaded.</code><p class="small-label">CHECKSUM BITS · NOT ADDITIONAL ENTROPY</p><code id="checksum-binary" class="break-code">No valid phrase loaded.</code><p class="small-label">FULL MNEMONIC BINARY · ENTROPY + CHECKSUM</p><code id="mnemonic-binary" class="break-code">No valid phrase loaded.</code></details>
+          <div id="assessment-next" class="assessment-next" hidden><a href="#understand">Understand the guessing time <span aria-hidden="true">↓</span></a><a href="#addresses">Explore Bitcoin addresses <span aria-hidden="true">↓</span></a></div>
         </div>
       </div>
+      <details id="technical-details" class="panel entropy-panel">
+        <summary>Entropy details <span class="summary-hint">Word indices, binary, and structure checks</span></summary>
+        <div class="entropy-intro"><h3>Every word represents a number.</h3><p>The English BIP39 list contains 2,048 words, indexed from <strong>0 to 2047</strong>. Each index becomes 11 binary digits. Together, those digits encode the entropy and its checksum.</p></div>
+        <div class="index-guide"><strong>Index 0 = abandon.</strong><p>The <a href="https://github.com/bitcoin/bips/blob/master/bip-0039/english.txt" target="_blank" rel="noopener noreferrer">official word list on GitHub ↗</a> displays lines starting at 1. To find a word there, add 1 to its BIP39 index: <strong>index 1477 → line 1478</strong>. “Word 1” below means the first word in your phrase, not its wordlist index.</p></div>
+        <p id="word-indices-empty" class="field-help">Analyze a valid phrase to see its word indices.</p>
+        <ol id="word-indices" class="word-indices" aria-label="Seed words and zero-based BIP39 indices"></ol>
+        <p class="field-help">These numbers and binary digits reveal the same secret as the recovery phrase. Treat them with the same care.</p>
+        <div class="entropy-raw-grid">
+          <div><h4>Entropy</h4><p class="small-label">HEXADECIMAL</p><code id="raw-entropy" class="break-code">No valid phrase loaded.</code><p class="small-label">RAW BINARY · ENTROPY BITS ONLY</p><code id="raw-binary" class="break-code">No valid phrase loaded.</code></div>
+          <div><h4>Checksum &amp; full encoding</h4><p class="small-label">CHECKSUM BITS · NOT ADDITIONAL ENTROPY</p><code id="checksum-binary" class="break-code">No valid phrase loaded.</code><p class="small-label">FULL MNEMONIC BINARY · ENTROPY + CHECKSUM</p><code id="mnemonic-binary" class="break-code">No valid phrase loaded.</code></div>
+        </div>
+        <div class="structure-checks"><div><h4>Structure checks</h4><dl class="technical-list"><dt>Word count</dt><dd id="check-length">Waiting</dd><dt>English wordlist</dt><dd id="check-words">Waiting</dd><dt>Checksum</dt><dd id="check-checksum">Waiting</dd></dl></div><div><h4>Pattern checks</h4><p class="field-help">These checks recognize a limited set of simple constructions. Passing them cannot certify a generator or establish secrecy. The checksum detects some mistakes; it does not add randomness.</p><ul id="pattern-findings"></ul></div></div>
+      </details>
     </section>
 
     <section id="understand" class="section" aria-labelledby="understand-title">
@@ -1429,8 +1552,8 @@ footer .brand {
     <section id="addresses" class="section" aria-labelledby="addresses-title">
       <div class="section-heading"><div><p class="eyebrow">03 / THE BITCOIN PATHS</p><h2 id="addresses-title">One seed. Different destinations.</h2></div></div>
       <p class="section-copy">A derivation path tells a wallet which keys to use. These are common conventions; the words alone don’t identify which path your wallet used.</p>
-      <div class="path-reference"><div><span>Legacy <small>BIP44</small></span><code>m/44'/0'/0'/0/0</code><small>1… · P2PKH</small></div><div><span>Nested SegWit <small>BIP49</small></span><code>m/49'/0'/0'/0/0</code><small>3… · P2SH-P2WPKH</small></div><div class="selected-reference"><span>Native SegWit <small>BIP84</small></span><code>m/84'/0'/0'/0/0</code><small>bc1q… · P2WPKH</small></div><div><span>Taproot <small>BIP86</small></span><code>m/86'/0'/0'/0/0</code><small>bc1p… · P2TR</small></div></div>
-      <p class="field-help">Examples above: mainnet, account 0, receiving address 0. An apostrophe marks hardened derivation. Testnet uses coin type 1'.</p>
+      <div class="path-reference" role="group" aria-label="Choose a Bitcoin address type"><button type="button" data-address-type="legacy" aria-pressed="false"><span>Legacy <small>BIP44</small></span><code>m/44'/0'/0'/0/0</code><small>1… · P2PKH</small></button><button type="button" data-address-type="nested" aria-pressed="false"><span>Nested SegWit <small>BIP49</small></span><code>m/49'/0'/0'/0/0</code><small>3… · P2SH-P2WPKH</small></button><button type="button" class="selected-reference" data-address-type="native" aria-pressed="true"><span>Native SegWit <small>BIP84</small></span><code>m/84'/0'/0'/0/0</code><small>bc1q… · P2WPKH</small></button><button type="button" data-address-type="taproot" aria-pressed="false"><span>Taproot <small>BIP86</small></span><code>m/86'/0'/0'/0/0</code><small>bc1p… · P2TR</small></button></div>
+      <p class="field-help">Choose an address type above. Path examples show mainnet, account 0, receiving address 0. An apostrophe marks hardened derivation. Testnet uses coin type 1'.</p>
       <div class="panel derivation-panel">
         <div class="derivation-controls"><div class="field"><label for="network">Bitcoin network</label><select id="network"><option value="mainnet">Mainnet</option><option value="testnet">Testnet</option></select></div><div class="field"><label for="address-type">Address type</label><select id="address-type"><option value="legacy">Legacy · BIP44</option><option value="nested">Nested SegWit · BIP49</option><option value="native" selected>Native SegWit · BIP84</option><option value="taproot">Taproot · BIP86</option></select></div><div class="field"><label for="account">Account</label><input id="account" type="number" min="0" max="2147483647" step="1" value="0"></div><div class="field"><label for="branch">Branch</label><select id="branch"><option value="0">Receiving (0)</option><option value="1">Change (1)</option></select></div><div class="field"><label for="start-index">Starting index</label><input id="start-index" type="number" min="0" max="2147483647" step="1" value="0"></div><div class="field"><label for="address-count">Addresses</label><input id="address-count" type="number" min="1" max="100" step="1" value="20"></div></div>
         <div class="passphrase-row"><div class="field"><label for="passphrase">BIP39 passphrase <span class="optional">Optional</span></label><div class="password-input"><input id="passphrase" type="password" spellcheck="false" autocomplete="off" autocapitalize="off" autocorrect="off" placeholder="Empty by default" aria-describedby="passphrase-help"><button id="show-passphrase" type="button" aria-pressed="false">Show</button></div><p id="passphrase-help" class="field-help">Case and spaces matter. Every passphrase creates a different wallet; there’s no “incorrect passphrase” error. Unicode is normalized with NFKD.</p></div><button id="derive" type="button" class="button primary" disabled>Derive addresses <span aria-hidden="true">→</span></button></div>
@@ -4965,13 +5088,17 @@ zoo`.split("\n"));
     let entropyBinary = null;
     let checksumBinary = null;
     let mnemonicBinary = null;
+    const wordIndices = valid ? tokens.map((word, position) => {
+      const index = wordlist.indexOf(word);
+      return { position: position + 1, word, index, githubLine: index + 1, binary: index.toString(2).padStart(11, "0") };
+    }) : [];
     let patterns = [];
     if (valid) {
       const entropy = mnemonicToEntropy(normalized, wordlist);
       try {
         entropyHex = Array.from(entropy, (byte) => byte.toString(16).padStart(2, "0")).join("");
         entropyBinary = Array.from(entropy, (byte) => byte.toString(2).padStart(8, "0")).join("");
-        mnemonicBinary = tokens.map((word) => wordlist.indexOf(word).toString(2).padStart(11, "0")).join("");
+        mnemonicBinary = wordIndices.map((item) => item.binary).join("");
         checksumBinary = mnemonicBinary.slice(entropyBinary.length);
         patterns = findPatterns(entropy, tokens);
       } finally {
@@ -4986,6 +5113,7 @@ zoo`.split("\n"));
       entropyBinary,
       checksumBinary,
       mnemonicBinary,
+      wordIndices,
       patterns,
       repeatedWordCount: tokens.length - new Set(tokens).size,
       knownPublic: known.has(normalized)
@@ -10547,6 +10675,30 @@ zoo`.split("\n"));
     for (const [id, content] of [["raw-entropy", analysis.entropyHex], ["raw-binary", analysis.entropyBinary], ["checksum-binary", analysis.checksumBinary], ["mnemonic-binary", analysis.mnemonicBinary]]) {
       text(id, content ?? "No valid phrase loaded.");
     }
+    element("word-indices-empty").hidden = analysis.valid;
+    element("assessment-next").hidden = !analysis.valid;
+    element("word-indices").replaceChildren(...analysis.wordIndices.map((item) => {
+      const card = document.createElement("li");
+      const heading = document.createElement("div");
+      heading.className = "word-index-heading";
+      const position = document.createElement("span");
+      position.className = "word-position";
+      position.textContent = `Word ${item.position}`;
+      const word = document.createElement("strong");
+      word.textContent = item.word;
+      heading.append(position, word);
+      const index = document.createElement("p");
+      index.className = "word-index-number";
+      index.append("BIP39 index ", Object.assign(document.createElement("strong"), { textContent: String(item.index) }));
+      const binary = document.createElement("code");
+      binary.textContent = item.binary;
+      binary.setAttribute("aria-label", `11-bit binary: ${item.binary}`);
+      const line = document.createElement("span");
+      line.className = "word-github-line";
+      line.textContent = `GitHub line ${item.githubLine}`;
+      card.append(heading, index, binary, line);
+      return card;
+    }));
     text("repetition", analysis.repeatedWordCount ? "Repeated words are allowed in BIP39. Ordinary repetition does not measure unpredictability; extreme constructions are checked separately." : "");
     element("pattern-findings").replaceChildren(...analysis.patterns.map((pattern) => {
       const item = document.createElement("li");
@@ -10732,7 +10884,23 @@ zoo`.split("\n"));
     analysisRuns = 0;
     markPending();
     renderModel();
+    renderAddressSelection();
   }
+  function renderAddressSelection() {
+    document.querySelectorAll("[data-address-type]").forEach((button) => {
+      const selected = button.dataset.addressType === value("address-type");
+      button.classList.toggle("selected-reference", selected);
+      button.setAttribute("aria-pressed", String(selected));
+    });
+  }
+  document.querySelectorAll("[data-address-type]").forEach((button) => {
+    button.addEventListener("click", () => {
+      setValue("address-type", button.dataset.addressType);
+      renderAddressSelection();
+      invalidateAddresses();
+    });
+  });
+  element("address-type").addEventListener("change", renderAddressSelection);
   input.addEventListener("input", () => {
     generatedHere = false;
     markPending();

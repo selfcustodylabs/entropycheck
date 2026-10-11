@@ -73,6 +73,23 @@ function renderAssessment() {
   for (const [id, content] of [['raw-entropy', analysis.entropyHex], ['raw-binary', analysis.entropyBinary], ['checksum-binary', analysis.checksumBinary], ['mnemonic-binary', analysis.mnemonicBinary]]) {
     text(id!, content ?? 'No valid phrase loaded.');
   }
+  element('word-indices-empty').hidden = analysis.valid;
+  element('assessment-next').hidden = !analysis.valid;
+  element('word-indices').replaceChildren(...analysis.wordIndices.map(item => {
+    const card = document.createElement('li');
+    const heading = document.createElement('div'); heading.className = 'word-index-heading';
+    const position = document.createElement('span'); position.className = 'word-position';
+    position.textContent = `Word ${item.position}`;
+    const word = document.createElement('strong'); word.textContent = item.word;
+    heading.append(position, word);
+    const index = document.createElement('p'); index.className = 'word-index-number';
+    index.append('BIP39 index ', Object.assign(document.createElement('strong'), { textContent: String(item.index) }));
+    const binary = document.createElement('code'); binary.textContent = item.binary;
+    binary.setAttribute('aria-label', `11-bit binary: ${item.binary}`);
+    const line = document.createElement('span'); line.className = 'word-github-line'; line.textContent = `GitHub line ${item.githubLine}`;
+    card.append(heading, index, binary, line);
+    return card;
+  }));
   text('repetition', analysis.repeatedWordCount ? 'Repeated words are allowed in BIP39. Ordinary repetition does not measure unpredictability; extreme constructions are checked separately.' : '');
   element('pattern-findings').replaceChildren(...analysis.patterns.map(pattern => {
     const item = document.createElement('li'); item.textContent = `${pattern.title}: ${pattern.explanation}`; return item;
@@ -250,8 +267,25 @@ function clearAll() {
   document.querySelector<HTMLInputElement>('input[name="model-words"][value="12"]')!.checked = true;
   document.querySelectorAll<HTMLDetailsElement>('details').forEach(details => { details.open = false; });
   text('generation-error', typeof globalThis.crypto?.getRandomValues === 'function' ? '' : 'Secure browser randomness is unavailable. Generation is disabled. Analysis of test phrases remains available.'); text('copy-status', '');
-  analysisRuns = 0; markPending(); renderModel();
+  analysisRuns = 0; markPending(); renderModel(); renderAddressSelection();
 }
+
+function renderAddressSelection() {
+  document.querySelectorAll<HTMLButtonElement>('[data-address-type]').forEach(button => {
+    const selected = button.dataset.addressType === value('address-type');
+    button.classList.toggle('selected-reference', selected);
+    button.setAttribute('aria-pressed', String(selected));
+  });
+}
+
+document.querySelectorAll<HTMLButtonElement>('[data-address-type]').forEach(button => {
+  button.addEventListener('click', () => {
+    setValue('address-type', button.dataset.addressType!);
+    renderAddressSelection();
+    invalidateAddresses();
+  });
+});
+element('address-type').addEventListener('change', renderAddressSelection);
 
 input.addEventListener('input', () => { generatedHere = false; markPending(); });
 source.addEventListener('change', markPending);

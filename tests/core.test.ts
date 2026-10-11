@@ -21,6 +21,25 @@ const defaults: DerivationOptions = { network: 'mainnet', addressType: 'native',
 bitcoin.initEccLib(ecc);
 const independentBip32 = BIP32Factory(ecc);
 
+test('word indices preserve zero-based BIP39 values, 11 bits, and one-based GitHub lines', () => {
+  const zero = analyzeMnemonic(phrase);
+  assert.deepEqual(zero.wordIndices[0], { position: 1, word: 'abandon', index: 0, githubLine: 1, binary: '00000000000' });
+  assert.deepEqual(zero.wordIndices[11], { position: 12, word: 'about', index: 3, githubLine: 4, binary: '00000000011' });
+  const bits = '10111000101' + '11111111111' + '0'.repeat(106);
+  const entropy = Uint8Array.from(bits.match(/.{8}/g)!, byte => parseInt(byte, 2));
+  const result = analyzeMnemonic(entropyToMnemonic(entropy, wordlist));
+  assert.deepEqual(result.wordIndices[0], { position: 1, word: 'reward', index: 1477, githubLine: 1478, binary: '10111000101' });
+  assert.deepEqual(result.wordIndices[1], { position: 2, word: 'zoo', index: 2047, githubLine: 2048, binary: '11111111111' });
+  for (const [, mnemonic] of vectors) {
+    const decoded = analyzeMnemonic(mnemonic);
+    assert.equal(decoded.wordIndices.length, decoded.wordCount);
+    assert.equal(decoded.wordIndices.map(item => item.binary).join(''), decoded.entropyBinary! + decoded.checksumBinary!);
+  }
+  for (const invalid of ['', 'abandon about', 'abandon '.repeat(12), phrase.replace('about', 'invalidword')]) {
+    assert.deepEqual(analyzeMnemonic(invalid).wordIndices, []);
+  }
+});
+
 test('all 24 Trezor English vectors: entropy, mnemonic, PBKDF2 seed and BIP32 root', () => {
   for (const [entropy, mnemonic, expectedSeed, expectedRoot] of vectors) {
     const analysis = analyzeMnemonic(mnemonic);

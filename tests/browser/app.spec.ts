@@ -3,6 +3,56 @@ import { fileURLToPath } from 'node:url';
 const artifact = new URL('../../entropycheck.html', import.meta.url).href;
 const example = `${'abandon '.repeat(11)}about`;
 
+test('entropy details show zero-based word indices offline and discard them after edits', async ({ page, context }) => {
+  await context.setOffline(true);
+  await page.goto(artifact);
+  await page.locator('#load-example').click();
+  await page.locator('#technical-details > summary').click();
+  const words = page.locator('#word-indices li');
+  await expect(words).toHaveCount(12);
+  await expect(words.first()).toContainText('Word 1abandon');
+  await expect(words.first()).toContainText('BIP39 index 0');
+  await expect(words.first()).toContainText('GitHub line 1');
+  await expect(words.first().locator('code')).toHaveText('00000000000');
+  await expect(words.last()).toContainText('BIP39 index 3');
+  await expect(words.last()).toContainText('GitHub line 4');
+  await expect(page.locator('.index-guide')).toContainText('index 1477 → line 1478');
+  for (const width of [320, 390, 768, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await expect(page.getByRole('navigation', { name: 'Main navigation' })).toBeVisible();
+  }
+  await page.locator('#mnemonic').fill('abandon about');
+  await expect(words).toHaveCount(0);
+  await expect(page.locator('#raw-binary')).toHaveText('No valid phrase loaded.');
+  await page.locator('#load-example').click();
+  await expect(words).toHaveCount(12);
+  await page.locator('#clear-all').click();
+  await expect(words).toHaveCount(0);
+  await expect(page.locator('#technical-details')).not.toHaveAttribute('open', '');
+});
+
+test('address type cards support keyboard selection and invalidate outdated addresses', async ({ page }) => {
+  await page.goto(artifact);
+  await page.locator('#load-example').click();
+  await page.locator('#address-count').fill('1');
+  await page.locator('#derive').click();
+  await expect(page.locator('#address-rows tr')).toHaveCount(1);
+  await page.locator('[data-address-type="taproot"]').focus();
+  await page.keyboard.press('Enter');
+  await expect(page.locator('#address-type')).toHaveValue('taproot');
+  await expect(page.locator('[data-address-type="taproot"]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('[data-address-type="native"]')).toHaveAttribute('aria-pressed', 'false');
+  await expect(page.locator('#address-rows tr')).toHaveCount(0);
+  await page.locator('#derive').click();
+  await expect(page.locator('#address-rows')).toContainText("m/86'/0'/0'/0/0");
+  await page.locator('#address-type').selectOption('legacy');
+  await expect(page.locator('[data-address-type="legacy"]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('#address-rows tr')).toHaveCount(0);
+  await page.locator('#clear-all').click();
+  await expect(page.locator('[data-address-type="native"]')).toHaveAttribute('aria-pressed', 'true');
+});
+
 test('file works with networking blocked, no storage writes or runtime requests', async ({ page, context }) => {
   const requests: string[] = [];
   const errors: string[] = [];
