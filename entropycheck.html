@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="referrer" content="no-referrer">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-wgrkBNf5zCOM8cp2VmcvNlESmhPPorzrGE5xFn4HtAw='; style-src 'sha256-zJSlssrK3rSgq4Mko4giR2fD53xBDPrgreSbhKhZO/I='; img-src data:; connect-src 'none'; form-action 'none'; base-uri 'none'; object-src 'none'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-hU4e47pq+cXh0nLXDWTTv54s0DEmlIy3IBI7ToegGFo='; style-src 'sha256-fF9AT+EklfFZBK5kD2YB260RPujYlq6NPMSr+7x++FE='; img-src data:; connect-src 'none'; form-action 'none'; base-uri 'none'; object-src 'none'">
   <meta name="description" content="Understand BIP39 seed phrases, explore entropy, and derive Bitcoin addresses. A self-contained tool that also works offline.">
   <title>EntropyCheck | Understand your Bitcoin seed</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='10' fill='%23c94d20'/%3E%3Cpath d='M12 11h16v5H17v3h9v4h-9v3h11v4H12z' fill='white'/%3E%3C/svg%3E">
@@ -1296,9 +1296,15 @@ footer .brand {
 .risk-summary[data-kind="unsafe"], .risk-summary[data-kind="weak"], .phrase-perspective[data-kind="unsafe"], .phrase-perspective[data-kind="weak"] { background: #fff0e9; border-color: #b33b1d; }
 .risk-summary[data-kind="unsafe"] .assessment-status, .risk-summary[data-kind="weak"] .assessment-status { color: #972e17; }
 .structure-status { font-weight: 700; margin-bottom: 6px; }
-.phrase-perspective { margin-bottom: 20px; border-left-width: 5px; }
+.phrase-perspective { margin-bottom: 20px; border-left-width: 5px; padding: 0; overflow: hidden; }
 .phrase-perspective .big-number { font-size: clamp(1.6rem, 4vw, 2.6rem); overflow-wrap: anywhere; }
-.phrase-analogy { border-top: 1px solid var(--line); padding-top: 18px; font-style: italic; }
+.perspective-lead { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(260px, .8fr); gap: 28px; padding: clamp(24px, 4vw, 42px); }
+.perspective-result .big-number { margin: 8px 0 16px; }
+.perspective-summary { max-width: 760px; margin-bottom: 0; font-size: 1.04rem; line-height: 1.7; }
+.plain-language { align-self: stretch; padding: 22px; border-radius: 10px; background: #f5eee1; border: 1px solid #ded2c0; }
+.plain-language p:last-child { margin: 10px 0 0; font-size: 1.06rem; line-height: 1.65; }
+.phrase-perspective[data-kind="unsafe"] .plain-language,
+.phrase-perspective[data-kind="weak"] .plain-language { background: #ffe4d8; border-color: #d89b84; }
 #ideal-model > summary { font-size: 1rem; line-height: 1.6; }
 #ideal-model[open] > summary { margin-bottom: 24px; }
 #ideal-model .model-intro { padding: 16px; background: #f5eee1; border-left: 3px solid #b2652e; }
@@ -1311,11 +1317,35 @@ footer .brand {
 .input-validation { margin: 0; padding: 12px 14px; font-size: .82rem; line-height: 1.5; background: #f4f3ee; border-top: 1px solid var(--line); }
 .phrase-input[data-state="invalid"] { border: 2px solid #ab361c; }
 .phrase-input[data-state="invalid"] .input-validation { color: #8c2814; background: #fff0e9; }
-.crack-section { border-top: 1px solid var(--line); padding-top: 24px; margin-top: 24px; }
-.crack-section h3 { margin: 0; font-size: 1.3rem; }
-#crack-controls { max-width: 430px; margin-top: 20px; }
-#crack-time { margin: 20px 0 12px; }
-@media (max-width: 600px) { .crack-section .label-row { align-items: flex-start; flex-wrap: wrap; gap: 8px; } }
+.crack-section { border-top: 1px solid var(--line); padding: clamp(24px, 4vw, 42px); background: #fbfaf6; }
+.crack-section h3 { margin: 4px 0 0; font-size: clamp(1.35rem, 2vw, 1.65rem); }
+.crack-result-card { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(260px, .75fr); gap: 28px; align-items: end; margin-top: 24px; padding: 24px; border: 1px solid var(--line); border-radius: 10px; background: #fff; }
+.crack-result-copy .big-number { margin: 8px 0 12px; }
+.crack-result-copy > :last-child { margin-bottom: 0; }
+#crack-controls { max-width: none; }
+#crack-controls .field-help { margin-bottom: 0; }
+.random-perspective { margin-top: 24px; }
+.random-perspective h4 { margin: 0 0 14px; font-size: 1.05rem; }
+.perspective-facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.perspective-facts article { padding: 18px; border: 1px solid var(--line); border-radius: 9px; background: #fff; }
+.perspective-facts article p:last-child { margin: 7px 0 0; font-size: 1.02rem; line-height: 1.55; }
+.lottery-analogy { margin: 14px 0 0; padding: 18px 20px; border-left: 3px solid var(--orange); background: #f5eee1; font-style: italic; line-height: 1.65; }
+.crack-disclosures { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 22px; }
+.crack-disclosures details { margin: 0; padding: 15px 17px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+.crack-disclosures details[hidden] { display: none; }
+.crack-disclosures summary { font-size: .93rem; }
+.crack-disclosures details p { font-size: .9rem; line-height: 1.65; }
+@media (max-width: 760px) {
+  .perspective-lead,
+  .crack-result-card { grid-template-columns: 1fr; }
+  .perspective-facts,
+  .crack-disclosures { grid-template-columns: 1fr; }
+  .crack-section .label-row { align-items: flex-start; flex-wrap: wrap; gap: 10px; }
+  .crack-section #crack-basis { display: inline-block; }
+  .perspective-lead,
+  .crack-section { padding: 24px; }
+  .crack-result-card { padding: 19px; gap: 20px; }
+}
 </style>
 </head>
 <body>
@@ -1363,17 +1393,30 @@ footer .brand {
     </section>
 
     <section id="understand" class="section" aria-labelledby="understand-title">
-      <div class="section-heading"><div><p class="eyebrow">02 / THE POSSIBILITIES</p><h2 id="understand-title">What do these words really tell us?</h2></div><span class="subtle-tag">This phrase’s assessment</span></div>
-      <div id="phrase-perspective" class="panel phrase-perspective"><p class="metric-label" id="phrase-quantity-label">Actual source entropy</p><p class="big-number" id="phrase-quantity">Not analyzed</p><p id="phrase-interpretation"></p><p class="phrase-analogy" id="phrase-analogy"></p>
-        <div class="crack-section" aria-labelledby="crack-heading"><div class="label-row"><h3 id="crack-heading">Time to crack</h3><span id="crack-basis" class="subtle-tag">Conditional estimate</span></div>
-          <p id="crack-assumptions" class="field-help">Estimates need a stated generation or attack model, a known verification target, and a fixed or known passphrase. They are not hardware benchmarks or predictions of wallet compromise.</p>
-          <div id="crack-controls" class="field" hidden><label for="crack-rate">Hypothetical complete candidate checks per second</label><select id="crack-rate"><option value="1000000">1 million (10⁶)</option><option value="1000000000">1 billion (10⁹)</option><option value="1000000000000">1 trillion (10¹²)</option></select></div>
-          <p id="crack-time" class="big-number">Analyze a phrase first</p><p id="crack-detail"></p><p id="crack-maximum" class="field-help"></p><p id="crack-passphrase" class="field-help"></p>
-          <div id="random-perspective" hidden><h4>Put that time in perspective</h4><p id="crack-centuries"></p><p id="crack-century-chance"></p><p id="crack-lottery" class="phrase-analogy"></p><p class="field-help">This describes brute-force phrase guessing only. Exposure, a predictable generator, malware, partial knowledge, and other attacks on Bitcoin keys can bypass this model. Checksum bits and the derived 512-bit seed do not add randomness.</p></div>
-          <details id="crack-math" hidden><summary>Calculation and limits</summary><p id="crack-formula" class="break-code"></p><p>Displayed times are rounded to three significant digits. The average assumes no repeated guesses and an equally likely target position within this family. A family-size upper bound gives an upper bound on that model’s average. The full-search figure covers this family only. It excludes setup and other attack families; it does not estimate the strength of an unknown passphrase. Checking rates are illustrations, not Bitcoin mining hash rates. Choosing a faster rate does not change the phrase or its risk finding.</p></details>
+      <div class="section-heading"><div><p class="eyebrow">02 / THE POSSIBILITIES</p><h2 id="understand-title">What do these words really tell us?</h2><p class="section-copy">Start with the plain-language result. Open the details only if you want to inspect the assumptions or math.</p></div><span class="subtle-tag">This phrase’s assessment</span></div>
+      <div id="phrase-perspective" class="panel phrase-perspective">
+        <div class="perspective-lead">
+          <div class="perspective-result"><p class="metric-label" id="phrase-quantity-label">Actual source entropy</p><p class="big-number" id="phrase-quantity">Not analyzed</p><p id="phrase-interpretation" class="perspective-summary"></p></div>
+          <aside class="plain-language" aria-labelledby="plain-language-title"><p class="small-label" id="plain-language-title">PLAIN LANGUAGE</p><p id="phrase-analogy"></p></aside>
+        </div>
+        <div class="crack-section" aria-labelledby="crack-heading">
+          <div class="label-row"><div><p class="small-label">THE PRACTICAL QUESTION</p><h3 id="crack-heading">How hard would it be to guess?</h3></div><span id="crack-basis" class="subtle-tag">Conditional estimate</span></div>
+          <div class="crack-result-card">
+            <div class="crack-result-copy"><p class="metric-label">Average search time</p><p id="crack-time" class="big-number">Analyze a phrase first</p><p id="crack-detail"></p></div>
+            <div id="crack-controls" class="field" hidden><label for="crack-rate">Try a hypothetical checking speed</label><select id="crack-rate"><option value="1000000">1 million checks/second</option><option value="1000000000">1 billion checks/second</option><option value="1000000000000">1 trillion checks/second</option></select><p class="field-help">For comparison only. These are complete seed checks, not Bitcoin mining hashes.</p></div>
+          </div>
+          <div id="random-perspective" class="random-perspective" hidden>
+            <h4>Make that number easier to picture</h4>
+            <div class="perspective-facts"><article><p class="metric-label">Measured in centuries</p><p id="crack-centuries"></p></article><article><p class="metric-label">Chance after 100 years</p><p id="crack-century-chance"></p></article></div>
+            <p id="crack-lottery" class="lottery-analogy"></p>
+          </div>
+          <div class="crack-disclosures">
+            <details id="crack-guide"><summary>Assumptions and limits</summary><p id="crack-assumptions">Estimates need a stated generation or attack model, a known verification target, and a fixed or known passphrase.</p><p id="crack-maximum" class="field-help"></p><p id="crack-passphrase" class="field-help"></p><p class="field-help">This describes phrase guessing only. Exposure, a predictable generator, malware, partial knowledge, and other attacks can bypass this model. Checksum bits and the derived 512-bit seed do not add randomness.</p></details>
+            <details id="crack-math" hidden><summary>Show the calculation</summary><p id="crack-formula" class="break-code"></p><p>Displayed times are rounded to three significant digits. The average assumes no repeated guesses and an equally likely target position. A family-size upper bound gives an upper bound on that model’s average. Checking rates are illustrations, not measured hardware performance. Choosing a faster rate does not change the phrase or its risk finding.</p></details>
+          </div>
         </div>
       </div>
-      <details id="ideal-model" class="panel model-panel"><summary>Explore ideal randomness, not this phrase’s measured strength</summary>
+      <details id="ideal-model" class="panel model-panel"><summary>Compare other phrase lengths</summary>
         <p class="model-intro">Hypothetical comparison only. These figures do not assess the phrase above. They assume uniformly random generation, a fixed or known passphrase, and a known verification target. Checking rates are illustrations, not hardware benchmarks or mining hash rates.</p>
         <div class="model-controls"><fieldset><legend>Compare phrase lengths</legend><div class="segmented" id="compare-lengths"><label><input type="radio" name="model-words" value="12" checked><span>12 words</span></label><label><input type="radio" name="model-words" value="15"><span>15</span></label><label><input type="radio" name="model-words" value="18"><span>18</span></label><label><input type="radio" name="model-words" value="21"><span>21</span></label><label><input type="radio" name="model-words" value="24"><span>24 words</span></label></div></fieldset><div class="field"><label for="check-rate">Hypothetical complete checks / second</label><select id="check-rate"><option value="1000000">1 million (10⁶)</option><option value="1000000000">1 billion (10⁹)</option><option value="1000000000000" selected>1 trillion (10¹²)</option></select></div></div>
         <div class="number-cards"><div><p class="metric-label">Possible phrases</p><p id="possibilities" class="big-number">3.40 × 10³⁸</p><span id="model-bits" class="field-help">128 random bits</span></div><div><p class="metric-label">Average exhaustive search</p><p class="big-number"><span id="average-years">5.39 × 10¹⁸</span><small> years</small></p><span class="field-help">Half the space, on average</span></div></div>
@@ -4872,8 +4915,8 @@ zoo`.split("\n"));
       title: generatedHere2 && source2 === "browser" ? "No recognized weakness found · not a safety certificate" : "Actual randomness is unverified",
       quantity: `${analysis2.encodedEntropyBits} bits if securely random`,
       quantityLabel: "Conditional strength",
-      interpretation: `No supported weakness was detected. Actual source entropy remains unknown. If these ${analysis2.wordCount} words were generated uniformly at random and kept secret, they represent a ${analysis2.encodedEntropyBits}-bit phrase-search space. The estimates below explain that assumption; they do not verify it.`,
-      analogy: `Under that assumption, one guess is like predicting ${analysis2.encodedEntropyBits} independent fair coin flips, all in the correct order.`,
+      interpretation: `No supported weakness was detected. If these ${analysis2.wordCount} words were generated securely at random and kept secret, they provide the potential strength shown here. Actual source entropy remains unknown because the words cannot prove how they were generated.`,
+      analogy: `Think of guessing ${analysis2.encodedEntropyBits} fair coin flips, all in the correct order. That is the chance of getting this phrase in one random guess.`,
       explanation: generatedHere2 && source2 === "browser" ? `The browser requested ${analysis2.encodedEntropyBits} bits from its cryptographic RNG in this session. That is nominal capacity, not measured entropy. A compromised or predictable generator can still produce ordinary-looking words.` : "No bundled public example or supported simple construction was recognized. This does not prove secrecy or random generation; a predictable generator can produce ordinary-looking words."
     };
   }
@@ -10563,7 +10606,7 @@ zoo`.split("\n"));
     text("crack-century-chance", "");
     text("crack-lottery", "");
     text("crack-basis", randomModel ? "Assuming secure random generation" : "Conditional estimate");
-    text("crack-assumptions", randomModel ? "Assumes every phrase of this length is equally likely, the words remain secret, and the attacker has no partial knowledge. Also assumes a known verification target and a fixed or known passphrase. This is a hypothetical exhaustive search, not a measured cracking time or a prediction of wallet compromise." : available ? "This models searching the recognized candidate family, assuming the attacker targets that construction and has a known verification target and a fixed or known passphrase. It is not a hardware benchmark or a prediction of wallet compromise." : "Estimates need a stated generation or attack model, a known verification target, and a fixed or known passphrase. They are not hardware benchmarks or predictions of wallet compromise.");
+    text("crack-assumptions", randomModel ? "This estimate applies only if every phrase of this length was equally likely, the words stayed secret, and the attacker has no partial knowledge. It also assumes a known verification target and a fixed or known passphrase. It is a hypothetical exhaustive search, not a measured cracking time or a prediction of wallet compromise." : available ? "This estimate searches the recognized candidate family. It assumes the attacker targets that construction, has a known verification target, and knows any BIP39 passphrase. It is not a hardware benchmark or a prediction of wallet compromise." : "Estimates need a stated generation or attack model, a known verification target, and a fixed or known passphrase. They are not hardware benchmarks or predictions of wallet compromise.");
     if (!available) {
       text("crack-time", !analysis.wordCount ? "Analyze a phrase first" : !analysis.valid ? "Not applicable to invalid input" : "Cannot estimate from these words");
       text("crack-detail", !analysis.wordCount ? "Run the assessment to see the applicable search model and its assumptions." : !analysis.valid ? "Fix the word count, wordlist, or checksum errors first. Invalid BIP39 input has no applicable phrase-search estimate." : "You reported human-chosen words. Human choices do not justify a uniform-random estimate, even when no supported pattern is detected. Actual strength and cracking time are unknown. The separate ideal-randomness comparison below explains what secure random generation would provide.");
@@ -10573,19 +10616,19 @@ zoo`.split("\n"));
     text("crack-passphrase", passphrase.value ? "A passphrase is entered. These figures assume the attacker already knows it; its strength is not evaluated." : "Assumes an empty or attacker-known BIP39 passphrase. A secret passphrase is not evaluated.");
     if (randomModel) {
       const model2 = modelStrength(analysis.encodedEntropyBits, rate);
-      text("crack-time", `≈ ${readableYears(model2.averageYears)} on average, if securely random`);
-      text("crack-detail", `Searching ${scientific(model2.possibilities)} equally likely phrases at ${rate.toLocaleString("en-US")} complete checks per second. Under these assumptions, exhaustive phrase guessing is infeasible on human timescales. This is conditional strength, not proof that the entered phrase is secret or unpredictable.`);
+      text("crack-time", `About ${readableYears(model2.averageYears)}`);
+      text("crack-detail", `If the phrase was generated securely at random, exhaustive guessing at ${rate.toLocaleString("en-US")} checks per second is beyond any human timescale.`);
       text("crack-maximum", `Full-space search at this rate: ≈ ${readableYears(model2.fullSearchYears)}. The average is not a minimum; a guess can succeed earlier.`);
-      text("crack-centuries", `About ${scientific(model2.averageCenturies)} centuries on average. One century is 100 years: even a trillion centuries would be much shorter than this average.`);
-      text("crack-century-chance", `After 100 years of continuous checking at this rate, the chance of finding this uniformly random phrase would be about 1 in ${scientific(1 / model2.centurySuccessProbability)}. That is still an extraordinarily unlikely result.`);
-      text("crack-lottery", `Imagine one winning ticket among ${scientific(model2.possibilities)} equally likely tickets. A single guess has probability 1 / 2^${model2.bits} (about ${scientific(model2.oneGuessProbability)}). More words help only when they encode more securely generated randomness.`);
+      text("crack-centuries", `${scientific(model2.averageCenturies)} centuries on average.`);
+      text("crack-century-chance", `About 1 in ${scientific(1 / model2.centurySuccessProbability)} at the selected speed.`);
+      text("crack-lottery", `Picture one winning ticket hidden among ${scientific(model2.possibilities)} equally likely tickets. More words help only when they encode more securely generated randomness.`);
       text("crack-formula", `N = 2^${model2.bits} = ${model2.possibilities}; R = ${rate}. Average = (N + 1) / (2R) = ${model2.averageSecondsNumerator} / ${model2.averageSecondsDenominator} seconds. Full space = N / R. One year = 31,557,600 seconds; century success probability = min(1, R × 100 × 31,557,600 / N).`);
       return;
     }
     const candidates = risk.candidates;
     const model = modelCandidateSearch(candidates, rate);
-    text("crack-time", candidates === 1n ? "No phrase search needed" : `≤ ${formatDuration(model.averageSeconds)} on average`);
-    text("crack-detail", candidates === 1n ? `The exact words are already known: only one candidate check is needed. At the selected hypothetical rate, that check models ${formatDuration(model.fullSearchSeconds)}. Actual verification and any unknown passphrase are separate.` : `For at most ${candidates.toLocaleString("en-US")} candidates in the detected construction at ${rate.toLocaleString("en-US")} complete checks per second. This is a conditional search estimate, not an observed cracking time.`);
+    text("crack-time", candidates === 1n ? "One known phrase to try" : `Up to ${formatDuration(model.averageSeconds)}`);
+    text("crack-detail", candidates === 1n ? "These exact words are already public or otherwise known, so an attacker does not need to search the full BIP39 space." : `The detected pattern reduces the search to at most ${candidates.toLocaleString("en-US")} candidates at the selected checking speed.`);
     text("crack-maximum", candidates === 1n ? "" : `Full-family search at this rate: ≤ ${formatDuration(model.fullSearchSeconds)}. An attacker may find it earlier or use a simpler guess.`);
     text("crack-formula", `N ≤ ${candidates}; R = ${rate}. Average = (N + 1) / (2R) ≤ ${model.averageNumerator} / ${model.averageDenominator} seconds. Full family = N / R.`);
   }

@@ -1287,9 +1287,15 @@ footer .brand {
 .risk-summary[data-kind="unsafe"], .risk-summary[data-kind="weak"], .phrase-perspective[data-kind="unsafe"], .phrase-perspective[data-kind="weak"] { background: #fff0e9; border-color: #b33b1d; }
 .risk-summary[data-kind="unsafe"] .assessment-status, .risk-summary[data-kind="weak"] .assessment-status { color: #972e17; }
 .structure-status { font-weight: 700; margin-bottom: 6px; }
-.phrase-perspective { margin-bottom: 20px; border-left-width: 5px; }
+.phrase-perspective { margin-bottom: 20px; border-left-width: 5px; padding: 0; overflow: hidden; }
 .phrase-perspective .big-number { font-size: clamp(1.6rem, 4vw, 2.6rem); overflow-wrap: anywhere; }
-.phrase-analogy { border-top: 1px solid var(--line); padding-top: 18px; font-style: italic; }
+.perspective-lead { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(260px, .8fr); gap: 28px; padding: clamp(24px, 4vw, 42px); }
+.perspective-result .big-number { margin: 8px 0 16px; }
+.perspective-summary { max-width: 760px; margin-bottom: 0; font-size: 1.04rem; line-height: 1.7; }
+.plain-language { align-self: stretch; padding: 22px; border-radius: 10px; background: #f5eee1; border: 1px solid #ded2c0; }
+.plain-language p:last-child { margin: 10px 0 0; font-size: 1.06rem; line-height: 1.65; }
+.phrase-perspective[data-kind="unsafe"] .plain-language,
+.phrase-perspective[data-kind="weak"] .plain-language { background: #ffe4d8; border-color: #d89b84; }
 #ideal-model > summary { font-size: 1rem; line-height: 1.6; }
 #ideal-model[open] > summary { margin-bottom: 24px; }
 #ideal-model .model-intro { padding: 16px; background: #f5eee1; border-left: 3px solid #b2652e; }
@@ -1302,8 +1308,32 @@ footer .brand {
 .input-validation { margin: 0; padding: 12px 14px; font-size: .82rem; line-height: 1.5; background: #f4f3ee; border-top: 1px solid var(--line); }
 .phrase-input[data-state="invalid"] { border: 2px solid #ab361c; }
 .phrase-input[data-state="invalid"] .input-validation { color: #8c2814; background: #fff0e9; }
-.crack-section { border-top: 1px solid var(--line); padding-top: 24px; margin-top: 24px; }
-.crack-section h3 { margin: 0; font-size: 1.3rem; }
-#crack-controls { max-width: 430px; margin-top: 20px; }
-#crack-time { margin: 20px 0 12px; }
-@media (max-width: 600px) { .crack-section .label-row { align-items: flex-start; flex-wrap: wrap; gap: 8px; } }
+.crack-section { border-top: 1px solid var(--line); padding: clamp(24px, 4vw, 42px); background: #fbfaf6; }
+.crack-section h3 { margin: 4px 0 0; font-size: clamp(1.35rem, 2vw, 1.65rem); }
+.crack-result-card { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(260px, .75fr); gap: 28px; align-items: end; margin-top: 24px; padding: 24px; border: 1px solid var(--line); border-radius: 10px; background: #fff; }
+.crack-result-copy .big-number { margin: 8px 0 12px; }
+.crack-result-copy > :last-child { margin-bottom: 0; }
+#crack-controls { max-width: none; }
+#crack-controls .field-help { margin-bottom: 0; }
+.random-perspective { margin-top: 24px; }
+.random-perspective h4 { margin: 0 0 14px; font-size: 1.05rem; }
+.perspective-facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.perspective-facts article { padding: 18px; border: 1px solid var(--line); border-radius: 9px; background: #fff; }
+.perspective-facts article p:last-child { margin: 7px 0 0; font-size: 1.02rem; line-height: 1.55; }
+.lottery-analogy { margin: 14px 0 0; padding: 18px 20px; border-left: 3px solid var(--orange); background: #f5eee1; font-style: italic; line-height: 1.65; }
+.crack-disclosures { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 22px; }
+.crack-disclosures details { margin: 0; padding: 15px 17px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+.crack-disclosures details[hidden] { display: none; }
+.crack-disclosures summary { font-size: .93rem; }
+.crack-disclosures details p { font-size: .9rem; line-height: 1.65; }
+@media (max-width: 760px) {
+  .perspective-lead,
+  .crack-result-card { grid-template-columns: 1fr; }
+  .perspective-facts,
+  .crack-disclosures { grid-template-columns: 1fr; }
+  .crack-section .label-row { align-items: flex-start; flex-wrap: wrap; gap: 10px; }
+  .crack-section #crack-basis { display: inline-block; }
+  .perspective-lead,
+  .crack-section { padding: 24px; }
+  .crack-result-card { padding: 19px; gap: 20px; }
+}

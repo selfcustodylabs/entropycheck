@@ -247,11 +247,11 @@ test('repeated word runs are weak with a visible conditional time, not a 256-bit
   await expect(page.locator('#risk-title')).toContainText('Unsafe');
   await expect(page.locator('#risk-explanation')).toContainText('2 runs of identical words');
   await expect(page.locator('#phrase-quantity')).toHaveText('≤ 737,837,056 candidates');
-  await expect(page.locator('#crack-time')).toHaveText('≤ 6.15 minutes on average');
+  await expect(page.locator('#crack-time')).toHaveText('Up to 6.15 minutes');
   await expect(page.locator('#crack-maximum')).toContainText('≤ 12.3 minutes');
   await expect(page.locator('#average-years')).toBeHidden();
   await page.locator('#crack-rate').selectOption('1000000000');
-  await expect(page.locator('#crack-time')).toHaveText('≤ 369 milliseconds on average');
+  await expect(page.locator('#crack-time')).toHaveText('Up to 369 milliseconds');
   await page.locator('#passphrase').fill('test passphrase');
   await expect(page.locator('#crack-passphrase')).toContainText('assume the attacker already knows it');
   await page.locator('#mnemonic').fill('abandon about');
@@ -259,7 +259,7 @@ test('repeated word runs are weak with a visible conditional time, not a 256-bit
   await expect(page.locator('#crack-controls')).toBeHidden();
   await expect(page.locator('#crack-maximum')).toBeEmpty();
   await page.locator('#load-example').click();
-  await expect(page.locator('#crack-time')).toHaveText('No phrase search needed');
+  await expect(page.locator('#crack-time')).toHaveText('One known phrase to try');
   await page.locator('#clear-all').click();
   await expect(page.locator('#crack-rate')).toHaveValue('1000000');
   await expect(page.locator('#crack-formula')).toBeEmpty();
@@ -277,13 +277,15 @@ test('unrecognized generated output has an explicitly conditional random-search 
   await expect(page.locator('#crack-basis')).toHaveText('Assuming secure random generation');
   await expect(page.locator('#crack-controls')).toBeVisible();
   await page.locator('#crack-rate').selectOption('1000000000000');
-  await expect(page.locator('#crack-time')).toHaveText('≈ 5.39 quintillion years on average, if securely random');
+  await expect(page.locator('#crack-time')).toHaveText('About 5.39 quintillion years');
   await expect(page.locator('#crack-maximum')).toContainText('10.8 quintillion years');
   await expect(page.locator('#crack-centuries')).toContainText('5.39 × 10¹⁶ centuries');
   await expect(page.locator('#crack-century-chance')).toContainText('1 in 1.08 × 10¹⁷');
-  await expect(page.locator('#phrase-analogy')).toContainText('128 independent fair coin flips');
+  await expect(page.locator('#phrase-analogy')).toContainText('128 fair coin flips');
   await expect(page.locator('#crack-lottery')).toContainText('3.40 × 10³⁸ equally likely tickets');
   await expect(page.locator('#random-perspective')).toBeVisible();
+  await expect(page.locator('#crack-guide')).not.toHaveAttribute('open', '');
+  await expect(page.locator('#crack-math')).not.toHaveAttribute('open', '');
   await expect(page.locator('#average-years')).toBeHidden();
   // Include collapsed educational content and license notices; omit JS/CSS comments.
   const copy = await page.locator('body').evaluate(body => {
@@ -307,7 +309,7 @@ test('random-search assumptions survive all lengths, contexts, and report transi
     await page.locator('#generate-length').selectOption(String(count));
     await page.locator('#generate').click();
     await page.locator('#crack-rate').selectOption('1000000000000');
-    await expect(page.locator('#crack-time')).toHaveText(`≈ ${expected[index]} years on average, if securely random`);
+    await expect(page.locator('#crack-time')).toHaveText(`About ${expected[index]} years`);
     await expect(page.locator('#phrase-quantity')).toHaveText(`${count / 3 * 32} bits if securely random`);
   }
   for (const source of ['unknown', 'wallet', 'physical', 'browser']) {
@@ -315,13 +317,15 @@ test('random-search assumptions survive all lengths, contexts, and report transi
     await expect(page.locator('#random-perspective')).toBeHidden();
     await expect(page.locator('#crack-century-chance')).toBeEmpty();
     await page.locator('#analyze-button').click();
-    await expect(page.locator('#crack-time')).toContainText('if securely random');
+    await expect(page.locator('#crack-time')).toContainText('years');
     await expect(page.locator('#phrase-interpretation')).toContainText('Actual source entropy remains unknown');
   }
   await page.locator('#passphrase').fill('public test passphrase');
   await expect(page.locator('#crack-passphrase')).toContainText('assume the attacker already knows it');
   await page.setViewportSize({ width: 390, height: 844 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await expect(page.locator('#crack-basis')).toBeVisible();
+  await expect(page.locator('#crack-basis')).toHaveText('Assuming secure random generation');
   await page.locator('#source').selectOption('human');
   await page.locator('#analyze-button').click();
   await expect(page.locator('#crack-detail')).toContainText('Human choices do not justify a uniform-random estimate');
@@ -335,7 +339,7 @@ test('random-search assumptions survive all lengths, contexts, and report transi
   await expect(page.locator('#crack-centuries')).toBeEmpty();
   await expect(page.locator('#random-perspective')).toBeHidden();
   await page.locator('#load-example').click();
-  await expect(page.locator('#crack-time')).toHaveText('No phrase search needed');
+  await expect(page.locator('#crack-time')).toHaveText('One known phrase to try');
   await expect(page.locator('#random-perspective')).toBeHidden();
   await page.locator('#clear-all').click();
   await expect(page.locator('#crack-time')).toHaveText('Analyze a phrase first');

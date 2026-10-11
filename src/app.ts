@@ -133,8 +133,8 @@ function renderCrackTime() {
   text('crack-centuries', ''); text('crack-century-chance', ''); text('crack-lottery', '');
   text('crack-basis', randomModel ? 'Assuming secure random generation' : 'Conditional estimate');
   text('crack-assumptions', randomModel
-    ? 'Assumes every phrase of this length is equally likely, the words remain secret, and the attacker has no partial knowledge. Also assumes a known verification target and a fixed or known passphrase. This is a hypothetical exhaustive search, not a measured cracking time or a prediction of wallet compromise.'
-    : available ? 'This models searching the recognized candidate family, assuming the attacker targets that construction and has a known verification target and a fixed or known passphrase. It is not a hardware benchmark or a prediction of wallet compromise.'
+    ? 'This estimate applies only if every phrase of this length was equally likely, the words stayed secret, and the attacker has no partial knowledge. It also assumes a known verification target and a fixed or known passphrase. It is a hypothetical exhaustive search, not a measured cracking time or a prediction of wallet compromise.'
+    : available ? 'This estimate searches the recognized candidate family. It assumes the attacker targets that construction, has a known verification target, and knows any BIP39 passphrase. It is not a hardware benchmark or a prediction of wallet compromise.'
     : 'Estimates need a stated generation or attack model, a known verification target, and a fixed or known passphrase. They are not hardware benchmarks or predictions of wallet compromise.');
   if (!available) {
     text('crack-time', !analysis.wordCount ? 'Analyze a phrase first' : !analysis.valid ? 'Not applicable to invalid input' : 'Cannot estimate from these words');
@@ -145,21 +145,21 @@ function renderCrackTime() {
   text('crack-passphrase', passphrase.value ? 'A passphrase is entered. These figures assume the attacker already knows it; its strength is not evaluated.' : 'Assumes an empty or attacker-known BIP39 passphrase. A secret passphrase is not evaluated.');
   if (randomModel) {
     const model = modelStrength(analysis.encodedEntropyBits!, rate);
-    text('crack-time', `≈ ${readableYears(model.averageYears)} on average, if securely random`);
-    text('crack-detail', `Searching ${scientific(model.possibilities)} equally likely phrases at ${rate.toLocaleString('en-US')} complete checks per second. Under these assumptions, exhaustive phrase guessing is infeasible on human timescales. This is conditional strength, not proof that the entered phrase is secret or unpredictable.`);
+    text('crack-time', `About ${readableYears(model.averageYears)}`);
+    text('crack-detail', `If the phrase was generated securely at random, exhaustive guessing at ${rate.toLocaleString('en-US')} checks per second is beyond any human timescale.`);
     text('crack-maximum', `Full-space search at this rate: ≈ ${readableYears(model.fullSearchYears)}. The average is not a minimum; a guess can succeed earlier.`);
-    text('crack-centuries', `About ${scientific(model.averageCenturies)} centuries on average. One century is 100 years: even a trillion centuries would be much shorter than this average.`);
-    text('crack-century-chance', `After 100 years of continuous checking at this rate, the chance of finding this uniformly random phrase would be about 1 in ${scientific(1 / model.centurySuccessProbability)}. That is still an extraordinarily unlikely result.`);
-    text('crack-lottery', `Imagine one winning ticket among ${scientific(model.possibilities)} equally likely tickets. A single guess has probability 1 / 2^${model.bits} (about ${scientific(model.oneGuessProbability)}). More words help only when they encode more securely generated randomness.`);
+    text('crack-centuries', `${scientific(model.averageCenturies)} centuries on average.`);
+    text('crack-century-chance', `About 1 in ${scientific(1 / model.centurySuccessProbability)} at the selected speed.`);
+    text('crack-lottery', `Picture one winning ticket hidden among ${scientific(model.possibilities)} equally likely tickets. More words help only when they encode more securely generated randomness.`);
     text('crack-formula', `N = 2^${model.bits} = ${model.possibilities}; R = ${rate}. Average = (N + 1) / (2R) = ${model.averageSecondsNumerator} / ${model.averageSecondsDenominator} seconds. Full space = N / R. One year = 31,557,600 seconds; century success probability = min(1, R × 100 × 31,557,600 / N).`);
     return;
   }
   const candidates = risk.candidates!;
   const model = modelCandidateSearch(candidates, rate);
-  text('crack-time', candidates === 1n ? 'No phrase search needed' : `≤ ${formatDuration(model.averageSeconds)} on average`);
+  text('crack-time', candidates === 1n ? 'One known phrase to try' : `Up to ${formatDuration(model.averageSeconds)}`);
   text('crack-detail', candidates === 1n
-    ? `The exact words are already known: only one candidate check is needed. At the selected hypothetical rate, that check models ${formatDuration(model.fullSearchSeconds)}. Actual verification and any unknown passphrase are separate.`
-    : `For at most ${candidates.toLocaleString('en-US')} candidates in the detected construction at ${rate.toLocaleString('en-US')} complete checks per second. This is a conditional search estimate, not an observed cracking time.`);
+    ? 'These exact words are already public or otherwise known, so an attacker does not need to search the full BIP39 space.'
+    : `The detected pattern reduces the search to at most ${candidates.toLocaleString('en-US')} candidates at the selected checking speed.`);
   text('crack-maximum', candidates === 1n ? '' : `Full-family search at this rate: ≤ ${formatDuration(model.fullSearchSeconds)}. An attacker may find it earlier or use a simpler guess.`);
   text('crack-formula', `N ≤ ${candidates}; R = ${rate}. Average = (N + 1) / (2R) ≤ ${model.averageNumerator} / ${model.averageDenominator} seconds. Full family = N / R.`);
 }

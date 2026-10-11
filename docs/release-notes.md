@@ -1,5 +1,7 @@
 EntropyCheck provides English BIP39 analysis and generation, phrase-specific public/pattern warnings, exact binary inspection, conditional entropy explanations, and Bitcoin mainnet/testnet address derivation for BIP44, BIP49, BIP84, and BIP86.
 
+The phrase-strength section now leads with a plain-language result, groups the search time and speed control in one card, and presents centuries and 100-year odds as compact comparisons. Assumptions and formulas are collapsed by default so beginners can understand the result before exploring technical detail.
+
 Input errors now appear live inside the phrase box. Repeated word runs are detected, and a visible Time to crack section models recognized families with explicit checking-rate and passphrase assumptions. Page copy uses no em dashes.
 
 For valid phrases without a detected weakness, the main report now includes a clearly conditional random-generation estimate with years, centuries, 100-year success odds, and coin-flip/lottery analogies. Actual source entropy remains unverified. Weak/public findings take precedence; human-chosen phrases keep their unknown-time warning.

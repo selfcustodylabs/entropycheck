@@ -13,7 +13,7 @@ The public demo is for public examples and disposable test phrases. Handle real 
 - Reports encoded entropy length and generation-source context separately. It does **not** claim to measure actual randomness from one phrase or assign a safety percentage.
 - Leads with a phrase-specific assessment: public/constant phrases, recognized simple constructions, or actual randomness unverified. Source claims never override concrete weaknesses.
 - Shows raw hexadecimal entropy, full-width binary entropy, checksum bits, and complete mnemonic binary.
-- Shows conditional **Time to crack** estimates for detected candidate families, with adjustable hypothetical checking rates, average and full-family times, and explicit passphrase assumptions. For valid phrases with no detected weakness, shows a separate full-space estimate labeled “assuming secure random generation.”
+- Presents a beginner-first phrase summary, conditional **Time to crack** estimate, and human-scale comparisons. Assumptions, passphrase limits, and formulas remain available in expandable details.
 - Shows conditional years, centuries, 100-year success odds, and coin-flip/lottery analogies in the main report. A collapsed calculator also compares other phrase lengths.
 - Derives mainnet and testnet single-signature addresses: BIP44 legacy, BIP49 nested SegWit, BIP84 native SegWit, and BIP86 Taproot.
 - Supports a BIP39 passphrase, accounts, receiving/change branches, and bounded address ranges.
