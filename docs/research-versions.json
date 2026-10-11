@@ -1,0 +1,16 @@
+{
+  "reviewed": "2026-10-11",
+  "repositoryHeads": {
+    "iancoleman/bip39": "de71c22328b24e0848bbe1bd12ac8974ca83b5b8",
+    "BitcoinQnA/seedtool": "088d829ab0e90db5e185b05120a03791eb0fc389",
+    "merland/seedpicker": "45b0b529d8dd4c822a8b8c98ff86f9a78cb278e8",
+    "SeedSigner/seedsigner": "b2199c68b475eab0035b863b156f149757a1b4a6",
+    "selfcustody/krux": "9b3a4314a205767606b1ad9fbd1da06ad908f38e",
+    "sparrowwallet/sparrow": "0340cdbe86b2b773a9a11c030378b3c44cbd00cb",
+    "trezor/python-mnemonic": "b57a5ad77a981e743f4167ab2f7927a55c1e82a8",
+    "3rdIteration/btcrecover": "1457088acf17630eb12a5b53989982ac34e55f2a",
+    "bitcoin/bips": "927b6de9915c9262615a6399de51b200f81e5aa4"
+  },
+  "bip39VectorsSource": "https://raw.githubusercontent.com/trezor/python-mnemonic/b57a5ad77a981e743f4167ab2f7927a55c1e82a8/vectors.json",
+  "bip39VectorsSourceSha256": "fa3b937b7cff9c9b8ecd3aa011faeb8d6dd67993174b72326e83f4de8fdb30f8"
+}

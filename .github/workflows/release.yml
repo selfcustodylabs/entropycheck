@@ -1,0 +1,28 @@
+name: Verify and release offline artifact
+on:
+  push:
+    tags: ['v*']
+permissions:
+  contents: read
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm run check
+      - run: npm exec playwright install --with-deps chromium firefox
+      - run: npm run test:browser
+      - name: Publish verified release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: gh release create "$RELEASE_TAG" entropycheck.html SHA256SUMS THIRD_PARTY_NOTICES.txt --verify-tag --title "EntropyCheck $RELEASE_TAG" --notes-file docs/release-notes.md
