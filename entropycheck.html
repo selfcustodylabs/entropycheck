@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="referrer" content="no-referrer">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-EfH6+YAZc/d0Uq/OgIr+m7bwqYAFF4Kv/j53tFKebjg='; style-src 'sha256-vZgBCTM3sybKpMlTlXylkdw5G7wwizf/aFrruLTdQ7s='; img-src data:; connect-src 'none'; form-action 'none'; base-uri 'none'; object-src 'none'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-T+fpb+IPCipdLAdfjCfaUasJJIxDzR3X3LmVSsu2sUw='; style-src 'sha256-Vvmo1Eb+uN+hn1LpZzW/3terG1i6RL9xYfdkO+BBXcU='; img-src data:; connect-src 'none'; form-action 'none'; base-uri 'none'; object-src 'none'">
   <meta name="description" content="Understand BIP39 seed phrases, explore entropy, and derive Bitcoin addresses. A self-contained tool that also works offline.">
   <title>EntropyCheck | Understand your Bitcoin seed</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='10' fill='%23c94d20'/%3E%3Cpath d='M12 11h16v5H17v3h9v4h-9v3h11v4H12z' fill='white'/%3E%3C/svg%3E">
@@ -300,6 +300,15 @@ main {
   white-space: nowrap;
   margin-left: 4px;
 }
+.notice[data-connection="online"] { border-color: #bd5d34; background: #fff0e5; color: #783515; }
+.notice-actions { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-top: 10px; font-weight: 600; }
+.notice-actions a { margin: 0; }
+.input-heading { margin-bottom: 20px; }
+.key-concepts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-bottom: 22px; }
+.key-concepts article { padding: 20px; background: #ecf0e5; border: 1px solid #d8dfcf; border-radius: 10px; }
+.key-concepts h3 { margin: 8px 0; }
+.key-concepts p { font-size: 14px; color: #526049; }
+@media (max-width: 700px) { .key-concepts { grid-template-columns: 1fr; gap: 10px; } }
 .section {
   margin: 56px 0;
 }
@@ -751,9 +760,7 @@ details p {
   line-height: 1.8;
 }
 .learning-note {
-  display: grid;
-  grid-template-columns: 150px 1fr;
-  gap: 25px;
+  display: block;
   padding: 21px 5px 0;
 }
 .small-label {
@@ -1322,10 +1329,10 @@ footer .brand {
 .structure-status { font-weight: 700; margin-bottom: 6px; }
 .phrase-perspective { margin-bottom: 20px; border-left-width: 5px; padding: 0; overflow: hidden; }
 .phrase-perspective .big-number { font-size: clamp(1.6rem, 4vw, 2.6rem); overflow-wrap: anywhere; }
-.perspective-lead { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(260px, .8fr); gap: 28px; padding: clamp(24px, 4vw, 42px); }
+.perspective-lead { display: grid; grid-template-columns: 1fr; gap: 18px; padding: clamp(24px, 4vw, 32px); }
 .perspective-result .big-number { margin: 8px 0 16px; }
 .perspective-summary { max-width: 760px; margin-bottom: 0; font-size: 1.04rem; line-height: 1.7; }
-.plain-language { align-self: stretch; padding: 22px; border-radius: 10px; background: #f5eee1; border: 1px solid #ded2c0; }
+.plain-language { margin: 0; padding: 14px 18px; border-radius: 10px; background: #f5eee1; border: 1px solid #ded2c0; }
 .plain-language p:last-child { margin: 10px 0 0; font-size: 1.06rem; line-height: 1.65; }
 .phrase-perspective[data-kind="unsafe"] .plain-language,
 .phrase-perspective[data-kind="weak"] .plain-language { background: #ffe4d8; border-color: #d89b84; }
@@ -1349,7 +1356,8 @@ footer .brand {
 #crack-controls { max-width: none; }
 #crack-controls .field-help { margin-bottom: 0; }
 .random-perspective { margin-top: 24px; }
-.random-perspective h4 { margin: 0 0 14px; font-size: 1.05rem; }
+.random-perspective > summary { font-size: .93rem; }
+.random-perspective[open] > summary { margin-bottom: 14px; }
 .perspective-facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
 .perspective-facts article { padding: 18px; border: 1px solid var(--line); border-radius: 9px; background: #fff; }
 .perspective-facts article p:last-child { margin: 7px 0 0; font-size: 1.02rem; line-height: 1.55; }
@@ -1372,10 +1380,12 @@ footer .brand {
 }
 
 /* Give technical material its own workspace, separate from the verdict. */
-.entropy-panel { margin-top: 18px; padding: 0; overflow: hidden; }
-.entropy-panel > summary { padding: 22px 26px; font-size: 16px; color: var(--ink); }
-.entropy-panel[open] > summary { margin-bottom: 0; border-bottom: 1px solid var(--line); background: #fafaf6; }
-.summary-hint { margin-left: 14px; color: var(--muted); font-size: 13px; font-weight: 400; }
+.entropy-panel { margin-top: 18px; padding: 0; overflow: hidden; border-color: #c8794e; }
+.entropy-panel > summary { padding: 22px 26px; font-size: 17px; color: #873411; background: #fae9d9; box-shadow: inset 5px 0 var(--accent); }
+.entropy-panel > summary:hover { background: #f5ddc5; }
+.entropy-panel > summary:focus-visible { outline-offset: -4px; }
+.entropy-panel[open] > summary { margin-bottom: 0; border-bottom: 1px solid #c8794e; }
+.summary-hint { margin-left: 14px; color: #804323; font-size: 13px; font-weight: 400; }
 .entropy-panel > :not(summary) { margin: 24px 26px; }
 .entropy-intro p { max-width: 760px; color: var(--muted); margin-bottom: 0; }
 .index-guide { padding: 18px 20px; background: #f5eee1; border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; }
@@ -1475,21 +1485,22 @@ footer .brand {
       <div><p class="eyebrow">YOUR BITCOIN SEED, EXPLAINED.</p><h1 id="hero-title">Understand the strength<br>behind your seed.</h1><p class="hero-copy">From recovery words to risk, randomness, and Bitcoin addresses.<br class="desktop-break"> A private, browser-local workspace for learning how it all fits together.</p><div class="hero-facts"><span>No accounts</span><span>No data uploads</span><span>Works offline</span></div></div>
       <div class="hero-aside" aria-hidden="true"><div class="bit-grid"><span>0</span><span>1</span><span>0</span><span>1</span><span>1</span><span>0</span><span>1</span><span>0</span><span>0</span><span>0</span><span>1</span><span>1</span><span>1</span><span>0</span><span>0</span><span>1</span></div><p>RANDOMNESS → WORDS</p></div>
     </section>
-    <aside class="notice" id="usage-notice"><span class="notice-icon" aria-hidden="true">!</span><p><strong id="notice-title">For testing and learning.</strong> <span id="notice-copy">Use public examples or disposable test phrases here. Handle real recovery phrases only with a verified offline copy on a trusted, disconnected device.</span> <a href="#offline">Offline guide <span aria-hidden="true">↗</span></a></p></aside>
+    <aside class="notice" id="usage-notice" role="status" aria-live="polite" aria-atomic="true"><span class="notice-icon" aria-hidden="true">!</span><div><p><strong id="notice-title">For testing and learning.</strong> <span id="notice-copy">Use public examples or disposable test phrases here. Handle real recovery phrases only with a verified offline copy on a trusted, disconnected device.</span></p><div class="notice-actions"><a class="download-link" href="./entropycheck.html" download="entropycheck.html">Download offline HTML ↓</a><a href="#offline">How to use it offline →</a></div></div></aside>
     <noscript><p class="notice">JavaScript is required for this local calculator. Nothing is submitted to a server.</p></noscript>
 
     <section id="analyze" class="section" aria-labelledby="analyze-title">
       <div class="section-heading"><div><p class="eyebrow">01 / THE PHRASE</p><h2 id="analyze-title">Start with the words.</h2><p class="section-copy">Paste a test phrase to check it, or explore with a generated example.</p></div><button id="clear-all" class="text-button" type="button">Clear all <span aria-hidden="true">↺</span></button></div>
       <div class="analysis-grid">
         <div class="panel input-panel">
+          <h3 class="input-heading">Use an existing phrase</h3>
           <div class="label-row"><label for="mnemonic">BIP39 recovery phrase</label><span id="word-counter" class="muted">0 words</span></div>
           <div id="phrase-input" class="phrase-input"><textarea id="mnemonic" rows="4" placeholder="Paste a test phrase, or generate one below to explore." spellcheck="false" autocomplete="off" autocapitalize="off" autocorrect="off" aria-describedby="input-validation phrase-help normalization" aria-invalid="false"></textarea><p id="input-validation" class="input-validation" role="status" aria-live="polite">Enter a phrase to check its structure.</p></div>
           <p id="phrase-help" class="field-help">English · 12, 15, 18, 21, or 24 words. All calculations happen in this page.</p>
           <p id="normalization" class="field-help"></p>
           <div class="field source-field"><label for="source">How was it generated? <span class="optional">Optional</span></label><select id="source"><option value="unknown">I don’t know / prefer not to say</option><option value="wallet">A wallet’s random generator</option><option value="browser">A browser’s cryptographic random generator</option><option value="physical">Physical randomness (dice, coins, etc.)</option><option value="human">Words chosen by a person</option><option value="public">A public example</option></select><p class="field-help">This context is self-reported. The phrase cannot verify its source.</p></div>
-          <button id="analyze-button" type="button" class="button primary">Analyze phrase <span aria-hidden="true">→</span></button>
+          <button id="analyze-button" type="button" class="button primary" disabled><span id="analyze-label">Analyze phrase</span> <span aria-hidden="true">→</span></button>
           <p id="analysis-feedback" class="field-help" role="status"></p>
-          <div class="explore-tools"><p class="small-label">OR TRY IT WITH A TEST PHRASE</p><div class="generate-row"><label class="sr-only" for="generate-length">Generated phrase length</label><select id="generate-length"><option value="12">12 words</option><option value="15">15 words</option><option value="18">18 words</option><option value="21">21 words</option><option value="24">24 words</option></select><button class="button" id="generate" type="button"><span aria-hidden="true">＋</span> Generate test phrase</button></div>
+          <div class="explore-tools"><h3>Or generate a test phrase</h3><p id="generate-help" class="field-help">Creates new words and analyzes them in one step.</p><div class="generate-row"><label class="sr-only" for="generate-length">Generated phrase length</label><select id="generate-length"><option value="12">12 words</option><option value="15">15 words</option><option value="18">18 words</option><option value="21">21 words</option><option value="24">24 words</option></select><button class="button primary" id="generate" type="button" aria-describedby="generate-help"><span aria-hidden="true">＋</span> Generate &amp; analyze</button></div>
           <p id="generation-error" class="field-error" role="status"></p>
           <div class="example-row"><button class="text-button" id="load-example" type="button">Load a public example <span aria-hidden="true">→</span></button><select id="example-length" aria-label="Public example length"><option value="12">12 words</option><option value="24">24 words</option></select></div></div>
         </div>
@@ -1505,7 +1516,7 @@ footer .brand {
         </div>
       </div>
       <details id="technical-details" class="panel entropy-panel">
-        <summary>Entropy details <span class="summary-hint">Word indices, binary, and structure checks</span></summary>
+        <summary>Entropy details <span class="summary-hint">Explore the numbers behind your words →</span></summary>
         <div class="entropy-intro"><h3>Every word represents a number.</h3><p>The English BIP39 list contains 2,048 words, indexed from <strong>0 to 2047</strong>. Each index becomes 11 binary digits. Together, those digits encode the entropy and its checksum.</p></div>
         <div class="index-guide"><strong>Index 0 = abandon.</strong><p>The <a href="https://github.com/bitcoin/bips/blob/master/bip-0039/english.txt" target="_blank" rel="noopener noreferrer">official word list on GitHub ↗</a> displays lines starting at 1. To find a word there, add 1 to its BIP39 index: <strong>index 1477 → line 1478</strong>. “Word 1” below means the first word in your phrase, not its wordlist index.</p></div>
         <p id="word-indices-empty" class="field-help">Analyze a valid phrase to see its word indices.</p>
@@ -1520,23 +1531,24 @@ footer .brand {
     </section>
 
     <section id="understand" class="section" aria-labelledby="understand-title">
-      <div class="section-heading"><div><p class="eyebrow">02 / THE POSSIBILITIES</p><h2 id="understand-title">What do these words really tell us?</h2><p class="section-copy">Start with the plain-language result. Open the details only if you want to inspect the assumptions or math.</p></div><span class="subtle-tag">This phrase’s assessment</span></div>
+      <div class="section-heading"><div><p class="eyebrow">02 / THE POSSIBILITIES</p><h2 id="understand-title">What do these words really tell us?</h2><p class="section-copy">Three things matter: valid words, random generation, and secrecy.</p></div></div>
+      <div class="key-concepts"><article><span class="small-label">01 / STRUCTURE</span><h3>Valid doesn’t mean secure.</h3><p>The checksum catches some mistakes. It cannot prove randomness.</p></article><article><span class="small-label">02 / RANDOMNESS</span><h3>How it was made matters.</h3><p>More words help only if they come from secure randomness.</p></article><article><span class="small-label">03 / SECRECY</span><h3>Public words aren’t secret.</h3><p>A shared or exposed phrase can be tried directly.</p></article></div>
       <div id="phrase-perspective" class="panel phrase-perspective">
         <div class="perspective-lead">
           <div class="perspective-result"><p class="metric-label" id="phrase-quantity-label">Actual source entropy</p><p class="big-number" id="phrase-quantity">Not analyzed</p><p id="phrase-interpretation" class="perspective-summary"></p></div>
-          <aside class="plain-language" aria-labelledby="plain-language-title"><p class="small-label" id="plain-language-title">PLAIN LANGUAGE</p><p id="phrase-analogy"></p></aside>
+          <details class="plain-language"><summary>A simple analogy</summary><p id="phrase-analogy"></p></details>
         </div>
         <div class="crack-section" aria-labelledby="crack-heading">
-          <div class="label-row"><div><p class="small-label">THE PRACTICAL QUESTION</p><h3 id="crack-heading">How hard would it be to guess?</h3></div><span id="crack-basis" class="subtle-tag">Conditional estimate</span></div>
+          <div class="label-row"><h3 id="crack-heading">How hard would it be to guess?</h3><span id="crack-basis" class="subtle-tag">Conditional estimate</span></div>
           <div class="crack-result-card">
             <div class="crack-result-copy"><p class="metric-label">Average search time</p><p id="crack-time" class="big-number">Analyze a phrase first</p><p id="crack-detail"></p></div>
             <div id="crack-controls" class="field" hidden><label for="crack-rate">Try a hypothetical checking speed</label><select id="crack-rate"><option value="1000000">1 million checks/second</option><option value="1000000000">1 billion checks/second</option><option value="1000000000000">1 trillion checks/second</option></select><p class="field-help">For comparison only. These are complete seed checks, not Bitcoin mining hashes.</p></div>
           </div>
-          <div id="random-perspective" class="random-perspective" hidden>
-            <h4>Make that number easier to picture</h4>
+          <details id="random-perspective" class="random-perspective" hidden>
+            <summary>Put that number in perspective</summary>
             <div class="perspective-facts"><article><p class="metric-label">Measured in centuries</p><p id="crack-centuries"></p></article><article><p class="metric-label">Chance after 100 years</p><p id="crack-century-chance"></p></article></div>
             <p id="crack-lottery" class="lottery-analogy"></p>
-          </div>
+          </details>
           <div class="crack-disclosures">
             <details id="crack-guide"><summary>Assumptions and limits</summary><p id="crack-assumptions">Estimates need a stated generation or attack model, a known verification target, and a fixed or known passphrase.</p><p id="crack-maximum" class="field-help"></p><p id="crack-passphrase" class="field-help"></p><p class="field-help">This describes phrase guessing only. Exposure, a predictable generator, malware, partial knowledge, and other attacks can bypass this model. Checksum bits and the derived 512-bit seed do not add randomness.</p></details>
             <details id="crack-math" hidden><summary>Show the calculation</summary><p id="crack-formula" class="break-code"></p><p>Displayed times are rounded to three significant digits. The average assumes no repeated guesses and an equally likely target position. A family-size upper bound gives an upper bound on that model’s average. Checking rates are illustrations, not measured hardware performance. Choosing a faster rate does not change the phrase or its risk finding.</p></details>
@@ -1550,7 +1562,7 @@ footer .brand {
         <div class="analogy-grid"><article class="analogy"><span class="analogy-symbol" aria-hidden="true">½</span><div><h3>A very long coin flip.</h3><p id="coin-analogy">Imagine guessing the exact outcome of 128 independent, fair coin flips. All of them, in order. That’s the chance of one correct guess.</p></div></article><article class="analogy"><span class="analogy-symbol" aria-hidden="true">№</span><div><h3>One winning ticket.</h3><p id="lottery-analogy">A lottery with one winner among 3.40 × 10³⁸ equally likely tickets. Each extra random bit doubles the number of tickets.</p></div></article></div>
         <details><summary>See the exact numbers and assumptions</summary><dl class="technical-list"><dt>Possible phrases · N = 2ᴱᴺᵀ</dt><dd id="exact-possibilities" class="break-code"></dd><dt>Probability of one correct guess</dt><dd id="one-guess" class="break-code"></dd><dt>Average search · (N + 1) / (2R)</dt><dd id="exact-time" class="break-code"></dd></dl><p>Assumes uniform random generation, no repeated guesses, a fixed or known passphrase, and a known target to verify each candidate. One year is 31,557,600 seconds. Checking rates are illustrations, not measured hardware performance or Bitcoin mining hash rates.</p><p>This models searching for a phrase. It does not measure overall wallet security, other attacks on Bitcoin keys, malware, or exposure. A 512-bit derived seed and checksum bits do not create extra randomness. Unknown or human-chosen generation may have a much smaller search space.</p></details>
       </details>
-      <aside class="learning-note"><span class="small-label">WHY THE SOURCE MATTERS</span><p><strong>256 output bits can hide just 32 bits of possibilities.</strong> In the Milk Sad vulnerability, a faulty generator expanded a small starting state into long wallet secrets. A phrase can look random and pass its checksum while still being predictable. <a href="https://milksad.info/disclosure.html" target="_blank" rel="noopener noreferrer">Read the original disclosure ↗</a></p></aside>
+      <details class="learning-note"><summary>A real example: a faulty generator</summary><p>Milk Sad produced long wallet secrets from just 32 bits of possibilities. The words looked random, but were predictable. <a href="https://milksad.info/disclosure.html" target="_blank" rel="noopener noreferrer">Read the disclosure ↗</a></p></details>
     </section>
 
     <section id="addresses" class="section" aria-labelledby="addresses-title">
@@ -1789,7 +1801,7 @@ THE SOFTWARE.
 
 </pre></details></details>
   </main>
-  <footer><a class="brand" href="#top">EntropyCheck<span class="footer-dot">·</span></a><span>Built for understanding. Designed to work offline.</span><a href="https://github.com/selfcustodylabs/entropycheck" target="_blank" rel="noopener noreferrer">Source & research ↗</a><a href="https://github.com/selfcustodylabs/entropycheck/releases/latest/download/SHA256SUMS" target="_blank" rel="noopener noreferrer">SHA-256 checksum ↗</a><span>MIT · v1.0.0</span></footer>
+  <footer><a class="brand" href="#top">EntropyCheck<span class="footer-dot">·</span></a><span>Made by <a href="https://selfcustodylabs.com" target="_blank" rel="noopener noreferrer">selfcustodylabs.com ↗</a></span><a href="https://github.com/selfcustodylabs/entropycheck" target="_blank" rel="noopener noreferrer">Source & research ↗</a><a href="https://github.com/selfcustodylabs/entropycheck/releases/latest/download/SHA256SUMS" target="_blank" rel="noopener noreferrer">SHA-256 checksum ↗</a><span>MIT · v1.0.0</span></footer>
   <div class="sr-only" id="copy-status" role="status"></div>
   <script>"use strict";
 (() => {
@@ -5003,7 +5015,7 @@ zoo`.split("\n"));
     return findings.sort((a, b) => patternCandidates(a) < patternCandidates(b) ? -1 : patternCandidates(a) > patternCandidates(b) ? 1 : 0);
   }
   function assessPhrase(analysis2, source2, generatedHere2 = false) {
-    const base = { candidates: null, familyBits: null, quantity: "Unknown", quantityLabel: "Actual source entropy", interpretation: "A phrase is one output, not a record of its generation process.", analogy: "The number of dials on a lock does not tell you how its combination was chosen." };
+    const base = { candidates: null, familyBits: null, quantity: "Unknown", quantityLabel: "Actual randomness", interpretation: "The words alone cannot prove how randomly they were chosen.", analogy: "The number of dials on a lock does not tell you how its combination was chosen." };
     if (!analysis2.wordCount) return { ...base, kind: "empty", title: "Analyze a phrase to see its risk", explanation: "The result will distinguish BIP39 capacity from concrete weaknesses and unverified randomness.", quantity: "Not analyzed" };
     if (!analysis2.valid) return { ...base, kind: "invalid", title: "Not valid English BIP39", explanation: "Correct the input from its original source. No phrase-strength conclusion is available for this invalid input.", quantity: "Not assessed" };
     const zero = analysis2.entropyBinary?.split("").every((bit) => bit === "0");
@@ -5017,7 +5029,7 @@ zoo`.split("\n"));
         explanation: `${why} Do not use this phrase for funds. Its valid ${analysis2.wordCount}-word format does not provide ${analysis2.encodedEntropyBits} bits of secrecy.`,
         quantity: "1 known candidate",
         quantityLabel: "An attacker can try these exact words",
-        interpretation: "0 bits of secrecy in these publicly known words. This is not a measurement of the original generator. No exhaustive search of the BIP39 space is needed to try this phrase. An independent passphrase is not assessed.",
+        interpretation: "0 bits of secrecy in these known words; not a measurement of the original generator. An attacker can try them directly. Do not use this phrase for funds.",
         analogy: "It’s like a lock with its combination printed beside it. Adding more dials does not make a public combination secret.",
         candidates: 1n,
         familyBits: 0
@@ -5030,7 +5042,7 @@ zoo`.split("\n"));
       explanation: `${pattern.title}. Do not rely on this phrase to protect funds. ${pattern.explanation}`,
       quantity: `≤ ${patternCandidates(pattern).toLocaleString("en-US")} candidates`,
       quantityLabel: "Within the recognized construction at this length",
-      interpretation: `At most ${pattern.familyBits} bits of candidate-family size (rounded up), versus ${analysis2.encodedEntropyBits} bits of BIP39 capacity. This is a bound on one enumerable construction, not measured source entropy or an observed cracking time. Other attacks may be easier. An independent passphrase is not assessed.`,
+      interpretation: "A recognizable pattern makes this phrase easier to guess. This count is a candidate bound, not measured source entropy. Other attacks may be easier.",
       analogy: "A lock may have many dials, but using a few repeated groups lets an attacker test a much smaller set of combinations.",
       candidates: patternCandidates(pattern),
       familyBits: pattern.familyBits
@@ -5042,7 +5054,7 @@ zoo`.split("\n"));
       title: generatedHere2 && source2 === "browser" ? "No recognized weakness found · not a safety certificate" : "Actual randomness is unverified",
       quantity: `${analysis2.encodedEntropyBits} bits if securely random`,
       quantityLabel: "Conditional strength",
-      interpretation: `No supported weakness was detected. If these ${analysis2.wordCount} words were generated securely at random and kept secret, they provide the potential strength shown here. Actual source entropy remains unknown because the words cannot prove how they were generated.`,
+      interpretation: "No recognized weakness found. This strength assumes secure random generation and secret words. Actual source entropy remains unknown.",
       analogy: `Think of guessing ${analysis2.encodedEntropyBits} fair coin flips, all in the correct order. That is the chance of getting this phrase in one random guess.`,
       explanation: generatedHere2 && source2 === "browser" ? `The browser requested ${analysis2.encodedEntropyBits} bits from its cryptographic RNG in this session. That is nominal capacity, not measured entropy. A compromised or predictable generator can still produce ordinary-looking words.` : "No bundled public example or supported simple construction was recognized. This does not prove secrecy or random generation; a predictable generator can produce ordinary-looking words."
     };
@@ -10721,6 +10733,8 @@ zoo`.split("\n"));
     renderAssessment();
     renderInputValidation(analysis, true);
     analysisRuns++;
+    text("analyze-label", "Analyze again");
+    element("analyze-button").disabled = false;
     text("analysis-feedback", `${reason} · check ${analysisRuns}. ${analysis.valid ? "Structure valid; review the phrase assessment." : "Review the validation findings."}`);
   }
   function markPending() {
@@ -10729,6 +10743,8 @@ zoo`.split("\n"));
     const live = validateMnemonicStructure(input.value);
     renderInputValidation(live);
     const count = live.wordCount;
+    text("analyze-label", "Analyze phrase");
+    element("analyze-button").disabled = count === 0;
     text("word-counter", `${count} ${count === 1 ? "word" : "words"}`);
     if (count) {
       text("risk-title", "Changes not analyzed");
@@ -10765,7 +10781,7 @@ zoo`.split("\n"));
     text("crack-assumptions", randomModel ? "This estimate applies only if every phrase of this length was equally likely, the words stayed secret, and the attacker has no partial knowledge. It also assumes a known verification target and a fixed or known passphrase. It is a hypothetical exhaustive search, not a measured cracking time or a prediction of wallet compromise." : available ? "This estimate searches the recognized candidate family. It assumes the attacker targets that construction, has a known verification target, and knows any BIP39 passphrase. It is not a hardware benchmark or a prediction of wallet compromise." : "Estimates need a stated generation or attack model, a known verification target, and a fixed or known passphrase. They are not hardware benchmarks or predictions of wallet compromise.");
     if (!available) {
       text("crack-time", !analysis.wordCount ? "Analyze a phrase first" : !analysis.valid ? "Not applicable to invalid input" : "Cannot estimate from these words");
-      text("crack-detail", !analysis.wordCount ? "Run the assessment to see the applicable search model and its assumptions." : !analysis.valid ? "Fix the word count, wordlist, or checksum errors first. Invalid BIP39 input has no applicable phrase-search estimate." : "You reported human-chosen words. Human choices do not justify a uniform-random estimate, even when no supported pattern is detected. Actual strength and cracking time are unknown. The separate ideal-randomness comparison below explains what secure random generation would provide.");
+      text("crack-detail", !analysis.wordCount ? "Paste and analyze a phrase, or generate a test phrase above." : !analysis.valid ? "Fix the word count, wordlist, or checksum first." : "Human choices do not justify a uniform-random estimate. Guessing time is unknown.");
       return;
     }
     const rate = Number(value("crack-rate"));
@@ -10961,14 +10977,23 @@ zoo`.split("\n"));
     element("show-passphrase").setAttribute("aria-pressed", String(show));
     text("show-passphrase", show ? "Hide" : "Show");
   });
+  function renderConnectionNotice() {
+    const local = location.protocol === "file:";
+    const online = navigator.onLine;
+    element("usage-notice").dataset.connection = online ? "online" : "offline";
+    text("environment", `${local ? "LOCAL FILE" : "HOSTED DEMO"} · BROWSER REPORTS ${online ? "ONLINE" : "OFFLINE"}`);
+    text("notice-title", online ? "You appear to be online. Don’t use a real seed phrase." : "Your browser reports offline.");
+    text("notice-copy", online ? "Use test phrases only. Download and verify this page, then open it on a trusted, disconnected device, such as an air-gapped computer. A local file can still be online." : "This is not proof of an air gap. Before using a real seed phrase, verify the downloaded file and use a trusted, disconnected device.");
+  }
   if (location.protocol === "file:") {
-    text("environment", "LOCAL FILE · CONNECTION NOT VERIFIED");
-    text("notice-title", "You’re using a local copy.");
-    text("notice-copy", "Verify the file and use a trusted, disconnected device before handling real recovery phrases. This page cannot establish an air gap or protect against device compromise.");
     document.querySelectorAll(".download-link").forEach((link) => {
       link.href = location.href.split("#")[0];
     });
-  } else text("environment", "HOSTED DEMO · FOR TEST PHRASES");
+  }
+  window.addEventListener("online", renderConnectionNotice);
+  window.addEventListener("offline", renderConnectionNotice);
+  window.addEventListener("pageshow", renderConnectionNotice);
+  renderConnectionNotice();
   clearAll();
   if (typeof globalThis.crypto?.getRandomValues !== "function") {
     element("generate").disabled = true;

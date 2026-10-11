@@ -1,3 +1,11 @@
+EntropyCheck v1.0.0 is the first downloadable release, with the standalone HTML, SHA256SUMS, and third-party license notices.
+
+The page now shows a live browser connection warning, including for local files, with direct links to the offline download and guide. Online use is for test phrases only; the offline label cannot prove an air gap.
+
+Phrase entry has explicit Analyze phrase and orange Generate & analyze actions. Completed checks change the first action to Analyze again. The explanation leads with three short cards about structure, randomness, and secrecy; analogies and extra comparisons expand on demand. Entropy details have a warm orange highlight, and the footer credits selfcustodylabs.com.
+
+The source commit and release tag are SSH-signed as selfcustodylabs. SHA256SUMS provides the HTML integrity hash, not a detached signature.
+
 EntropyCheck provides English BIP39 analysis and generation, phrase-specific public/pattern warnings, exact binary inspection, conditional entropy explanations, and Bitcoin mainnet/testnet address derivation for BIP44, BIP49, BIP84, and BIP86.
 
 The interface now separates phrase entry, assessment, and full-width entropy details, with more readable text, mobile navigation, and keyboard-accessible address-type cards. Entropy details display every word's zero-based BIP39 index, 11-bit encoding, and GitHub line number (index + 1). These secret representations clear immediately when the phrase changes or Clear All is pressed.

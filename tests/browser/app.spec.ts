@@ -3,6 +3,42 @@ import { fileURLToPath } from 'node:url';
 const artifact = new URL('../../entropycheck.html', import.meta.url).href;
 const example = `${'abandon '.repeat(11)}about`;
 
+for (const location of [artifact, 'http://127.0.0.1:4173']) {
+  test(`connection warning follows browser status at ${location.startsWith('file:') ? 'local file' : 'hosted demo'}`, async ({ page }) => {
+    await page.addInitScript(() => Object.defineProperty(navigator, 'onLine', { configurable: true, get: () => true }));
+    await page.goto(location);
+    await expect(page.locator('#notice-title')).toContainText('Don’t use a real seed phrase');
+    await expect(page.locator('#notice-copy')).toContainText('air-gapped computer');
+    await expect(page.locator('#usage-notice .download-link')).toHaveAttribute('download', 'entropycheck.html');
+    for (const online of [false, true]) {
+      await page.evaluate(online => {
+        Object.defineProperty(navigator, 'onLine', { configurable: true, get: () => online });
+        window.dispatchEvent(new Event(online ? 'online' : 'offline'));
+      }, online);
+      await expect(page.locator('#environment')).toContainText(`BROWSER REPORTS ${online ? 'ONLINE' : 'OFFLINE'}`);
+      await expect(page.locator('#notice-copy')).toContainText(online ? 'Use test phrases only' : 'not proof of an air gap');
+    }
+    if (location.startsWith('file:')) await expect(page.locator('#usage-notice .download-link')).toHaveAttribute('href', artifact);
+  });
+}
+
+test('phrase actions distinguish pending input from completed generation', async ({ page }) => {
+  await page.goto(artifact);
+  await expect(page.locator('#analyze-button')).toBeDisabled();
+  await expect(page.locator('#generate')).toHaveAccessibleName('Generate & analyze');
+  await page.locator('#generate').click();
+  await expect(page.locator('#analysis-feedback')).toContainText('Generated and analyzed');
+  await expect(page.locator('#analyze-button')).toHaveAccessibleName('Analyze again');
+  await page.locator('#mnemonic').fill(example);
+  await expect(page.locator('#analyze-button')).toHaveAccessibleName('Analyze phrase');
+  await expect(page.locator('#phrase-quantity')).toHaveText('Not analyzed');
+  await page.locator('#analyze-button').click();
+  await expect(page.locator('#phrase-quantity')).toHaveText('1 known candidate');
+  await expect(page.locator('.plain-language')).not.toHaveAttribute('open', '');
+  await page.locator('#clear-all').click();
+  await expect(page.locator('#analyze-button')).toBeDisabled();
+});
+
 test('entropy details show zero-based word indices offline and discard them after edits', async ({ page, context }) => {
   await context.setOffline(true);
   await page.goto(artifact);

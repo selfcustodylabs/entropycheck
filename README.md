@@ -24,7 +24,7 @@ The phrase alone cannot identify your wallet's derivation path or validate a pas
 
 ## Reading the assessment
 
-Paste or edit the phrase to see immediate word-count, wordlist, and checksum feedback in the input box. Click **Analyze phrase** for the security assessment. Editing the words or generation context clears the old report and addresses until you analyze again. Generation and public-example buttons analyze immediately; every run provides visible completion feedback.
+Paste or edit the phrase to see immediate word-count, wordlist, and checksum feedback in the input box. Click **Analyze phrase** for the security assessment, or **Generate & analyze** to create and check a test phrase in one step. The analysis button then reads **Analyze again**. Editing the words or generation context clears the old report and addresses until you analyze again. Public examples also analyze immediately; every run provides visible completion feedback.
 
 The 24-word phrase `abandon` repeated 23 times followed by `art` is structurally valid, but encodes 256 zero bits. EntropyCheck calls it **Unsafe: all-zero phrase** and shows **1 known candidate**, not the ideal 2^256 search space. Zero secrecy in publicly known words does not mean we measured the original generator's entropy. A separate BIP39 passphrase is not evaluated.
 
@@ -47,7 +47,9 @@ When no weakness is recognized, actual source entropy remains unknown, but the m
 3. Transfer the verified file to your trusted, disconnected computer and double-click it. No Node.js, web server, or network access is required.
 4. Use **Clear all**, then close the browser when finished. The application cannot guarantee erasure of browser/OS memory, clipboard history, or browser crash data.
 
-A hash establishes integrity relative to the checksum you trust; an attacker replacing both files can supply a matching hash. These initial releases do not claim a maintainer signing identity. You can also reproduce the file from source. The interface labels local-file execution without claiming that the device is air-gapped.
+A hash establishes integrity relative to the checksum you trust; an attacker replacing both files can supply a matching hash. Release source commits and tags are SSH-signed as `selfcustodylabs`; the downloadable checksum is not a detached signature. You can also reproduce the file from source.
+
+The page shows the browser’s online/offline report and updates it when the connection status changes, without making network probes. When online, including when opened as a local file, it warns against real seed phrases and links to the offline download and guide. A browser reporting offline does not prove an air gap or a trustworthy device.
 
 ## Develop and reproduce
 

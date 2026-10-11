@@ -107,6 +107,8 @@ function analyze(reason = 'Analysis complete') {
   renderAssessment();
   renderInputValidation(analysis, true);
   analysisRuns++;
+  text('analyze-label', 'Analyze again');
+  element<HTMLButtonElement>('analyze-button').disabled = false;
   text('analysis-feedback', `${reason} · check ${analysisRuns}. ${analysis.valid ? 'Structure valid; review the phrase assessment.' : 'Review the validation findings.'}`);
 }
 
@@ -116,6 +118,8 @@ function markPending() {
   const live = validateMnemonicStructure(input.value);
   renderInputValidation(live);
   const count = live.wordCount;
+  text('analyze-label', 'Analyze phrase');
+  element<HTMLButtonElement>('analyze-button').disabled = count === 0;
   text('word-counter', `${count} ${count === 1 ? 'word' : 'words'}`);
   if (count) {
     text('risk-title', 'Changes not analyzed');
@@ -155,7 +159,7 @@ function renderCrackTime() {
     : 'Estimates need a stated generation or attack model, a known verification target, and a fixed or known passphrase. They are not hardware benchmarks or predictions of wallet compromise.');
   if (!available) {
     text('crack-time', !analysis.wordCount ? 'Analyze a phrase first' : !analysis.valid ? 'Not applicable to invalid input' : 'Cannot estimate from these words');
-    text('crack-detail', !analysis.wordCount ? 'Run the assessment to see the applicable search model and its assumptions.' : !analysis.valid ? 'Fix the word count, wordlist, or checksum errors first. Invalid BIP39 input has no applicable phrase-search estimate.' : 'You reported human-chosen words. Human choices do not justify a uniform-random estimate, even when no supported pattern is detected. Actual strength and cracking time are unknown. The separate ideal-randomness comparison below explains what secure random generation would provide.');
+    text('crack-detail', !analysis.wordCount ? 'Paste and analyze a phrase, or generate a test phrase above.' : !analysis.valid ? 'Fix the word count, wordlist, or checksum first.' : 'Human choices do not justify a uniform-random estimate. Guessing time is unknown.');
     return;
   }
   const rate = Number(value('crack-rate'));
@@ -320,12 +324,24 @@ element('show-passphrase').addEventListener('click', () => {
   element('show-passphrase').setAttribute('aria-pressed', String(show));
   text('show-passphrase', show ? 'Hide' : 'Show');
 });
+function renderConnectionNotice() {
+  const local = location.protocol === 'file:';
+  const online = navigator.onLine;
+  element('usage-notice').dataset.connection = online ? 'online' : 'offline';
+  text('environment', `${local ? 'LOCAL FILE' : 'HOSTED DEMO'} · BROWSER REPORTS ${online ? 'ONLINE' : 'OFFLINE'}`);
+  text('notice-title', online ? 'You appear to be online. Don’t use a real seed phrase.' : 'Your browser reports offline.');
+  text('notice-copy', online
+    ? 'Use test phrases only. Download and verify this page, then open it on a trusted, disconnected device, such as an air-gapped computer. A local file can still be online.'
+    : 'This is not proof of an air gap. Before using a real seed phrase, verify the downloaded file and use a trusted, disconnected device.');
+}
 if (location.protocol === 'file:') {
-  text('environment', 'LOCAL FILE · CONNECTION NOT VERIFIED');
-  text('notice-title', 'You’re using a local copy.');
-  text('notice-copy', 'Verify the file and use a trusted, disconnected device before handling real recovery phrases. This page cannot establish an air gap or protect against device compromise.');
   document.querySelectorAll<HTMLAnchorElement>('.download-link').forEach(link => { link.href = location.href.split('#')[0]; });
-} else text('environment', 'HOSTED DEMO · FOR TEST PHRASES');
+}
+// Use the browser's connection hint without sending a network probe.
+window.addEventListener('online', renderConnectionNotice);
+window.addEventListener('offline', renderConnectionNotice);
+window.addEventListener('pageshow', renderConnectionNotice);
+renderConnectionNotice();
 clearAll();
 if (typeof globalThis.crypto?.getRandomValues !== 'function') {
   element<HTMLButtonElement>('generate').disabled = true;

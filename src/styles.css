@@ -291,6 +291,15 @@ main {
   white-space: nowrap;
   margin-left: 4px;
 }
+.notice[data-connection="online"] { border-color: #bd5d34; background: #fff0e5; color: #783515; }
+.notice-actions { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-top: 10px; font-weight: 600; }
+.notice-actions a { margin: 0; }
+.input-heading { margin-bottom: 20px; }
+.key-concepts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-bottom: 22px; }
+.key-concepts article { padding: 20px; background: #ecf0e5; border: 1px solid #d8dfcf; border-radius: 10px; }
+.key-concepts h3 { margin: 8px 0; }
+.key-concepts p { font-size: 14px; color: #526049; }
+@media (max-width: 700px) { .key-concepts { grid-template-columns: 1fr; gap: 10px; } }
 .section {
   margin: 56px 0;
 }
@@ -742,9 +751,7 @@ details p {
   line-height: 1.8;
 }
 .learning-note {
-  display: grid;
-  grid-template-columns: 150px 1fr;
-  gap: 25px;
+  display: block;
   padding: 21px 5px 0;
 }
 .small-label {
@@ -1313,10 +1320,10 @@ footer .brand {
 .structure-status { font-weight: 700; margin-bottom: 6px; }
 .phrase-perspective { margin-bottom: 20px; border-left-width: 5px; padding: 0; overflow: hidden; }
 .phrase-perspective .big-number { font-size: clamp(1.6rem, 4vw, 2.6rem); overflow-wrap: anywhere; }
-.perspective-lead { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(260px, .8fr); gap: 28px; padding: clamp(24px, 4vw, 42px); }
+.perspective-lead { display: grid; grid-template-columns: 1fr; gap: 18px; padding: clamp(24px, 4vw, 32px); }
 .perspective-result .big-number { margin: 8px 0 16px; }
 .perspective-summary { max-width: 760px; margin-bottom: 0; font-size: 1.04rem; line-height: 1.7; }
-.plain-language { align-self: stretch; padding: 22px; border-radius: 10px; background: #f5eee1; border: 1px solid #ded2c0; }
+.plain-language { margin: 0; padding: 14px 18px; border-radius: 10px; background: #f5eee1; border: 1px solid #ded2c0; }
 .plain-language p:last-child { margin: 10px 0 0; font-size: 1.06rem; line-height: 1.65; }
 .phrase-perspective[data-kind="unsafe"] .plain-language,
 .phrase-perspective[data-kind="weak"] .plain-language { background: #ffe4d8; border-color: #d89b84; }
@@ -1340,7 +1347,8 @@ footer .brand {
 #crack-controls { max-width: none; }
 #crack-controls .field-help { margin-bottom: 0; }
 .random-perspective { margin-top: 24px; }
-.random-perspective h4 { margin: 0 0 14px; font-size: 1.05rem; }
+.random-perspective > summary { font-size: .93rem; }
+.random-perspective[open] > summary { margin-bottom: 14px; }
 .perspective-facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
 .perspective-facts article { padding: 18px; border: 1px solid var(--line); border-radius: 9px; background: #fff; }
 .perspective-facts article p:last-child { margin: 7px 0 0; font-size: 1.02rem; line-height: 1.55; }
@@ -1363,10 +1371,12 @@ footer .brand {
 }
 
 /* Give technical material its own workspace, separate from the verdict. */
-.entropy-panel { margin-top: 18px; padding: 0; overflow: hidden; }
-.entropy-panel > summary { padding: 22px 26px; font-size: 16px; color: var(--ink); }
-.entropy-panel[open] > summary { margin-bottom: 0; border-bottom: 1px solid var(--line); background: #fafaf6; }
-.summary-hint { margin-left: 14px; color: var(--muted); font-size: 13px; font-weight: 400; }
+.entropy-panel { margin-top: 18px; padding: 0; overflow: hidden; border-color: #c8794e; }
+.entropy-panel > summary { padding: 22px 26px; font-size: 17px; color: #873411; background: #fae9d9; box-shadow: inset 5px 0 var(--accent); }
+.entropy-panel > summary:hover { background: #f5ddc5; }
+.entropy-panel > summary:focus-visible { outline-offset: -4px; }
+.entropy-panel[open] > summary { margin-bottom: 0; border-bottom: 1px solid #c8794e; }
+.summary-hint { margin-left: 14px; color: #804323; font-size: 13px; font-weight: 400; }
 .entropy-panel > :not(summary) { margin: 24px 26px; }
 .entropy-intro p { max-width: 760px; color: var(--muted); margin-bottom: 0; }
 .index-guide { padding: 18px 20px; background: #f5eee1; border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; }
