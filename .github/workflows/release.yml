@@ -20,7 +20,10 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: npm run check
       - run: npm exec playwright install --with-deps chromium firefox
-      - run: npm run test:browser
+      - name: Test browser behavior in Chromium
+        run: npm run test:browser -- --project=chromium
+      - name: Test browser behavior in Firefox
+        run: npm run test:browser -- --project=firefox
       - name: Publish verified release
         env:
           GH_TOKEN: ${{ github.token }}
