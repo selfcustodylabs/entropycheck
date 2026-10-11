@@ -67,6 +67,10 @@ For `ENT` uniformly random bits, `N = 2^ENT`. A single guess succeeds with proba
 
 Exact integer totals and a rational mean are retained using BigInt. Scientific notation and years are rounded for display. The UI assumes a fixed/known passphrase and a known verification target. Rates are illustrative, not measured hardware speeds; mining hashes are not BIP39 candidate checks. Whole-space numbers do not model other attacks on Bitcoin keys, theft, partial recovery, or malware.
 
+The main report now displays this uniform model for valid phrases with no recognized weakness, with the secure-generation assumption attached to the headline. It is a conditional explanation, not an inference of measured entropy; recognized weak/public inputs and self-reported human choices do not receive it in the main report. This follows the distinction between encoded length in [BIP39](https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki) and the limits of output testing described by [NIST SP 800-22](https://csrc.nist.gov/pubs/sp/800/22/r1/upd1/final) (rechecked 2026-10-11).
+
+Centuries equal years / 100. For a fixed 100-year search horizon, the probability of success with distinct guesses is `min(1, R × 100 × 31,557,600 / N)`. At 128 bits and 10¹² complete checks/second, this is about 1 in 1.08 × 10¹⁷; the mean is about 5.39 quintillion years or 5.39 × 10¹⁶ centuries. A mean is not a minimum time. These analogies avoid implying a guaranteed waiting period.
+
 Coin-flip analogy: guessing the exact ordered outcomes of `ENT` independent fair flips has probability `1/2^ENT`. Lottery analogy: one winner among `2^ENT` equally likely tickets. Both analogies use the same assumptions as the mathematical model, without uncertain physical comparisons.
 
 ## Library selection

@@ -12,7 +12,20 @@ export function modelStrength(bits: number, rate: number) {
     averageSecondsNumerator, averageSecondsDenominator,
     oneGuessProbability: 1 / Number(possibilities),
     averageYears: Number(averageSecondsNumerator) / Number(averageSecondsDenominator) / SECONDS_PER_YEAR,
+    fullSearchYears: Number(possibilities) / rate / SECONDS_PER_YEAR,
+    averageCenturies: Number(averageSecondsNumerator) / Number(averageSecondsDenominator) / SECONDS_PER_YEAR / 100,
+    // Distinct guesses in one century, divided by the uniform candidate space.
+    centurySuccessProbability: Math.min(1, Number(BigInt(rate) * BigInt(SECONDS_PER_YEAR) * 100n) / Number(possibilities)),
   };
+}
+
+/** Short-scale English names where they make a large time easier to read. */
+export function readableYears(years: number): string {
+  if (!Number.isFinite(years) || years <= 0) throw new Error('Years must be positive and finite.');
+  const scales: [number, string][] = [[1e18, 'quintillion'], [1e15, 'quadrillion'], [1e12, 'trillion'], [1e9, 'billion'], [1e6, 'million']];
+  const scale = scales.find(([size]) => years >= size);
+  if (years >= 1e21) return `${scientific(years)} years`;
+  return scale ? `${Number((years / scale[0]).toPrecision(3))} ${scale[1]} years` : `${Number(years.toPrecision(3))} years`;
 }
 
 export function scientific(value: number | bigint, digits = 2): string {

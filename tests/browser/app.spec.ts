@@ -265,16 +265,26 @@ test('repeated word runs are weak with a visible conditional time, not a 256-bit
   await expect(page.locator('#crack-formula')).toBeEmpty();
 });
 
-test('unrecognized generated output has no invented crack time and page copy has no em dashes', async ({ page }) => {
+test('unrecognized generated output has an explicitly conditional random-search report and no em dashes', async ({ page }) => {
   await page.addInitScript(() => {
     const bytes = [37, 194, 16, 133, 75, 228, 60, 169, 4, 218, 121, 44, 87, 178, 98, 11];
     Object.defineProperty(crypto, 'getRandomValues', { value: (array: Uint8Array) => { array.set(bytes); return array; } });
   });
   await page.goto(artifact);
   await page.locator('#generate').click();
-  await expect(page.locator('#crack-time')).toHaveText('Cannot estimate from these words');
-  await expect(page.locator('#crack-detail')).toContainText('does not mean the phrase is strong');
-  await expect(page.locator('#crack-controls')).toBeHidden();
+  await expect(page.locator('#phrase-quantity')).toHaveText('128 bits if securely random');
+  await expect(page.locator('#phrase-interpretation')).toContainText('Actual source entropy remains unknown');
+  await expect(page.locator('#crack-basis')).toHaveText('Assuming secure random generation');
+  await expect(page.locator('#crack-controls')).toBeVisible();
+  await page.locator('#crack-rate').selectOption('1000000000000');
+  await expect(page.locator('#crack-time')).toHaveText('≈ 5.39 quintillion years on average, if securely random');
+  await expect(page.locator('#crack-maximum')).toContainText('10.8 quintillion years');
+  await expect(page.locator('#crack-centuries')).toContainText('5.39 × 10¹⁶ centuries');
+  await expect(page.locator('#crack-century-chance')).toContainText('1 in 1.08 × 10¹⁷');
+  await expect(page.locator('#phrase-analogy')).toContainText('128 independent fair coin flips');
+  await expect(page.locator('#crack-lottery')).toContainText('3.40 × 10³⁸ equally likely tickets');
+  await expect(page.locator('#random-perspective')).toBeVisible();
+  await expect(page.locator('#average-years')).toBeHidden();
   // Include collapsed educational content and license notices; omit JS/CSS comments.
   const copy = await page.locator('body').evaluate(body => {
     const clone = body.cloneNode(true) as HTMLElement;
@@ -283,4 +293,51 @@ test('unrecognized generated output has no invented crack time and page copy has
   });
   expect(copy).not.toContain('\u2014');
   expect(await page.title()).not.toContain('\u2014');
+});
+
+test('random-search assumptions survive all lengths, contexts, and report transitions offline', async ({ page, context }) => {
+  await context.setOffline(true);
+  await page.addInitScript(() => {
+    const bytes = [37, 194, 16, 133, 75, 228, 60, 169, 4, 218, 121, 44, 87, 178, 98, 11, 95, 203, 7, 166, 72, 189, 49, 110, 211, 66, 17, 158, 241, 103, 6, 127];
+    Object.defineProperty(crypto, 'getRandomValues', { value: (array: Uint8Array) => { array.set(bytes.slice(0, array.length)); return array; } });
+  });
+  await page.goto(artifact);
+  const expected = ['5.39 quintillion', '2.32 × 10²⁸', '9.95 × 10³⁷', '4.27 × 10⁴⁷', '1.83 × 10⁵⁷'];
+  for (const [index, count] of [12, 15, 18, 21, 24].entries()) {
+    await page.locator('#generate-length').selectOption(String(count));
+    await page.locator('#generate').click();
+    await page.locator('#crack-rate').selectOption('1000000000000');
+    await expect(page.locator('#crack-time')).toHaveText(`≈ ${expected[index]} years on average, if securely random`);
+    await expect(page.locator('#phrase-quantity')).toHaveText(`${count / 3 * 32} bits if securely random`);
+  }
+  for (const source of ['unknown', 'wallet', 'physical', 'browser']) {
+    await page.locator('#source').selectOption(source);
+    await expect(page.locator('#random-perspective')).toBeHidden();
+    await expect(page.locator('#crack-century-chance')).toBeEmpty();
+    await page.locator('#analyze-button').click();
+    await expect(page.locator('#crack-time')).toContainText('if securely random');
+    await expect(page.locator('#phrase-interpretation')).toContainText('Actual source entropy remains unknown');
+  }
+  await page.locator('#passphrase').fill('public test passphrase');
+  await expect(page.locator('#crack-passphrase')).toContainText('assume the attacker already knows it');
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.locator('#source').selectOption('human');
+  await page.locator('#analyze-button').click();
+  await expect(page.locator('#crack-detail')).toContainText('Human choices do not justify a uniform-random estimate');
+  await expect(page.locator('#random-perspective')).toBeHidden();
+  await expect(page.locator('#phrase-quantity')).toHaveText('Unknown');
+  await page.locator('#source').selectOption('unknown');
+  await page.locator('#mnemonic').fill('abandon '.repeat(12) + 'art '.repeat(11) + 'buddy');
+  await page.locator('#analyze-button').click();
+  await expect(page.locator('#crack-time')).toContainText('microseconds');
+  await expect(page.locator('#crack-basis')).toHaveText('Conditional estimate');
+  await expect(page.locator('#crack-centuries')).toBeEmpty();
+  await expect(page.locator('#random-perspective')).toBeHidden();
+  await page.locator('#load-example').click();
+  await expect(page.locator('#crack-time')).toHaveText('No phrase search needed');
+  await expect(page.locator('#random-perspective')).toBeHidden();
+  await page.locator('#clear-all').click();
+  await expect(page.locator('#crack-time')).toHaveText('Analyze a phrase first');
+  await expect(page.locator('#crack-formula')).toBeEmpty();
 });

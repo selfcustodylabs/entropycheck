@@ -2,6 +2,8 @@ EntropyCheck provides English BIP39 analysis and generation, phrase-specific pub
 
 Input errors now appear live inside the phrase box. Repeated word runs are detected, and a visible Time to crack section models recognized families with explicit checking-rate and passphrase assumptions. Page copy uses no em dashes.
 
+For valid phrases without a detected weakness, the main report now includes a clearly conditional random-generation estimate with years, centuries, 100-year success odds, and coin-flip/lottery analogies. Actual source entropy remains unverified. Weak/public findings take precedence; human-chosen phrases keep their unknown-time warning.
+
 The assessment leads with concrete weaknesses rather than ideal phrase-length figures. Analyze explicitly runs the checks; edits invalidate prior findings. The separate ideal-randomness calculator is collapsed by default and never certifies the entered phrase.
 
 Download `entropycheck.html` and `SHA256SUMS`. Verify the checksum against a trusted source, then open the HTML directly on a trusted, disconnected computer. The file contains all required code, styles, wordlists, and educational content; no server or installation is needed.

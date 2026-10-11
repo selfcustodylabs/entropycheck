@@ -12,7 +12,7 @@ import { analyzeMnemonic, validateMnemonicStructure, validationFindings, assessS
 import { assessPhrase, findPatterns } from '../src/core/risk.ts';
 import { generatePhrase } from '../src/core/generation.ts';
 import { modelCandidateSearch, formatDuration } from '../src/core/crack-time.ts';
-import { modelStrength, scientific } from '../src/core/strength.ts';
+import { modelStrength, scientific, readableYears, SECONDS_PER_YEAR } from '../src/core/strength.ts';
 import { deriveAddresses, validateOptions, accountPath, ADDRESS_TYPES, type DerivationOptions } from '../src/core/derivation.ts';
 
 const vectors: string[][] = JSON.parse(readFileSync(new URL('./fixtures/bip39-english.json', import.meta.url), 'utf8'));
@@ -245,7 +245,9 @@ test('ordinary duplicate words and unrecognized outputs never receive an effecti
   assert.ok(analysis.repeatedWordCount); assert.equal(analysis.patterns.length, 0);
   for (const source of ['unknown', 'wallet', 'browser', 'physical', 'human'] as const) {
     const risk = assessPhrase(analysis, source, true);
-    assert.equal(risk.candidates, null); assert.equal(risk.familyBits, null); assert.equal(risk.quantity, 'Unknown');
+    assert.equal(risk.candidates, null); assert.equal(risk.familyBits, null);
+    assert.equal(risk.quantity, source === 'human' ? 'Unknown' : '256 bits if securely random');
+    if (source !== 'human') assert.match(risk.interpretation, /Actual source entropy remains unknown/);
     assert.equal(risk.kind, source === 'human' ? 'caution' : 'unverified');
   }
   assert.equal(assessPhrase(analysis, 'public').kind, 'unsafe');
@@ -316,4 +318,23 @@ test('conditional cracking times preserve formulas, units, and rate scaling', ()
   assert.throws(() => modelCandidateSearch(1n, 0));
   assert.throws(() => modelCandidateSearch(1n, 0.5));
   assert.throws(() => formatDuration(Number.NaN));
+});
+
+test('random-search perspective preserves conditional years, centuries and success probabilities', () => {
+  for (const bits of [128, 160, 192, 224, 256]) for (const rate of [1e6, 1e9, 1e12]) {
+    const model = modelStrength(bits, rate);
+    const independent = modelCandidateSearch(2n ** BigInt(bits), rate);
+    assert.equal(model.averageYears, independent.averageSeconds / SECONDS_PER_YEAR);
+    assert.equal(model.fullSearchYears, independent.fullSearchSeconds / SECONDS_PER_YEAR);
+    assert.equal(model.averageCenturies, model.averageYears / 100);
+    assert.equal(model.centurySuccessProbability, (rate * 100 * SECONDS_PER_YEAR) / 2 ** bits);
+    assert.ok(model.averageCenturies > 1e12);
+    assert.ok(model.centurySuccessProbability > 0 && model.centurySuccessProbability < 1e-16);
+  }
+  const example = modelStrength(128, 1e12);
+  assert.equal(readableYears(example.averageYears), '5.39 quintillion years');
+  assert.equal(scientific(example.averageCenturies), '5.39 × 10¹⁶');
+  assert.equal(scientific(1 / example.centurySuccessProbability), '1.08 × 10¹⁷');
+  assert.equal(readableYears(modelStrength(256, 1e12).averageYears), '1.83 × 10⁵⁷ years');
+  assert.throws(() => readableYears(Infinity));
 });

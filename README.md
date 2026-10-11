@@ -13,8 +13,8 @@ The public demo is for public examples and disposable test phrases. Handle real 
 - Reports encoded entropy length and generation-source context separately. It does **not** claim to measure actual randomness from one phrase or assign a safety percentage.
 - Leads with a phrase-specific assessment: public/constant phrases, recognized simple constructions, or actual randomness unverified. Source claims never override concrete weaknesses.
 - Shows raw hexadecimal entropy, full-width binary entropy, checksum bits, and complete mnemonic binary.
-- Shows conditional **Time to crack** estimates for detected candidate families, with adjustable hypothetical checking rates, average and full-family times, and explicit passphrase assumptions. Unknown construction means no invented time.
-- Keeps ideal-randomness search sizes, times, and analogies in a collapsed, explicitly hypothetical comparison.
+- Shows conditional **Time to crack** estimates for detected candidate families, with adjustable hypothetical checking rates, average and full-family times, and explicit passphrase assumptions. For valid phrases with no detected weakness, shows a separate full-space estimate labeled “assuming secure random generation.”
+- Shows conditional years, centuries, 100-year success odds, and coin-flip/lottery analogies in the main report. A collapsed calculator also compares other phrase lengths.
 - Derives mainnet and testnet single-signature addresses: BIP44 legacy, BIP49 nested SegWit, BIP84 native SegWit, and BIP86 Taproot.
 - Supports a BIP39 passphrase, accounts, receiving/change branches, and bounded address ranges.
 - Contains no analytics, wallet balance requests, persistent session storage, remote fonts, runtime dependencies, or service workers.
@@ -31,7 +31,7 @@ The tool also recognizes repeated 1–4 byte blocks, upward/downward byte sequen
 
 For example, the checksum-valid 24-word phrase with 12 `abandon` words, 11 `art` words, then `buddy` belongs to the two-run family. Counting all word choices, split positions, and final entropy choices gives 737,837,056 candidates. At an illustrative one million complete checks per second, the average is about 6.15 minutes and the full family about 12.3 minutes. These figures assume the attacker targets this family, has a known verification target, and knows the passphrase. They are not measured hardware performance, actual source entropy, or a wallet-compromise prediction. A version with an extra word is invalid and receives no crack-time estimate.
 
-When no weakness is recognized, actual source entropy remains **Unknown**. “256 bits of BIP39 capacity” is not “256 verified random bits.” The ideal-randomness comparison is educational and does not assign strength to the entered phrase. See the [revised assessment plan](docs/revised-assessment-plan.md) for the report contract and test requirements.
+When no weakness is recognized, actual source entropy remains unknown, but the main report now explains the potential strength **if securely random**. For 12 words at one trillion complete checks per second, the average exhaustive phrase search is about 5.39 quintillion years, or 5.39 × 10¹⁶ centuries. After 100 years of checking, the modeled success probability is about 1 in 1.08 × 10¹⁷. These figures assume uniform generation, secrecy, no partial knowledge, and a known target and passphrase; they are not a measured property of the input or overall wallet security. Recognized weak/public phrases take precedence, and reported human choices do not receive this random-generation estimate in the main report. See the [revised assessment plan](docs/revised-assessment-plan.md) for the report contract and test requirements.
 
 ## Use offline
 
