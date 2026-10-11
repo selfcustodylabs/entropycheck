@@ -39,6 +39,10 @@ html {
 body {
   margin: 0;
 }
+html,
+body {
+  overflow-x: hidden;
+}
 button,
 input,
 select,
