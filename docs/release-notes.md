@@ -1,5 +1,7 @@
 EntropyCheck provides English BIP39 analysis and generation, phrase-specific public/pattern warnings, exact binary inspection, conditional entropy explanations, and Bitcoin mainnet/testnet address derivation for BIP44, BIP49, BIP84, and BIP86.
 
+Input errors now appear live inside the phrase box. Repeated word runs are detected, and a visible Time to crack section models recognized families with explicit checking-rate and passphrase assumptions. Page copy uses no em dashes.
+
 The assessment leads with concrete weaknesses rather than ideal phrase-length figures. Analyze explicitly runs the checks; edits invalidate prior findings. The separate ideal-randomness calculator is collapsed by default and never certifies the entered phrase.
 
 Download `entropycheck.html` and `SHA256SUMS`. Verify the checksum against a trusted source, then open the HTML directly on a trusted, disconnected computer. The file contains all required code, styles, wordlists, and educational content; no server or installation is needed.

@@ -1295,3 +1295,15 @@ footer .brand {
 #ideal-model .model-intro { padding: 16px; background: #f5eee1; border-left: 3px solid #b2652e; }
 #analysis-feedback { min-height: 1.5em; }
 @media print { #raw-binary, #checksum-binary, #mnemonic-binary { display: none !important; } }
+.phrase-input { border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.phrase-input textarea { border: 0; border-radius: 0; display: block; margin: 0; }
+.phrase-input:focus-within { outline: 2px solid #9b431e; outline-offset: 2px; }
+.phrase-input textarea:focus { outline: none; box-shadow: none; }
+.input-validation { margin: 0; padding: 12px 14px; font-size: .82rem; line-height: 1.5; background: #f4f3ee; border-top: 1px solid var(--line); }
+.phrase-input[data-state="invalid"] { border: 2px solid #ab361c; }
+.phrase-input[data-state="invalid"] .input-validation { color: #8c2814; background: #fff0e9; }
+.crack-section { border-top: 1px solid var(--line); padding-top: 24px; margin-top: 24px; }
+.crack-section h3 { margin: 0; font-size: 1.3rem; }
+#crack-controls { max-width: 430px; margin-top: 20px; }
+#crack-time { margin: 20px 0 12px; }
+@media (max-width: 600px) { .crack-section .label-row { align-items: flex-start; flex-wrap: wrap; gap: 8px; } }

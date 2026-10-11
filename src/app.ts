@@ -1,4 +1,5 @@
-import { analyzeMnemonic, assessSource, isWordCount, type GenerationSource } from './core/analysis.ts';
+import { analyzeMnemonic, validateMnemonicStructure, validationFindings, assessSource, isWordCount, type GenerationSource, type MnemonicValidation } from './core/analysis.ts';
+import { modelCandidateSearch, formatDuration } from './core/crack-time.ts';
 import { assessPhrase } from './core/risk.ts';
 import { modelStrength, scientific } from './core/strength.ts';
 import { generatePhrase } from './core/generation.ts';
@@ -53,20 +54,18 @@ function renderAssessment() {
   text('phrase-quantity-label', risk.quantityLabel);
   text('phrase-interpretation', risk.interpretation);
   text('phrase-analogy', risk.analogy);
+  renderCrackTime();
   element<HTMLDetailsElement>('ideal-model').open = false;
   invalidateAddresses();
   text('word-counter', `${analysis.wordCount} ${analysis.wordCount === 1 ? 'word' : 'words'}`);
   text('normalization', analysis.normalizationChanged ? 'Analysis uses lowercase words and single spaces. Capitalization and extra whitespace are normalized; words are never replaced.' : '');
   const hasInput = analysis.wordCount > 0;
   text('validity', !hasInput ? 'Waiting for a phrase' : analysis.valid ? 'Valid BIP39 structure' : 'Not valid English BIP39');
-  const findings: string[] = [];
-  if (!analysis.validLength) findings.push(`Expected 12, 15, 18, 21, or 24 words; found ${analysis.wordCount}.`);
-  if (analysis.invalidPositions.length) findings.push(`Words outside the English wordlist at positions ${analysis.invalidPositions.join(', ')}.`);
-  if (analysis.checksumValid === false) findings.push('The checksum does not match. Check the original phrase; this tool does not repair it.');
+  const findings = validationFindings(analysis);
   text('validation-detail', !hasInput ? 'Enter words to check their length, wordlist, and checksum.' : analysis.valid ? 'Word count, English wordlist, and checksum pass. This establishes structure, not randomness or secrecy.' : findings.join(' '));
   for (const [id, amount] of [['entropy-bits', analysis.encodedEntropyBits], ['checksum-bits', hasInput ? analysis.checksumBits : null]] as const) {
     const small = document.createElement('small'); small.textContent = ' bits';
-    element(id).replaceChildren(document.createTextNode(amount === null ? '—' : String(amount)), small);
+    element(id).replaceChildren(document.createTextNode(amount === null ? 'N/A' : String(amount)), small);
   }
   text('check-length', !hasInput ? 'Waiting' : analysis.validLength ? `${analysis.wordCount} · supported` : `${analysis.wordCount} · unsupported`);
   text('check-words', !hasInput ? 'Waiting' : analysis.validWords ? 'All words recognized' : `Invalid positions: ${analysis.invalidPositions.join(', ')}`);
@@ -89,6 +88,7 @@ function renderAssessment() {
 function analyze(reason = 'Analysis complete') {
   analysis = analyzeMnemonic(input.value);
   renderAssessment();
+  renderInputValidation(analysis, true);
   analysisRuns++;
   text('analysis-feedback', `${reason} · check ${analysisRuns}. ${analysis.valid ? 'Structure valid; review the phrase assessment.' : 'Review the validation findings.'}`);
 }
@@ -96,7 +96,9 @@ function analyze(reason = 'Analysis complete') {
 function markPending() {
   analysis = analyzeMnemonic('');
   renderAssessment();
-  const count = input.value.trim() ? input.value.trim().split(/\s+/u).length : 0;
+  const live = validateMnemonicStructure(input.value);
+  renderInputValidation(live);
+  const count = live.wordCount;
   text('word-counter', `${count} ${count === 1 ? 'word' : 'words'}`);
   if (count) {
     text('risk-title', 'Changes not analyzed');
@@ -106,6 +108,41 @@ function markPending() {
     text('source-detail', 'The selected source will be considered when you analyze this phrase.');
   }
   text('analysis-feedback', count ? 'Phrase or context changed. Click Analyze phrase.' : '');
+}
+
+function renderInputValidation(result: MnemonicValidation, completed = false) {
+  const hasInput = result.wordCount > 0;
+  const invalid = hasInput && !result.valid;
+  input.setAttribute('aria-invalid', String(invalid));
+  element('phrase-input').dataset.state = invalid ? 'invalid' : hasInput ? 'valid' : 'empty';
+  text('input-validation', !hasInput ? 'Enter a phrase to check its structure.' : invalid
+    ? `Invalid BIP39 phrase. ${validationFindings(result).join(' ')}`
+    : completed ? 'Structure valid. Review the security assessment.' : 'Structure valid. Click Analyze phrase for the security assessment.');
+  text('normalization', result.normalizationChanged ? 'Validation uses lowercase words and single spaces. Capitalization and extra whitespace are normalized; words are never replaced.' : '');
+}
+
+function renderCrackTime() {
+  const risk = assessPhrase(analysis, source.value as GenerationSource, generatedHere);
+  const available = risk.candidates !== null;
+  element('crack-controls').hidden = !available;
+  element('crack-math').hidden = !available;
+  element<HTMLDetailsElement>('crack-math').open = false;
+  text('crack-formula', ''); text('crack-maximum', ''); text('crack-passphrase', '');
+  if (!available) {
+    text('crack-time', !analysis.wordCount ? 'Analyze a phrase first' : !analysis.valid ? 'Not applicable to invalid input' : 'Cannot estimate from these words');
+    text('crack-detail', !analysis.wordCount ? 'Run the assessment to see whether a known candidate or a small construction can be identified.' : !analysis.valid ? 'Fix the word count, wordlist, or checksum errors first. Invalid BIP39 input has no applicable phrase-search estimate.' : 'No supported small construction was found. This does not mean the phrase is strong or slow to crack. Without knowing the generation process or what an attacker knows, assigning a time would be misleading. The optional ideal-randomness comparison below is a separate hypothetical model.');
+    return;
+  }
+  const candidates = risk.candidates!;
+  const rate = Number(value('crack-rate'));
+  const model = modelCandidateSearch(candidates, rate);
+  text('crack-time', candidates === 1n ? 'No phrase search needed' : `≤ ${formatDuration(model.averageSeconds)} on average`);
+  text('crack-detail', candidates === 1n
+    ? `The exact words are already known: only one candidate check is needed. At the selected hypothetical rate, that check models ${formatDuration(model.fullSearchSeconds)}. Actual verification and any unknown passphrase are separate.`
+    : `For at most ${candidates.toLocaleString('en-US')} candidates in the detected construction at ${rate.toLocaleString('en-US')} complete checks per second. This is a conditional search estimate, not an observed cracking time.`);
+  text('crack-maximum', candidates === 1n ? '' : `Full-family search at this rate: ≤ ${formatDuration(model.fullSearchSeconds)}. An attacker may find it earlier or use a simpler guess.`);
+  text('crack-formula', `N ≤ ${candidates}; R = ${rate}. Average = (N + 1) / (2R) ≤ ${model.averageNumerator} / ${model.averageDenominator} seconds. Full family = N / R.`);
+  text('crack-passphrase', passphrase.value ? 'A passphrase is entered. These figures assume the attacker already knows it; its strength is not evaluated.' : 'Assumes an empty or attacker-known BIP39 passphrase. A secret passphrase is not evaluated.');
 }
 
 function renderModel() {
@@ -190,7 +227,7 @@ function clearAll() {
   input.value = ''; passphrase.value = ''; source.value = 'unknown'; generatedHere = false;
   passphrase.type = 'password';
   element('show-passphrase').setAttribute('aria-pressed', 'false'); text('show-passphrase', 'Show');
-  for (const [id, val] of Object.entries({ 'generate-length': '12', 'example-length': '12', network: 'mainnet', 'address-type': 'native', account: '0', branch: '0', 'start-index': '0', 'address-count': '20', 'check-rate': '1000000000000' })) setValue(id, val);
+  for (const [id, val] of Object.entries({ 'generate-length': '12', 'example-length': '12', network: 'mainnet', 'address-type': 'native', account: '0', branch: '0', 'start-index': '0', 'address-count': '20', 'check-rate': '1000000000000', 'crack-rate': '1000000' })) setValue(id, val);
   document.querySelector<HTMLInputElement>('input[name="model-words"][value="12"]')!.checked = true;
   document.querySelectorAll<HTMLDetailsElement>('details').forEach(details => { details.open = false; });
   text('generation-error', typeof globalThis.crypto?.getRandomValues === 'function' ? '' : 'Secure browser randomness is unavailable. Generation is disabled. Analysis of test phrases remains available.'); text('copy-status', '');
@@ -219,6 +256,9 @@ for (const id of ['network', 'address-type', 'account', 'branch', 'start-index',
 }
 element('compare-lengths').addEventListener('change', renderModel);
 element('check-rate').addEventListener('change', renderModel);
+element('crack-rate').addEventListener('change', renderCrackTime);
+passphrase.addEventListener('input', renderCrackTime);
+passphrase.addEventListener('change', renderCrackTime);
 element('derive').addEventListener('click', () => { void derive(); });
 element('copy-all').addEventListener('click', () => { void copyText(addressResults.map(item => `${item.path}\t${item.address}`).join('\n')); });
 element('show-passphrase').addEventListener('click', () => {

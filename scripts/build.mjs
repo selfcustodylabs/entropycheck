@@ -29,7 +29,7 @@ for (const path of Object.keys(bundle.metafile.inputs).sort()) {
   if (!license) throw new Error(`Missing license for ${name}`);
   packages.set(name, `${name}@${pkg.version}\n${'='.repeat(64)}\n${license.trim()}\n`);
 }
-const notices = `EntropyCheck 1.0.0\n\n${await readFile('LICENSE', 'utf8')}\n\nPublic BIP39 examples — trezor/python-mnemonic\n\n${await readFile('tests/fixtures/TREZOR_LICENSE', 'utf8')}\n\nBundled dependency licenses\n\n${[...packages.values()].join('\n')}\n`;
+const notices = `EntropyCheck 1.0.0\n\n${await readFile('LICENSE', 'utf8')}\n\nPublic BIP39 examples: trezor/python-mnemonic\n\n${await readFile('tests/fixtures/TREZOR_LICENSE', 'utf8')}\n\nBundled dependency licenses\n\n${[...packages.values()].join('\n')}\n`;
 const csp = `default-src 'none'; script-src ${cspDigest(js)}; style-src ${cspDigest(css)}; img-src data:; connect-src 'none'; form-action 'none'; base-uri 'none'; object-src 'none'`;
 const template = await readFile('src/index.html', 'utf8');
 // Function replacements preserve literal "$" characters in bundled code.

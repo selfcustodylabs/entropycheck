@@ -17,7 +17,7 @@ export function isWordCount(count: number): count is WordCount {
   return (WORD_COUNTS as readonly number[]).includes(count);
 }
 
-export function analyzeMnemonic(input: string) {
+export function validateMnemonicStructure(input: string) {
   const normalized = normalizeMnemonic(input);
   const tokens = normalized ? normalized.split(' ') : [];
   const validLength = isWordCount(tokens.length);
@@ -25,6 +25,23 @@ export function analyzeMnemonic(input: string) {
   const validWords = tokens.length > 0 && invalidPositions.length === 0;
   const checksumValid = validLength && validWords ? validateMnemonic(normalized, wordlist) : null;
   const valid = checksumValid === true;
+  return { normalized, normalizationChanged: input !== normalized, wordCount: tokens.length,
+    validLength, validWords, invalidPositions, checksumValid, valid };
+}
+export type MnemonicValidation = ReturnType<typeof validateMnemonicStructure>;
+
+export function validationFindings(result: MnemonicValidation): string[] {
+  const findings: string[] = [];
+  if (!result.validLength) findings.push(`Expected 12, 15, 18, 21, or 24 words; found ${result.wordCount}.`);
+  if (result.invalidPositions.length) findings.push(`Words outside the English wordlist at positions ${result.invalidPositions.join(', ')}.`);
+  if (result.checksumValid === false) findings.push('The checksum does not match. Check the original phrase; this tool does not repair it.');
+  return findings;
+}
+
+export function analyzeMnemonic(input: string) {
+  const structure = validateMnemonicStructure(input);
+  const { normalized, valid, validLength } = structure;
+  const tokens = normalized ? normalized.split(' ') : [];
   let entropyHex: string | null = null;
   let entropyBinary: string | null = null;
   let checksumBinary: string | null = null;
@@ -42,8 +59,7 @@ export function analyzeMnemonic(input: string) {
     finally { entropy.fill(0); }
   }
   return {
-    normalized, normalizationChanged: input !== normalized,
-    wordCount: tokens.length, validLength, validWords, invalidPositions, checksumValid, valid,
+    ...structure,
     encodedEntropyBits: valid ? tokens.length / 3 * 32 : null,
     checksumBits: validLength ? tokens.length / 3 : null,
     entropyHex, entropyBinary, checksumBinary, mnemonicBinary, patterns,

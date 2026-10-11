@@ -8,9 +8,10 @@ import { wordlist } from '@scure/bip39/wordlists/english.js';
 import BIP32Factory from 'bip32';
 import * as ecc from '@bitcoinerlab/secp256k1';
 import * as bitcoin from 'bitcoinjs-lib';
-import { analyzeMnemonic, assessSource, normalizeMnemonic, WORD_COUNTS } from '../src/core/analysis.ts';
+import { analyzeMnemonic, validateMnemonicStructure, validationFindings, assessSource, normalizeMnemonic, WORD_COUNTS } from '../src/core/analysis.ts';
 import { assessPhrase, findPatterns } from '../src/core/risk.ts';
 import { generatePhrase } from '../src/core/generation.ts';
+import { modelCandidateSearch, formatDuration } from '../src/core/crack-time.ts';
 import { modelStrength, scientific } from '../src/core/strength.ts';
 import { deriveAddresses, validateOptions, accountPath, ADDRESS_TYPES, type DerivationOptions } from '../src/core/derivation.ts';
 
@@ -250,4 +251,69 @@ test('ordinary duplicate words and unrecognized outputs never receive an effecti
   assert.equal(assessPhrase(analysis, 'public').kind, 'unsafe');
   assert.equal(assessPhrase(analyzeMnemonic(''), 'unknown').kind, 'empty');
   assert.equal(assessPhrase(analyzeMnemonic('not valid'), 'unknown').kind, 'invalid');
+});
+
+test('live structure validation separates errors without computing a strength report', () => {
+  for (const count of WORD_COUNTS) {
+    const mnemonic = entropyToMnemonic(new Uint8Array(count / 3 * 4).fill(42), wordlist);
+    const result = validateMnemonicStructure(`  ${mnemonic.toUpperCase()}\n`);
+    assert.equal(result.valid, true); assert.equal(result.normalizationChanged, true);
+    assert.equal('entropyHex' in result, false); assert.equal('patterns' in result, false);
+  }
+  assert.match(validationFindings(validateMnemonicStructure('abandon '.repeat(13) + 'art '.repeat(11) + 'buddy')).join(' '), /found 25/);
+  assert.match(validationFindings(validateMnemonicStructure(phrase.replace('about', 'notaword'))).join(' '), /positions 12/);
+  assert.match(validationFindings(validateMnemonicStructure('abandon '.repeat(12))).join(' '), /checksum does not match/);
+});
+
+test('two and three word runs include all boundaries and final entropy choices', () => {
+  const example = 'abandon '.repeat(12) + 'art '.repeat(11) + 'buddy';
+  const analysis = analyzeMnemonic(example);
+  assert.equal(analysis.valid, true);
+  const risk = assessPhrase(analysis, 'wallet');
+  assert.equal(risk.kind, 'weak'); assert.equal(risk.familyBits, 30);
+  assert.equal(risk.candidates, 737837056n);
+  assert.match(risk.explanation, /2 runs of identical words/);
+  // Independent enumeration of all boundary choices, for every supported length.
+  for (const count of WORD_COUNTS) for (const runs of [2, 3]) {
+    let boundaries = 0;
+    for (let a = 1; a < count - 1; a++) {
+      if (runs === 2) boundaries++;
+      else for (let b = a + 1; b < count - 1; b++) boundaries++;
+    }
+    for (const firstRun of [1, Math.floor(count / 2), count - runs]) {
+      const prefix = [...Array(firstRun).fill('abandon'), ...Array(count - 1 - firstRun - (runs === 3 ? 1 : 0)).fill('art'), ...(runs === 3 ? ['zoo'] : [])];
+      const bits = prefix.map(word => wordlist.indexOf(word).toString(2).padStart(11, '0')).join('').padEnd(count / 3 * 32, '0');
+      const bytes = Uint8Array.from(bits.match(/.{8}/g)!.map(part => parseInt(part, 2)));
+      const tested = analyzeMnemonic(entropyToMnemonic(bytes, wordlist));
+      const pattern = tested.patterns.find(p => p.code === 'word-runs')!;
+      assert.ok(pattern);
+      const finalEntropyChoices = BigInt(2 ** (11 - count / 3));
+      assert.equal(pattern.candidates, BigInt(boundaries) * 2048n * 2047n ** BigInt(runs - 1) * finalEntropyChoices);
+      assert.ok((1n << BigInt(pattern.familyBits)) >= pattern.candidates!);
+    }
+  }
+});
+
+test('conditional cracking times preserve formulas, units, and rate scaling', () => {
+  const count = 737837056n;
+  const model = modelCandidateSearch(count, 1e6);
+  assert.equal(model.averageNumerator, 737837057n);
+  assert.equal(model.averageDenominator, 2000000n);
+  assert.equal(model.averageSeconds, 368.9185285);
+  assert.equal(model.fullSearchSeconds, 737.837056);
+  assert.equal(formatDuration(model.averageSeconds), '6.15 minutes');
+  assert.equal(formatDuration(model.fullSearchSeconds), '12.3 minutes');
+  for (const rate of [1e6, 1e9, 1e12]) {
+    const result = modelCandidateSearch(count, rate);
+    assert.equal(result.averageNumerator, model.averageNumerator);
+    assert.equal(result.averageDenominator, BigInt(2 * rate));
+    const known = modelCandidateSearch(1n, rate);
+    assert.equal(known.averageSeconds, 1 / rate);
+    assert.equal(known.fullSearchSeconds, 1 / rate);
+  }
+  for (const [seconds, expected] of [[1e-12, '0.001 nanoseconds'], [1e-6, '1 microsecond'], [0.001, '1 millisecond'], [1, '1 second'], [60, '1 minute'], [3600, '1 hour'], [86400, '1 day'], [31557600, '1 year']] as const) assert.equal(formatDuration(seconds), expected);
+  assert.throws(() => modelCandidateSearch(0n, 1e6));
+  assert.throws(() => modelCandidateSearch(1n, 0));
+  assert.throws(() => modelCandidateSearch(1n, 0.5));
+  assert.throws(() => formatDuration(Number.NaN));
 });

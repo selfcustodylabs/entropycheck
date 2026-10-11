@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-Public BIP39 examples — trezor/python-mnemonic
+Public BIP39 examples: trezor/python-mnemonic
 
 The MIT License (MIT)
 

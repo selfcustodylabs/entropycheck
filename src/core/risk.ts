@@ -5,11 +5,17 @@ export interface PatternFinding {
   title: string;
   explanation: string;
   familyBits: number;
+  candidates?: bigint;
+}
+
+export function patternCandidates(pattern: PatternFinding): bigint {
+  return pattern.candidates ?? (1n << BigInt(pattern.familyBits));
 }
 
 /** Enumerates small constructions, not a statistical estimator of source entropy. */
 export function findPatterns(bytes: Uint8Array, tokens: string[]): PatternFinding[] {
   const findings: PatternFinding[] = [];
+  const supportedLength = [12, 15, 18, 21, 24].includes(tokens.length);
   for (let period = 1; period <= 4; period++) {
     if (bytes.every((byte, index) => byte === bytes[index % period])) {
       findings.push({ code: 'repeated-block', title: `A ${period}-byte block repeats`, familyBits: period * 8,
@@ -30,12 +36,23 @@ export function findPatterns(bytes: Uint8Array, tokens: string[]): PatternFindin
     if (variableBytes >= 1 && variableBytes <= 4) findings.push({ code, title: 'Almost all entropy bytes are zero', familyBits: variableBytes * 8,
       explanation: `All but ${variableBytes} ${code === 'zero-prefix' ? 'trailing' : 'leading'} byte(s) are zero. Enumerating every value in those positions takes at most 2^${variableBytes * 8} candidates at this length.` });
   }
-  if (tokens.slice(0, -1).every(word => word === tokens[0])) {
+  if (supportedLength && tokens.slice(0, -1).every(word => word === tokens[0])) {
     const familyBits = 22 - tokens.length / 3;
     findings.push({ code: 'repeated-prefix-words', title: 'Every word before the last is identical', familyBits,
       explanation: `This extreme construction has only 2^${familyBits} valid phrases at this length: 2,048 choices for the repeated word and the remaining entropy choices in the final word. Occasional repeated words do not imply this weakness.` });
   }
-  return findings.sort((a, b) => a.familyBits - b.familyBits);
+  const prefix = tokens.slice(0, -1);
+  const runs = prefix.reduce((count, word, index) => count + Number(index === 0 || word !== prefix[index - 1]), 0);
+  if (supportedLength && (runs === 2 || runs === 3)) {
+    // Enumerate all word choices, all positive run lengths, and every final entropy suffix.
+    // Requiring adjacent run words to differ gives 2048 * 2047^(runs - 1) choices.
+    const boundaries = runs === 2 ? tokens.length - 2 : (tokens.length - 2) * (tokens.length - 3) / 2;
+    const candidates = 2048n * 2047n ** BigInt(runs - 1) * BigInt(boundaries) * (1n << BigInt(11 - tokens.length / 3));
+    const familyBits = (candidates - 1n).toString(2).length;
+    findings.push({ code: 'word-runs', title: `The first ${prefix.length} words form just ${runs} constant runs`, candidates, familyBits,
+      explanation: `Before the checksum-bearing last word, the phrase consists of only ${runs} runs of identical words. Trying all word choices, run lengths, and valid final words at this length gives ${candidates.toLocaleString('en-US')} candidates. This is an enumerable construction, not ordinary occasional repetition.` });
+  }
+  return findings.sort((a, b) => patternCandidates(a) < patternCandidates(b) ? -1 : patternCandidates(a) > patternCandidates(b) ? 1 : 0);
 }
 
 export interface PhraseRisk {
@@ -66,9 +83,9 @@ export function assessPhrase(analysis: MnemonicAnalysis, source: GenerationSourc
   }
   const pattern = analysis.patterns[0];
   if (pattern) return { kind: 'weak', title: 'Unsafe: a simple construction is recognizable', explanation: `${pattern.title}. Do not rely on this phrase to protect funds. ${pattern.explanation}`,
-    quantity: `≤ ${(1n << BigInt(pattern.familyBits)).toLocaleString('en-US')} candidates`, quantityLabel: 'Within the recognized construction at this length',
-    interpretation: `At most ${pattern.familyBits} bits of candidate-family size, versus ${analysis.encodedEntropyBits} bits of BIP39 capacity. This is a bound on one enumerable construction, not measured source entropy or a prediction of attack time. Other attacks may be easier. An independent passphrase is not assessed.`,
-    analogy: 'A lock may have many dials, but using a short repeating combination lets an attacker test a much smaller set of possibilities.', candidates: 1n << BigInt(pattern.familyBits), familyBits: pattern.familyBits };
+    quantity: `≤ ${patternCandidates(pattern).toLocaleString('en-US')} candidates`, quantityLabel: 'Within the recognized construction at this length',
+    interpretation: `At most ${pattern.familyBits} bits of candidate-family size (rounded up), versus ${analysis.encodedEntropyBits} bits of BIP39 capacity. This is a bound on one enumerable construction, not measured source entropy or an observed cracking time. Other attacks may be easier. An independent passphrase is not assessed.`,
+    analogy: 'A lock may have many dials, but using a few repeated groups lets an attacker test a much smaller set of combinations.', candidates: patternCandidates(pattern), familyBits: pattern.familyBits };
   if (source === 'human') return { ...base, kind: 'caution', title: 'Human-chosen: strength is not established', explanation: 'Human choices can be predictable even when no simple pattern is detected. This tool cannot assign effective entropy to this phrase. Do not substitute hand-picked words for secure random generation.' };
   return { ...base, kind: 'unverified', title: generatedHere && source === 'browser' ? 'No recognized weakness found · not a safety certificate' : 'Actual randomness is unverified',
     explanation: generatedHere && source === 'browser' ? `The browser requested ${analysis.encodedEntropyBits} bits from its cryptographic RNG in this session. That is nominal capacity, not measured entropy. A compromised or predictable generator can still produce ordinary-looking words.` : 'No bundled public example or supported simple construction was recognized. This does not prove secrecy or random generation; a predictable generator can produce ordinary-looking words.' };

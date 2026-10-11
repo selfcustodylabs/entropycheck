@@ -8,11 +8,12 @@ The public demo is for public examples and disposable test phrases. Handle real 
 
 ## What it does
 
-- Validates English BIP39 word count, word membership, and checksum separately.
+- Validates English BIP39 word count, word membership, and checksum live inside the input box, before Analyze is pressed.
 - Supports 12, 15, 18, 21, and 24 words, with browser CSPRNG generation.
 - Reports encoded entropy length and generation-source context separately. It does **not** claim to measure actual randomness from one phrase or assign a safety percentage.
 - Leads with a phrase-specific assessment: public/constant phrases, recognized simple constructions, or actual randomness unverified. Source claims never override concrete weaknesses.
 - Shows raw hexadecimal entropy, full-width binary entropy, checksum bits, and complete mnemonic binary.
+- Shows conditional **Time to crack** estimates for detected candidate families, with adjustable hypothetical checking rates, average and full-family times, and explicit passphrase assumptions. Unknown construction means no invented time.
 - Keeps ideal-randomness search sizes, times, and analogies in a collapsed, explicitly hypothetical comparison.
 - Derives mainnet and testnet single-signature addresses: BIP44 legacy, BIP49 nested SegWit, BIP84 native SegWit, and BIP86 Taproot.
 - Supports a BIP39 passphrase, accounts, receiving/change branches, and bounded address ranges.
@@ -22,11 +23,13 @@ The phrase alone cannot identify your wallet's derivation path or validate a pas
 
 ## Reading the assessment
 
-Paste or edit the phrase, then click **Analyze phrase**. Editing the words or generation context clears the old report and addresses until you analyze again. Generation and public-example buttons analyze immediately; every run provides visible completion feedback.
+Paste or edit the phrase to see immediate word-count, wordlist, and checksum feedback in the input box. Click **Analyze phrase** for the security assessment. Editing the words or generation context clears the old report and addresses until you analyze again. Generation and public-example buttons analyze immediately; every run provides visible completion feedback.
 
 The 24-word phrase `abandon` repeated 23 times followed by `art` is structurally valid, but encodes 256 zero bits. EntropyCheck calls it **Unsafe: all-zero phrase** and shows **1 known candidate**, not the ideal 2^256 search space. Zero secrecy in publicly known words does not mean we measured the original generator's entropy. A separate BIP39 passphrase is not evaluated.
 
-The tool also recognizes repeated 1–4 byte blocks, upward/downward byte sequences, short values padded with zeros, and the extreme construction where all words before the last are identical. It reports the size of that particular candidate family. These are limited pattern checks, not a statistical entropy estimator or exhaustive weak-seed database. Ordinary duplicate words do not imply weakness. An ordinary-looking output of a compromised generator can escape every check.
+The tool also recognizes repeated 1–4 byte blocks, upward/downward byte sequences, short values padded with zeros, and prefixes formed from one, two, or three constant word runs. It reports the size of that particular candidate family. These are limited pattern checks, not a statistical entropy estimator or exhaustive weak-seed database. Ordinary duplicate words do not imply weakness. An ordinary-looking output of a compromised generator can escape every check.
+
+For example, the checksum-valid 24-word phrase with 12 `abandon` words, 11 `art` words, then `buddy` belongs to the two-run family. Counting all word choices, split positions, and final entropy choices gives 737,837,056 candidates. At an illustrative one million complete checks per second, the average is about 6.15 minutes and the full family about 12.3 minutes. These figures assume the attacker targets this family, has a known verification target, and knows the passphrase. They are not measured hardware performance, actual source entropy, or a wallet-compromise prediction. A version with an extra word is invalid and receives no crack-time estimate.
 
 When no weakness is recognized, actual source entropy remains **Unknown**. “256 bits of BIP39 capacity” is not “256 verified random bits.” The ideal-randomness comparison is educational and does not assign strength to the entered phrase. See the [revised assessment plan](docs/revised-assessment-plan.md) for the report contract and test requirements.
 

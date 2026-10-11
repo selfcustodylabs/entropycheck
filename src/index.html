@@ -6,7 +6,7 @@
   <meta name="referrer" content="no-referrer">
   <meta http-equiv="Content-Security-Policy" content="__CSP__">
   <meta name="description" content="Understand BIP39 seed phrases, explore entropy, and derive Bitcoin addresses. A self-contained tool that also works offline.">
-  <title>EntropyCheck — Understand your Bitcoin seed</title>
+  <title>EntropyCheck | Understand your Bitcoin seed</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='10' fill='%23c94d20'/%3E%3Cpath d='M12 11h16v5H17v3h9v4h-9v3h11v4H12z' fill='white'/%3E%3C/svg%3E">
   <style>__CSS__</style>
 </head>
@@ -20,7 +20,7 @@
   <main id="top">
     <div class="environment-strip"><span id="environment">BROWSER-LOCAL COMPUTATION</span><span>Bitcoin only <span aria-hidden="true">/</span> English BIP39</span></div>
     <section class="hero" aria-labelledby="hero-title">
-      <div><p class="eyebrow">A LITTLE CLARITY. A LOT OF POSSIBILITIES.</p><h1 id="hero-title">Understand the strength<br>behind your seed.</h1><p class="hero-copy">Check its structure. Explore the numbers. Follow its Bitcoin paths.<br class="desktop-break"> Learn what your words can tell you—and what they can’t.</p></div>
+      <div><p class="eyebrow">A LITTLE CLARITY. A LOT OF POSSIBILITIES.</p><h1 id="hero-title">Understand the strength<br>behind your seed.</h1><p class="hero-copy">Check its structure. Explore the numbers. Follow its Bitcoin paths.<br class="desktop-break"> Learn what your words can tell you and what they can’t.</p></div>
       <div class="hero-aside" aria-hidden="true"><div class="bit-grid"><span>0</span><span>1</span><span>0</span><span>1</span><span>1</span><span>0</span><span>1</span><span>0</span><span>0</span><span>0</span><span>1</span><span>1</span><span>1</span><span>0</span><span>0</span><span>1</span></div><p>RANDOMNESS → WORDS</p></div>
     </section>
     <aside class="notice" id="usage-notice"><span class="notice-icon" aria-hidden="true">!</span><p><strong id="notice-title">For testing and learning.</strong> <span id="notice-copy">Use public examples or disposable test phrases here. Handle real recovery phrases only with a verified offline copy on a trusted, disconnected device.</span> <a href="#offline">Offline guide <span aria-hidden="true">↗</span></a></p></aside>
@@ -31,7 +31,7 @@
       <div class="analysis-grid">
         <div class="panel input-panel">
           <div class="label-row"><label for="mnemonic">BIP39 recovery phrase</label><span id="word-counter" class="muted">0 words</span></div>
-          <textarea id="mnemonic" rows="4" placeholder="Paste a test phrase, or generate one below to explore." spellcheck="false" autocomplete="off" autocapitalize="off" autocorrect="off" aria-describedby="phrase-help normalization"></textarea>
+          <div id="phrase-input" class="phrase-input"><textarea id="mnemonic" rows="4" placeholder="Paste a test phrase, or generate one below to explore." spellcheck="false" autocomplete="off" autocapitalize="off" autocorrect="off" aria-describedby="input-validation phrase-help normalization" aria-invalid="false"></textarea><p id="input-validation" class="input-validation" role="status" aria-live="polite">Enter a phrase to check its structure.</p></div>
           <p id="phrase-help" class="field-help">English · 12, 15, 18, 21, or 24 words. All calculations happen in this page.</p>
           <p id="normalization" class="field-help"></p>
           <div class="generate-row"><label class="sr-only" for="generate-length">Generated phrase length</label><select id="generate-length"><option value="12">12 words</option><option value="15">15 words</option><option value="18">18 words</option><option value="21">21 words</option><option value="24">24 words</option></select><button class="button" id="generate" type="button"><span aria-hidden="true">＋</span> Generate test phrase</button></div>
@@ -45,7 +45,7 @@
           <div class="label-row"><h3 id="assessment-title">What we can tell you</h3><span class="status-dot" aria-hidden="true"></span></div>
           <div id="risk-summary" class="risk-summary"><p class="assessment-kicker">PHRASE ASSESSMENT</p><h3 class="assessment-status" id="risk-title">Analyze a phrase to see its risk</h3><p id="risk-explanation"></p></div>
           <div id="assessment-summary"><p class="structure-status" id="validity">Waiting for a phrase</p><p class="muted" id="validation-detail">Enter words to check their length, wordlist, and checksum.</p></div>
-          <div class="metrics"><div><span class="metric-label">BIP39 capacity</span><strong id="entropy-bits">—<small> bits</small></strong></div><div><span class="metric-label">Checksum</span><strong id="checksum-bits">—<small> bits</small></strong></div></div>
+          <div class="metrics"><div><span class="metric-label">BIP39 capacity</span><strong id="entropy-bits">N/A<small> bits</small></strong></div><div><span class="metric-label">Checksum</span><strong id="checksum-bits">N/A<small> bits</small></strong></div></div>
           <p class="field-help">Capacity is the encoded entropy length, not a measurement of actual randomness.</p>
           <div id="source-assessment" class="source-assessment"><h4 id="source-title">Randomness has a backstory.</h4><p id="source-detail">A valid phrase tells us how many bits it encodes. It doesn’t tell us how unpredictably those bits were chosen.</p></div>
           <p class="field-help" id="repetition"></p>
@@ -56,8 +56,15 @@
 
     <section id="understand" class="section" aria-labelledby="understand-title">
       <div class="section-heading"><div><p class="eyebrow">02 / THE POSSIBILITIES</p><h2 id="understand-title">What do these words really tell us?</h2></div><span class="subtle-tag">This phrase’s assessment</span></div>
-      <div id="phrase-perspective" class="panel phrase-perspective"><p class="metric-label" id="phrase-quantity-label">Actual source entropy</p><p class="big-number" id="phrase-quantity">Not analyzed</p><p id="phrase-interpretation"></p><p class="phrase-analogy" id="phrase-analogy"></p></div>
-      <details id="ideal-model" class="panel model-panel"><summary>Explore ideal randomness — not this phrase’s measured strength</summary>
+      <div id="phrase-perspective" class="panel phrase-perspective"><p class="metric-label" id="phrase-quantity-label">Actual source entropy</p><p class="big-number" id="phrase-quantity">Not analyzed</p><p id="phrase-interpretation"></p><p class="phrase-analogy" id="phrase-analogy"></p>
+        <div class="crack-section" aria-labelledby="crack-heading"><div class="label-row"><h3 id="crack-heading">Time to crack</h3><span class="subtle-tag">Conditional estimate</span></div>
+          <p class="field-help">This models searching the recognized candidate family, assuming the attacker targets that construction and has a known verification target and a fixed or known passphrase. It is not a hardware benchmark or a prediction of wallet compromise.</p>
+          <div id="crack-controls" class="field" hidden><label for="crack-rate">Hypothetical complete candidate checks per second</label><select id="crack-rate"><option value="1000000">1 million (10⁶)</option><option value="1000000000">1 billion (10⁹)</option><option value="1000000000000">1 trillion (10¹²)</option></select></div>
+          <p id="crack-time" class="big-number">Analyze a phrase first</p><p id="crack-detail"></p><p id="crack-maximum" class="field-help"></p><p id="crack-passphrase" class="field-help"></p>
+          <details id="crack-math" hidden><summary>Calculation and limits</summary><p id="crack-formula" class="break-code"></p><p>Displayed times are rounded to three significant digits. The average assumes no repeated guesses and an equally likely target position within this family. A family-size upper bound gives an upper bound on that model’s average. The full-search figure covers this family only. It excludes setup and other attack families; it does not estimate the strength of an unknown passphrase. Checking rates are illustrations, not Bitcoin mining hash rates. Choosing a faster rate does not change the phrase or its risk finding.</p></details>
+        </div>
+      </div>
+      <details id="ideal-model" class="panel model-panel"><summary>Explore ideal randomness, not this phrase’s measured strength</summary>
         <p class="model-intro">Hypothetical comparison only. These figures do not assess the phrase above. They assume uniformly random generation, a fixed or known passphrase, and a known verification target. Checking rates are illustrations, not hardware benchmarks or mining hash rates.</p>
         <div class="model-controls"><fieldset><legend>Compare phrase lengths</legend><div class="segmented" id="compare-lengths"><label><input type="radio" name="model-words" value="12" checked><span>12 words</span></label><label><input type="radio" name="model-words" value="15"><span>15</span></label><label><input type="radio" name="model-words" value="18"><span>18</span></label><label><input type="radio" name="model-words" value="21"><span>21</span></label><label><input type="radio" name="model-words" value="24"><span>24 words</span></label></div></fieldset><div class="field"><label for="check-rate">Hypothetical complete checks / second</label><select id="check-rate"><option value="1000000">1 million (10⁶)</option><option value="1000000000">1 billion (10⁹)</option><option value="1000000000000" selected>1 trillion (10¹²)</option></select></div></div>
         <div class="number-cards"><div><p class="metric-label">Possible phrases</p><p id="possibilities" class="big-number">3.40 × 10³⁸</p><span id="model-bits" class="field-help">128 random bits</span></div><div><p class="metric-label">Average exhaustive search</p><p class="big-number"><span id="average-years">5.39 × 10¹⁸</span><small> years</small></p><span class="field-help">Half the space, on average</span></div></div>

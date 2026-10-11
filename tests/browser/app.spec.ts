@@ -81,7 +81,7 @@ test('invalid phrase blocks derivation and preserves independent validation find
   await page.locator('#mnemonic').fill('abandon '.repeat(12));
   await page.locator('#analyze-button').click();
   await expect(page.locator('#check-checksum')).toHaveText('Does not match');
-  await expect(page.locator('#entropy-bits')).toHaveText('— bits');
+  await expect(page.locator('#entropy-bits')).toHaveText('N/A bits');
   await page.locator('#mnemonic').fill(example.replace('about', '<script>alert(1)</script>'));
   await page.locator('#analyze-button').click();
   await expect(page.locator('#validation-detail')).toContainText('positions 12');
@@ -211,4 +211,76 @@ test('a broken RNG cannot produce a reassuring generation assessment', async ({ 
   await expect(page.locator('#phrase-quantity')).toHaveText('1 known candidate');
   await expect(page.locator('#analysis-feedback')).toContainText('Generated and analyzed');
   await expect(page.locator('#average-years')).toBeHidden();
+});
+
+test('input box validates length, words and checksum immediately before Analyze', async ({ page }) => {
+  await page.goto(artifact);
+  await page.locator('#mnemonic').fill('abandon about');
+  await expect(page.locator('#mnemonic')).toHaveAttribute('aria-invalid', 'true');
+  await expect(page.locator('#phrase-input #input-validation')).toContainText('found 2');
+  await expect(page.locator('#derive')).toBeDisabled();
+  await expect(page.locator('#analysis-feedback')).not.toContainText('complete');
+  await page.locator('#mnemonic').fill(example.replace('about', 'notaword'));
+  await expect(page.locator('#input-validation')).toContainText('positions 12');
+  await page.locator('#mnemonic').fill('abandon '.repeat(12));
+  await expect(page.locator('#input-validation')).toContainText('checksum does not match');
+  await page.locator('#mnemonic').fill('abandon '.repeat(13) + 'art '.repeat(11) + 'buddy');
+  await expect(page.locator('#input-validation')).toContainText('found 25');
+  await page.locator('#analyze-button').click();
+  await expect(page.locator('#crack-time')).toHaveText('Not applicable to invalid input');
+  await expect(page.locator('#crack-controls')).toBeHidden();
+  await page.locator('#mnemonic').fill(` ${example.toUpperCase()} `);
+  await expect(page.locator('#mnemonic')).toHaveAttribute('aria-invalid', 'false');
+  await expect(page.locator('#input-validation')).toContainText('Structure valid');
+  await expect(page.locator('#normalization')).toContainText('normalized');
+  await expect(page.locator('#derive')).toBeDisabled();
+  await page.locator('#clear-all').click();
+  await expect(page.locator('#mnemonic')).toHaveAttribute('aria-invalid', 'false');
+  await expect(page.locator('#input-validation')).toHaveText('Enter a phrase to check its structure.');
+});
+
+test('repeated word runs are weak with a visible conditional time, not a 256-bit claim', async ({ page }) => {
+  await page.goto(artifact);
+  await page.locator('#mnemonic').fill('abandon '.repeat(12) + 'art '.repeat(11) + 'buddy');
+  await expect(page.locator('#input-validation')).toContainText('Structure valid');
+  await page.locator('#analyze-button').click();
+  await expect(page.locator('#risk-title')).toContainText('Unsafe');
+  await expect(page.locator('#risk-explanation')).toContainText('2 runs of identical words');
+  await expect(page.locator('#phrase-quantity')).toHaveText('≤ 737,837,056 candidates');
+  await expect(page.locator('#crack-time')).toHaveText('≤ 6.15 minutes on average');
+  await expect(page.locator('#crack-maximum')).toContainText('≤ 12.3 minutes');
+  await expect(page.locator('#average-years')).toBeHidden();
+  await page.locator('#crack-rate').selectOption('1000000000');
+  await expect(page.locator('#crack-time')).toHaveText('≤ 369 milliseconds on average');
+  await page.locator('#passphrase').fill('test passphrase');
+  await expect(page.locator('#crack-passphrase')).toContainText('assume the attacker already knows it');
+  await page.locator('#mnemonic').fill('abandon about');
+  await expect(page.locator('#crack-time')).toHaveText('Analyze a phrase first');
+  await expect(page.locator('#crack-controls')).toBeHidden();
+  await expect(page.locator('#crack-maximum')).toBeEmpty();
+  await page.locator('#load-example').click();
+  await expect(page.locator('#crack-time')).toHaveText('No phrase search needed');
+  await page.locator('#clear-all').click();
+  await expect(page.locator('#crack-rate')).toHaveValue('1000000');
+  await expect(page.locator('#crack-formula')).toBeEmpty();
+});
+
+test('unrecognized generated output has no invented crack time and page copy has no em dashes', async ({ page }) => {
+  await page.addInitScript(() => {
+    const bytes = [37, 194, 16, 133, 75, 228, 60, 169, 4, 218, 121, 44, 87, 178, 98, 11];
+    Object.defineProperty(crypto, 'getRandomValues', { value: (array: Uint8Array) => { array.set(bytes); return array; } });
+  });
+  await page.goto(artifact);
+  await page.locator('#generate').click();
+  await expect(page.locator('#crack-time')).toHaveText('Cannot estimate from these words');
+  await expect(page.locator('#crack-detail')).toContainText('does not mean the phrase is strong');
+  await expect(page.locator('#crack-controls')).toBeHidden();
+  // Include collapsed educational content and license notices; omit JS/CSS comments.
+  const copy = await page.locator('body').evaluate(body => {
+    const clone = body.cloneNode(true) as HTMLElement;
+    clone.querySelectorAll('script,style').forEach(node => node.remove());
+    return clone.textContent;
+  });
+  expect(copy).not.toContain('\u2014');
+  expect(await page.title()).not.toContain('\u2014');
 });
