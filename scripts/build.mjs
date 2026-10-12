@@ -29,13 +29,13 @@ for (const path of Object.keys(bundle.metafile.inputs).sort()) {
   if (!license) throw new Error(`Missing license for ${name}`);
   packages.set(name, `${name}@${pkg.version}\n${'='.repeat(64)}\n${license.trim()}\n`);
 }
-const notices = `EntropyCheck 1.0.0\n\n${await readFile('LICENSE', 'utf8')}\n\nPublic BIP39 examples: trezor/python-mnemonic\n\n${await readFile('tests/fixtures/TREZOR_LICENSE', 'utf8')}\n\nBundled dependency licenses\n\n${[...packages.values()].join('\n')}\n`;
+const notices = `SeedInspect 1.0.0\n\n${await readFile('LICENSE', 'utf8')}\n\nPublic BIP39 examples: trezor/python-mnemonic\n\n${await readFile('tests/fixtures/TREZOR_LICENSE', 'utf8')}\n\nBundled dependency licenses\n\n${[...packages.values()].join('\n')}\n`;
 const csp = `default-src 'none'; script-src ${cspDigest(js)}; style-src ${cspDigest(css)}; img-src data:; connect-src 'none'; form-action 'none'; base-uri 'none'; object-src 'none'`;
 const template = await readFile('src/index.html', 'utf8');
 // Function replacements preserve literal "$" characters in bundled code.
 const html = template.replace('__CSP__', () => csp).replace('__CSS__', () => css).replace('__JS__', () => js).replace('__LICENSES__', () => escapeHtml(notices));
-const checksums = `${digest(html)}  entropycheck.html\n`;
-const artifacts = new Map([['entropycheck.html', html], ['SHA256SUMS', checksums], ['THIRD_PARTY_NOTICES.txt', notices]]);
+const checksums = `${digest(html)}  seedinspect.html\n`;
+const artifacts = new Map([['seedinspect.html', html], ['SHA256SUMS', checksums], ['THIRD_PARTY_NOTICES.txt', notices]]);
 for (const [path, content] of artifacts) {
   if (check) {
     const actual = await readFile(path, 'utf8');
@@ -45,6 +45,6 @@ for (const [path, content] of artifacts) {
 // Pages serves exactly the same bytes as the offline file.
 if (!check) {
   await mkdir('dist', { recursive: true });
-  await Promise.all([writeFile('dist/index.html', html), writeFile('dist/entropycheck.html', html), writeFile('dist/SHA256SUMS', checksums), writeFile('dist/.nojekyll', '')]);
+  await Promise.all([writeFile('dist/index.html', html), writeFile('dist/seedinspect.html', html), writeFile('dist/SHA256SUMS', checksums), writeFile('dist/.nojekyll', '')]);
 }
 console.log(`${check ? 'Verified' : 'Built'} standalone HTML (${Buffer.byteLength(html).toLocaleString('en-US')} bytes). SHA-256: ${digest(html)}`);

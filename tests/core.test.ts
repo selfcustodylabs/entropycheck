@@ -222,7 +222,7 @@ test('invalid inputs, ranges, empty selection and cancellation fail closed', asy
 });
 
 test('distributed artifact checksum matches source manifest', () => {
-  const artifact = readFileSync(new URL('../entropycheck.html', import.meta.url));
+  const artifact = readFileSync(new URL('../seedinspect.html', import.meta.url));
   const expected = readFileSync(new URL('../SHA256SUMS', import.meta.url), 'utf8').split(' ')[0];
   assert.equal(createHash('sha256').update(artifact).digest('hex'), expected);
 });

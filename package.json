@@ -1,5 +1,5 @@
 {
-  "name": "entropycheck",
+  "name": "seedinspect",
   "version": "1.0.0",
   "private": true,
   "description": "Offline Bitcoin BIP39 analysis, generation, and address derivation",

@@ -27,4 +27,4 @@ This replaces the original assumption that an always-visible ideal search-space 
 - Cover all-zero and all-one encodings at every BIP39 length, non-obvious public examples, balanced-but-repetitive bytes, short zero-padded values, sequential bytes, and extreme repeated-word constructions.
 - Unknown imports never receive an effective-entropy value. Generated phrases with injected broken RNG output are still flagged, without silently rerolling them. Normal duplicate words are not treated as proof of weakness.
 - Verify binary widths, checksum concatenation against independent SHA-256, explicit Analyze behavior, stale-result clearing, model isolation, transitions between conditional random and targeted-family estimates, source precedence, and Clear All in Chromium and Firefox.
-- Repository and canonical URLs target selfcustodylabs/entropycheck. Publication depends on the authenticated account having write access.
+- The repository is selfcustodylabs/seedinspect; the canonical demo is https://seedinspect.selfcustodylabs.com/. Publication depends on the authenticated account having write access.

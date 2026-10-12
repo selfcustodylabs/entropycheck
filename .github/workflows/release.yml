@@ -30,8 +30,8 @@ jobs:
           RELEASE_TAG: ${{ github.ref_name }}
         run: |
           if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
-            gh release upload "$RELEASE_TAG" entropycheck.html SHA256SUMS THIRD_PARTY_NOTICES.txt --clobber
-            gh release edit "$RELEASE_TAG" --title "EntropyCheck $RELEASE_TAG" --notes-file docs/release-notes.md
+            gh release upload "$RELEASE_TAG" seedinspect.html SHA256SUMS THIRD_PARTY_NOTICES.txt --clobber
+            gh release edit "$RELEASE_TAG" --title "SeedInspect $RELEASE_TAG" --notes-file docs/release-notes.md
           else
-            gh release create "$RELEASE_TAG" entropycheck.html SHA256SUMS THIRD_PARTY_NOTICES.txt --verify-tag --title "EntropyCheck $RELEASE_TAG" --notes-file docs/release-notes.md
+            gh release create "$RELEASE_TAG" seedinspect.html SHA256SUMS THIRD_PARTY_NOTICES.txt --verify-tag --title "SeedInspect $RELEASE_TAG" --notes-file docs/release-notes.md
           fi

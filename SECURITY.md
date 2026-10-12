@@ -1,6 +1,6 @@
 # Security model
 
-EntropyCheck is an educational BIP39 inspector and Bitcoin address derivation tool. It has not been independently audited. Report suspected vulnerabilities privately through GitHub's security advisory facility if enabled; otherwise contact the repository maintainer without attaching secret material. Never post a live seed phrase or passphrase.
+SeedInspect is an educational BIP39 inspector and Bitcoin address derivation tool. It has not been independently audited. Report suspected vulnerabilities privately through GitHub's security advisory facility if enabled; otherwise contact the repository maintainer without attaching secret material. Never post a live seed phrase or passphrase.
 
 ## What is measured
 

@@ -1,4 +1,4 @@
-EntropyCheck v1.0.0 includes the latest interface improvements and raw binary entropy import. Download the standalone HTML, SHA256SUMS, and third-party license notices together.
+SeedInspect v1.0.0 includes the latest interface improvements and raw binary entropy import. Download the standalone HTML, SHA256SUMS, and third-party license notices together.
 
 - Independent generation, phrase-import, and binary-import tabs preserve their own inputs, reports, passphrases, address settings, and derived addresses. Clear all resets every tab.
 - Binary import stays in its tab and displays selectable recovery words with a copy button. All five entropy lengths are supported, with leading zeros preserved and checksums added automatically.

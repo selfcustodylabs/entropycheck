@@ -1,8 +1,8 @@
-# EntropyCheck
+# SeedInspect
 
-**Identify known seed-phrase weaknesses, understand the limits of entropy checks, and derive Bitcoin addresses — entirely in your browser.**
+**Inspect BIP39 seed phrases, detect known weaknesses, and derive Bitcoin addresses — entirely in your browser.**
 
-[Public test demo](https://selfcustodylabs.github.io/entropycheck/) · [Download offline HTML](https://github.com/selfcustodylabs/entropycheck/releases/latest/download/entropycheck.html) · [Research](docs/research.md) · [Security model](SECURITY.md)
+[Public test demo](https://seedinspect.selfcustodylabs.com/) · [Download offline HTML](https://github.com/selfcustodylabs/seedinspect/releases/latest/download/seedinspect.html) · [Research](docs/research.md) · [Security model](SECURITY.md)
 
 The public demo is for public examples and disposable test phrases. Handle real recovery phrases only in a verified offline copy on a trusted, disconnected computer. Local computation alone does not protect against a compromised website, browser extension, operating system, or device.
 
@@ -34,7 +34,7 @@ To use your own bits, choose **Import binary entropy**, paste `0` and `1` digits
 
 For a simple dice method, record one bit per independent roll of a fair six-sided die: 1–3 → `0`, 4–6 → `1`. Collect exactly the required number of bits, keeping every outcome in order. This assumes fair, independent rolls; conversion does not remove bias or establish randomness. The page cannot verify the origin of imported bits. Binary entropy reveals the same secret as the recovery words.
 
-The 24-word phrase `abandon` repeated 23 times followed by `art` is structurally valid, but encodes 256 zero bits. EntropyCheck calls it **Unsafe: all-zero phrase** and shows **1 known candidate**, not the ideal 2^256 search space. Zero secrecy in publicly known words does not mean we measured the original generator's entropy. A separate BIP39 passphrase is not evaluated.
+The 24-word phrase `abandon` repeated 23 times followed by `art` is structurally valid, but encodes 256 zero bits. SeedInspect calls it **Unsafe: all-zero phrase** and shows **1 known candidate**, not the ideal 2^256 search space. Zero secrecy in publicly known words does not mean we measured the original generator's entropy. A separate BIP39 passphrase is not evaluated.
 
 The tool also recognizes repeated 1–4 byte blocks, upward/downward byte sequences, short values padded with zeros, and prefixes formed from one, two, or three constant word runs. It reports the size of that particular candidate family. These are limited pattern checks, not a statistical entropy estimator or exhaustive weak-seed database. Ordinary duplicate words do not imply weakness. An ordinary-looking output of a compromised generator can escape every check.
 
@@ -44,14 +44,14 @@ When no weakness is recognized, actual source entropy remains unknown, but the m
 
 ## Use offline
 
-1. Download `entropycheck.html` and `SHA256SUMS` from the same release. The repository also contains the current standalone file.
+1. Download `seedinspect.html` and `SHA256SUMS` from the same release. The repository also contains the current standalone file.
 2. Verify the download against a checksum from a trusted source:
 
    ```sh
    sha256sum --check SHA256SUMS
    ```
 
-   On macOS: `shasum -a 256 entropycheck.html`. On Windows PowerShell: `Get-FileHash .\entropycheck.html -Algorithm SHA256`. Compare the full result with `SHA256SUMS`.
+   On macOS: `shasum -a 256 seedinspect.html`. On Windows PowerShell: `Get-FileHash .\seedinspect.html -Algorithm SHA256`. Compare the full result with `SHA256SUMS`.
 3. Transfer the verified file to your trusted, disconnected computer and double-click it. No Node.js, web server, or network access is required.
 4. Use **Clear all**, then close the browser when finished. The application cannot guarantee erasure of browser/OS memory, clipboard history, or browser crash data.
 
@@ -76,9 +76,9 @@ npm run serve
 
 On Linux CI, install browser system libraries with `npm exec playwright install --with-deps chromium firefox`. Development preview: `http://127.0.0.1:4173`.
 
-`npm run check` typechecks the code, runs cryptographic/model tests, and independently rebuilds in memory to compare the distributed HTML, license notices, and checksums byte-for-byte. `npm run build` regenerates the tracked artifacts and creates `dist/` for Pages. Commit changes to source, lockfile, `entropycheck.html`, `SHA256SUMS`, and `THIRD_PARTY_NOTICES.txt` together.
+`npm run check` typechecks the code, runs cryptographic/model tests, and independently rebuilds in memory to compare the distributed HTML, license notices, and checksums byte-for-byte. `npm run build` regenerates the tracked artifacts and creates `dist/` for Pages. Commit changes to source, lockfile, `seedinspect.html`, `SHA256SUMS`, and `THIRD_PARTY_NOTICES.txt` together.
 
-The build has no time-dependent fields or machine-specific paths. The Pages `index.html` and offline `entropycheck.html` contain identical bytes. The content-security policy authorizes only the exact bundled script/style hashes and blocks network connections.
+The build has no time-dependent fields or machine-specific paths. The Pages `index.html` and offline `seedinspect.html` contain identical bytes. The content-security policy authorizes only the exact bundled script/style hashes and blocks network connections.
 
 ## Fork and publish
 
@@ -88,6 +88,8 @@ The build has no time-dependent fields or machine-specific paths. The Pages `ind
 4. For a release, update the displayed version and package version together, rebuild artifacts, then push a `v*` tag. The release workflow verifies the tagged source and publishes the HTML, checksums, and license notices. An existing mutable release is updated with the verified artifacts when its tag is explicitly replaced.
 
 Runtime behavior and deployment workflows are independent of the owner/repository. HTML downloads use a relative path, so a project site hosted under any repository name works. Footer project/checksum links point to this project's canonical repository until you update them for your fork.
+
+The canonical demo is hosted at `seedinspect.selfcustodylabs.com`. Configure the custom domain in GitHub Pages settings and point its DNS CNAME to `selfcustodylabs.github.io`. This repository deploys through GitHub Actions, so a repository `CNAME` file is not required. Forks should configure their own domain and update the public demo link. See [GitHub's custom-domain guide](https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site/managing-a-custom-domain-for-your-github-pages-site).
 
 ## Verification
 

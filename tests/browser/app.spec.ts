@@ -1,6 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { fileURLToPath } from 'node:url';
-const artifact = new URL('../../entropycheck.html', import.meta.url).href;
+const artifact = new URL('../../seedinspect.html', import.meta.url).href;
 const example = `${'abandon '.repeat(11)}about`;
 
 async function openReportDetails(page: Page) {
