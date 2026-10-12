@@ -14,7 +14,7 @@
   <a class="skip-link" href="#analyze">Skip to tool</a>
   <header class="site-header">
     <a class="brand" href="#top" aria-label="EntropyCheck home"><span class="brand-mark" aria-hidden="true">E<span>·</span></span>EntropyCheck<span class="version">v1.0</span></a>
-    <nav aria-label="Main navigation"><a href="#analyze"><span aria-hidden="true">01</span> Analyze</a><a href="#understand"><span aria-hidden="true">02</span> Understand</a><a href="#addresses"><span aria-hidden="true">03</span> Addresses</a></nav>
+    <nav aria-label="Main navigation"><a href="#analyze"><span aria-hidden="true">01</span> Analyze</a><a id="nav-understand" href="#understand" hidden><span aria-hidden="true">02</span> Understand</a><a id="nav-addresses" href="#addresses" hidden><span aria-hidden="true">03</span> Addresses</a></nav>
     <a class="button small download-link" href="./entropycheck.html" download="entropycheck.html">Download offline <span aria-hidden="true">↗</span></a>
   </header>
   <main id="top">
@@ -23,26 +23,82 @@
       <div><p class="eyebrow">YOUR BITCOIN SEED, EXPLAINED.</p><h1 id="hero-title">Understand the strength<br>behind your seed.</h1><p class="hero-copy">From recovery words to risk, randomness, and Bitcoin addresses.<br class="desktop-break"> A private, browser-local workspace for learning how it all fits together.</p><div class="hero-facts"><span>No accounts</span><span>No data uploads</span><span>Works offline</span></div></div>
       <div class="hero-aside" aria-hidden="true"><div class="bit-grid"><span>0</span><span>1</span><span>0</span><span>1</span><span>1</span><span>0</span><span>1</span><span>0</span><span>0</span><span>0</span><span>1</span><span>1</span><span>1</span><span>0</span><span>0</span><span>1</span></div><p>RANDOMNESS → WORDS</p></div>
     </section>
-    <aside class="notice" id="usage-notice" role="status" aria-live="polite" aria-atomic="true"><span class="notice-icon" aria-hidden="true">!</span><div><p><strong id="notice-title">For testing and learning.</strong> <span id="notice-copy">Use public examples or disposable test phrases here. Handle real recovery phrases only with a verified offline copy on a trusted, disconnected device.</span></p><div class="notice-actions"><a class="download-link" href="./entropycheck.html" download="entropycheck.html">Download offline HTML ↓</a><a href="#offline">How to use it offline →</a></div></div></aside>
     <noscript><p class="notice">JavaScript is required for this local calculator. Nothing is submitted to a server.</p></noscript>
 
     <section id="analyze" class="section" aria-labelledby="analyze-title">
-      <div class="section-heading"><div><p class="eyebrow">01 / THE PHRASE</p><h2 id="analyze-title">Start with the words.</h2><p class="section-copy">Paste a test phrase to check it, or explore with a generated example.</p></div><button id="clear-all" class="text-button" type="button">Clear all <span aria-hidden="true">↺</span></button></div>
-      <div class="analysis-grid">
+      <div class="section-heading"><div><p class="eyebrow">01 / THE PHRASE</p><h2 id="analyze-title">Start with words or bits.</h2><p class="section-copy">Paste a test phrase, import raw binary entropy, or explore with a generated example.</p></div><button id="clear-all" class="text-button" type="button">Clear all <span aria-hidden="true">↺</span></button></div>
+      <div class="analysis-grid" id="analysis-grid">
         <div class="panel input-panel">
-          <h3 class="input-heading">Use an existing phrase</h3>
-          <div class="label-row"><label for="mnemonic">BIP39 recovery phrase</label><span id="word-counter" class="muted">0 words</span></div>
-          <div id="phrase-input" class="phrase-input"><textarea id="mnemonic" rows="4" placeholder="Paste a test phrase, or generate one below to explore." spellcheck="false" autocomplete="off" autocapitalize="off" autocorrect="off" aria-describedby="input-validation phrase-help normalization" aria-invalid="false"></textarea><p id="input-validation" class="input-validation" role="status" aria-live="polite">Enter a phrase to check its structure.</p></div>
-          <p id="phrase-help" class="field-help">English · 12, 15, 18, 21, or 24 words. All calculations happen in this page.</p>
-          <p id="normalization" class="field-help"></p>
-          <div class="field source-field"><label for="source">How was it generated? <span class="optional">Optional</span></label><select id="source"><option value="unknown">I don’t know / prefer not to say</option><option value="wallet">A wallet’s random generator</option><option value="browser">A browser’s cryptographic random generator</option><option value="physical">Physical randomness (dice, coins, etc.)</option><option value="human">Words chosen by a person</option><option value="public">A public example</option></select><p class="field-help">This context is self-reported. The phrase cannot verify its source.</p></div>
-          <button id="analyze-button" type="button" class="button primary" disabled><span id="analyze-label">Analyze phrase</span> <span aria-hidden="true">→</span></button>
+          <div class="seed-tabs" role="tablist" aria-label="Start with a seed phrase or entropy">
+            <button id="tab-generate" type="button" role="tab" aria-selected="true" aria-controls="panel-generate">Generate new seed</button>
+            <button id="tab-phrase" type="button" role="tab" aria-selected="false" aria-controls="panel-phrase" tabindex="-1">Import seed phrase</button>
+            <button id="tab-binary" type="button" role="tab" aria-selected="false" aria-controls="panel-binary" tabindex="-1">Import binary entropy</button>
+          </div>
+          <div id="panel-generate" class="seed-panel" role="tabpanel" aria-labelledby="tab-generate">
+            <div class="generation-start">
+              <div class="generation-copy">
+                <h3>Explore a fresh seed.</h3>
+                <p id="generate-help">Create a test phrase and explore its words, entropy, and Bitcoin addresses.</p>
+                <label for="generate-length">Phrase length</label>
+                <div class="generate-row"><select id="generate-length"><option value="12">12 words</option><option value="15">15 words</option><option value="18">18 words</option><option value="21">21 words</option><option value="24">24 words</option></select><button class="button primary" id="generate" type="button" aria-describedby="generate-help generation-replaces">Generate <span aria-hidden="true">→</span></button></div>
+                <p class="field-help generation-note">Browser-generated randomness. Analyzed automatically.</p>
+              </div>
+              <div class="seed-preview" aria-hidden="true">
+                <div class="seed-preview-heading"><span>0101</span><span>→</span><span>Words</span></div>
+                <div class="seed-preview-words"><span>01<i></i></span><span>02<i></i></span><span>03<i></i></span><span>04<i></i></span><span>05<i></i></span><span>06<i></i></span></div>
+                <p>Small words. A world of possibilities.</p>
+              </div>
+            </div>
+            <p id="generation-replaces" class="field-help" hidden>Generating again replaces the current phrase and clears its passphrase and addresses.</p>
+            <div id="generated-result" class="generated-result" hidden>
+              <div class="label-row"><h3>Your generated phrase</h3><button id="copy-phrase" class="copy-icon" type="button" aria-label="Copy generated seed phrase" title="Copy seed phrase"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="8" y="8" width="12" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg></button></div>
+              <p id="generated-phrase" class="generated-phrase"></p>
+              <p id="phrase-copy-feedback" class="field-help" role="status"></p>
+              <button id="edit-phrase" type="button" class="text-button">Edit in Import seed phrase →</button>
+            </div>
+            <p id="generation-error" class="field-error" role="status"></p>
+          </div>
+          <div id="panel-phrase" class="seed-panel" role="tabpanel" aria-labelledby="tab-phrase" hidden>
+            <div class="import-intro">
+              <div><h3>Explore your words.</h3><p class="field-help">Check an existing phrase, or load a public example to explore.</p></div>
+              <svg class="workflow-art" viewBox="0 0 220 150" fill="none" aria-hidden="true">
+                <rect x="26" y="20" width="139" height="112" rx="12" fill="#f0f1e9" transform="rotate(-6 26 20)"/>
+                <rect x="42" y="14" width="139" height="112" rx="12" fill="#faf6ec" stroke="#e4dccb"/>
+                <path d="M61 39h34M61 58h23M61 77h34M113 39h47M113 58h34M113 77h47M61 99h62" stroke="#c6b893" stroke-width="5" stroke-linecap="round"/>
+                <circle cx="167" cy="104" r="26" fill="#fffdf8" stroke="#b7461c" stroke-width="2"/><path d="m185 123 18 18M157 104l7 7 13-15" stroke="#b7461c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="example-row"><button class="text-button" id="load-example" type="button">Load a public example <span aria-hidden="true">→</span></button><select id="example-length" aria-label="Public example length"><option value="12">12 words</option><option value="24">24 words</option></select></div>
+            <div id="phrase-workspace">
+              <div class="label-row"><label id="phrase-label" for="mnemonic">BIP39 recovery phrase</label><span id="word-counter" class="muted">0 words</span></div>
+              <div id="phrase-input" class="phrase-input"><textarea id="mnemonic" rows="4" placeholder="Paste your English BIP39 recovery phrase." spellcheck="false" autocomplete="off" autocapitalize="off" autocorrect="off" aria-describedby="input-validation phrase-help normalization phrase-input-feedback" aria-invalid="false"></textarea><p id="input-validation" class="input-validation" role="status" aria-live="polite">Enter a phrase to check its structure.</p></div>
+              <p id="phrase-input-feedback" class="field-error" role="status"></p>
+              <p id="phrase-help" class="field-help">English letters and spaces only · 12, 15, 18, 21, or 24 words. All calculations happen in this page.</p>
+              <p id="normalization" class="field-help"></p>
+              <button id="analyze-button" type="button" class="button primary" disabled><span id="analyze-label">Analyze phrase</span> <span aria-hidden="true">→</span></button>
+            </div>
+          </div>
+          <div id="panel-binary" class="seed-panel" role="tabpanel" aria-labelledby="tab-binary" hidden>
+            <div class="import-intro">
+              <div><h3>Begin with the bits.</h3><p class="field-help">Turn your binary entropy into recovery words.</p></div>
+              <svg class="workflow-art" viewBox="0 0 220 150" fill="none" aria-hidden="true">
+                <rect x="18" y="16" width="132" height="106" rx="12" fill="#faf6ec" stroke="#e4dccb"/>
+                <g fill="#967c54" font-family="monospace" font-size="18" letter-spacing="9"><text x="37" y="47">01010</text><text x="37" y="75">10001</text><text x="37" y="103">01101</text></g>
+                <path d="M141 87h43m-9-9 9 9-9 9" stroke="#b7461c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <rect x="123" y="109" width="81" height="29" rx="7" fill="#f0f1e9" stroke="#dedfd6"/><path d="M138 123h50" stroke="#9ba88b" stroke-width="5" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <p id="entropy-help" class="field-help">Enter 128, 160, 192, 224, or 256 bits for 12, 15, 18, 21, or 24 words. Type only 0 and 1. Spaces and line breaks in pasted bits are removed. Enter entropy only: the BIP39 checksum is added automatically. Leading zeros are preserved.</p>
+            <label for="entropy-input">Raw entropy bits</label>
+            <div id="entropy-input-box" class="phrase-input"><textarea id="entropy-input" rows="4" inputmode="numeric" placeholder="Paste your bits here: 01001011…" spellcheck="false" autocomplete="off" autocapitalize="off" autocorrect="off" aria-describedby="entropy-help entropy-validation entropy-input-feedback" aria-invalid="false"></textarea><p id="entropy-validation" class="input-validation" role="status" aria-live="polite">Enter binary entropy to create a phrase.</p></div>
+            <p id="entropy-input-feedback" class="field-error" role="status"></p>
+            <details class="dice-help"><summary>Using dice or coins?</summary><p>For each independent roll of a fair six-sided die, record 0 for 1–3 or 1 for 4–6. Each roll gives one bit, so collect exactly the number of bits you need. For a fair coin, choose heads = 0 and tails = 1 before you start. Keep every outcome in order; do not choose or rearrange bits.</p><p>This assumes fair, independent outcomes. Conversion cannot remove bias or prove randomness.</p></details>
+            <p class="field-help">Import replaces the current phrase and clears its passphrase and addresses. These bits reveal the same secret as the words.</p>
+            <button id="import-entropy" type="button" class="button primary" disabled>Import &amp; analyze</button>
+          </div>
           <p id="analysis-feedback" class="field-help" role="status"></p>
-          <div class="explore-tools"><h3>Or generate a test phrase</h3><p id="generate-help" class="field-help">Creates new words and analyzes them in one step.</p><div class="generate-row"><label class="sr-only" for="generate-length">Generated phrase length</label><select id="generate-length"><option value="12">12 words</option><option value="15">15 words</option><option value="18">18 words</option><option value="21">21 words</option><option value="24">24 words</option></select><button class="button primary" id="generate" type="button" aria-describedby="generate-help"><span aria-hidden="true">＋</span> Generate &amp; analyze</button></div>
-          <p id="generation-error" class="field-error" role="status"></p>
-          <div class="example-row"><button class="text-button" id="load-example" type="button">Load a public example <span aria-hidden="true">→</span></button><select id="example-length" aria-label="Public example length"><option value="12">12 words</option><option value="24">24 words</option></select></div></div>
         </div>
-        <div class="panel assessment-panel" id="assessment" tabindex="-1" aria-labelledby="assessment-title">
+        <div class="panel assessment-panel" id="assessment" hidden tabindex="-1" aria-labelledby="assessment-title">
           <div class="label-row"><h3 id="assessment-title">What we can tell you</h3><span class="status-dot" aria-hidden="true"></span></div>
           <div id="risk-summary" class="risk-summary"><p class="assessment-kicker">PHRASE ASSESSMENT</p><h3 class="assessment-status" id="risk-title">Analyze a phrase to see its risk</h3><p id="risk-explanation"></p></div>
           <div id="assessment-summary"><p class="structure-status" id="validity">Waiting for a phrase</p><p class="muted" id="validation-detail">Enter words to check their length, wordlist, and checksum.</p></div>
@@ -53,7 +109,8 @@
           <div id="assessment-next" class="assessment-next" hidden><a href="#understand">Understand the guessing time <span aria-hidden="true">↓</span></a><a href="#addresses">Explore Bitcoin addresses <span aria-hidden="true">↓</span></a></div>
         </div>
       </div>
-      <details id="technical-details" class="panel entropy-panel">
+      <p id="results-placeholder" class="results-placeholder">Your assessment, entropy details, and address tools will appear after a valid phrase is analyzed.</p>
+      <details id="technical-details" class="panel entropy-panel" hidden>
         <summary>Entropy details <span class="summary-hint">Explore the numbers behind your words →</span></summary>
         <div class="entropy-intro"><h3>Every word represents a number.</h3><p>The English BIP39 list contains 2,048 words, indexed from <strong>0 to 2047</strong>. Each index becomes 11 binary digits. Together, those digits encode the entropy and its checksum.</p></div>
         <div class="index-guide"><strong>Index 0 = abandon.</strong><p>The <a href="https://github.com/bitcoin/bips/blob/master/bip-0039/english.txt" target="_blank" rel="noopener noreferrer">official word list on GitHub ↗</a> displays lines starting at 1. To find a word there, add 1 to its BIP39 index: <strong>index 1477 → line 1478</strong>. “Word 1” below means the first word in your phrase, not its wordlist index.</p></div>
@@ -68,42 +125,54 @@
       </details>
     </section>
 
-    <section id="understand" class="section" aria-labelledby="understand-title">
-      <div class="section-heading"><div><p class="eyebrow">02 / THE POSSIBILITIES</p><h2 id="understand-title">What do these words really tell us?</h2><p class="section-copy">Three things matter: valid words, random generation, and secrecy.</p></div></div>
-      <div class="key-concepts"><article><span class="small-label">01 / STRUCTURE</span><h3>Valid doesn’t mean secure.</h3><p>The checksum catches some mistakes. It cannot prove randomness.</p></article><article><span class="small-label">02 / RANDOMNESS</span><h3>How it was made matters.</h3><p>More words help only if they come from secure randomness.</p></article><article><span class="small-label">03 / SECRECY</span><h3>Public words aren’t secret.</h3><p>A shared or exposed phrase can be tried directly.</p></article></div>
+    <section id="understand" class="section" hidden aria-labelledby="understand-title">
+      <div class="section-heading"><div><p class="eyebrow">02 / THE POSSIBILITIES</p><h2 id="understand-title">How hard is this phrase to guess?</h2><p class="section-copy">A simple picture of the result. Valid words alone cannot prove randomness or secrecy.</p></div></div>
       <div id="phrase-perspective" class="panel phrase-perspective">
         <div class="perspective-lead">
           <div class="perspective-result"><p class="metric-label" id="phrase-quantity-label">Actual source entropy</p><p class="big-number" id="phrase-quantity">Not analyzed</p><p id="phrase-interpretation" class="perspective-summary"></p></div>
-          <details class="plain-language"><summary>A simple analogy</summary><p id="phrase-analogy"></p></details>
+          <div id="simple-analogy" class="simple-analogy" hidden>
+            <div id="analogy-coins" class="coin-strip" aria-hidden="true"><span>H</span><span>T</span><span>H</span><span>?</span><span>…</span></div>
+            <p class="metric-label">Picture it simply</p><h3 id="analogy-title"></h3><p id="phrase-analogy"></p>
+            <p id="analogy-condition" class="field-help"></p>
+          </div>
         </div>
         <div class="crack-section" aria-labelledby="crack-heading">
-          <div class="label-row"><h3 id="crack-heading">How hard would it be to guess?</h3><span id="crack-basis" class="subtle-tag">Conditional estimate</span></div>
+          <div class="label-row"><h3 id="crack-heading">Estimated guessing effort</h3><span id="crack-basis" class="subtle-tag">Conditional estimate</span></div>
           <div class="crack-result-card">
+            <svg class="guessing-art" viewBox="0 0 200 160" fill="none" aria-hidden="true">
+              <circle cx="100" cy="80" r="69" fill="#f0f1e9"/>
+              <g stroke="#d4d8c9" stroke-width="1.5"><path d="M28 55h34m76 0h34M20 80h42m76 0h42M28 105h34m76 0h34"/><circle cx="24" cy="55" r="3"/><circle cx="176" cy="55" r="3"/><circle cx="16" cy="80" r="3"/><circle cx="184" cy="80" r="3"/><circle cx="24" cy="105" r="3"/><circle cx="176" cy="105" r="3"/></g>
+              <path d="M76 32c0 27 4 32 24 48-20 16-24 21-24 48h48c0-27-4-32-24-48 20-16 24-21 24-48Z" fill="#fffdf8" stroke="#967c54" stroke-width="2"/>
+              <path d="M82 48h36c-2 10-8 16-18 23-10-7-16-13-18-23ZM82 122c2-12 8-19 18-27 10 8 16 15 18 27Z" fill="#d9ab79"/>
+              <path d="M71 31h58M71 129h58M100 80v7" stroke="#b7461c" stroke-width="4" stroke-linecap="round"/>
+            </svg>
             <div class="crack-result-copy"><p class="metric-label">Average search time</p><p id="crack-time" class="big-number">Analyze a phrase first</p><p id="crack-detail"></p></div>
+          </div>
+          <p id="crack-passphrase" class="field-help"></p>
+          <details id="report-details" class="report-details">
+            <summary>Explore the calculation and compare lengths</summary>
             <div id="crack-controls" class="field" hidden><label for="crack-rate">Try a hypothetical checking speed</label><select id="crack-rate"><option value="1000000">1 million checks/second</option><option value="1000000000">1 billion checks/second</option><option value="1000000000000">1 trillion checks/second</option></select><p class="field-help">For comparison only. These are complete seed checks, not Bitcoin mining hashes.</p></div>
-          </div>
-          <details id="random-perspective" class="random-perspective" hidden>
-            <summary>Put that number in perspective</summary>
-            <div class="perspective-facts"><article><p class="metric-label">Measured in centuries</p><p id="crack-centuries"></p></article><article><p class="metric-label">Chance after 100 years</p><p id="crack-century-chance"></p></article></div>
-            <p id="crack-lottery" class="lottery-analogy"></p>
+            <div id="random-perspective" class="random-perspective" hidden>
+              <div class="perspective-facts"><article><p class="metric-label">Measured in centuries</p><p id="crack-centuries"></p></article><article><p class="metric-label">Chance after 100 years</p><p id="crack-century-chance"></p></article></div>
+              <p id="crack-lottery" class="lottery-analogy"></p>
+            </div>
+            <div class="crack-disclosures">
+              <div id="crack-guide"><h4>Assumptions and limits</h4><p id="crack-assumptions">Estimates need a stated generation or attack model, a known verification target, and a fixed or known passphrase.</p><p id="crack-maximum" class="field-help"></p><p class="field-help">This describes phrase guessing only. Exposure, a predictable generator, malware, partial knowledge, and other attacks can bypass this model. Checksum bits and the derived 512-bit seed do not add randomness.</p></div>
+              <div id="crack-math" hidden><h4>The calculation</h4><p id="crack-formula" class="break-code"></p><p>Displayed times are rounded to three significant digits. The average assumes no repeated guesses and an equally likely target position. A family-size upper bound gives an upper bound on that model’s average. Checking rates are illustrations, not measured hardware performance. Choosing a faster rate does not change the phrase or its risk finding.</p></div>
+            </div>
+            <div id="ideal-model" class="model-panel"><h4>Compare other phrase lengths</h4>
+              <p class="model-intro">Hypothetical comparison only. These figures do not assess the phrase above. They assume uniformly random generation, a fixed or known passphrase, and a known verification target. Checking rates are illustrations, not hardware benchmarks or mining hash rates.</p>
+              <div class="model-controls"><fieldset><legend>Compare phrase lengths</legend><div class="segmented" id="compare-lengths"><label><input type="radio" name="model-words" value="12" checked><span>12 words</span></label><label><input type="radio" name="model-words" value="15"><span>15</span></label><label><input type="radio" name="model-words" value="18"><span>18</span></label><label><input type="radio" name="model-words" value="21"><span>21</span></label><label><input type="radio" name="model-words" value="24"><span>24 words</span></label></div></fieldset><div class="field"><label for="check-rate">Hypothetical complete checks / second</label><select id="check-rate"><option value="1000000">1 million (10⁶)</option><option value="1000000000">1 billion (10⁹)</option><option value="1000000000000" selected>1 trillion (10¹²)</option></select></div></div>
+              <div class="number-cards"><div><p class="metric-label">Possible phrases</p><p id="possibilities" class="big-number">3.40 × 10³⁸</p><span id="model-bits" class="field-help">128 random bits</span></div><div><p class="metric-label">Average exhaustive search</p><p class="big-number"><span id="average-years">5.39 × 10¹⁸</span><small> years</small></p><span class="field-help">Half the space, on average</span></div></div>
+              <div class="analogy-grid"><article class="analogy"><span class="analogy-symbol" aria-hidden="true">½</span><div><h3>Guess every flip.</h3><p id="coin-analogy">Imagine guessing the exact outcome of 128 independent, fair coin flips. All of them, in order. That’s the chance of one correct guess.</p></div></article><article class="analogy"><span class="analogy-symbol" aria-hidden="true">№</span><div><h3>Pick one ticket.</h3><p id="lottery-analogy">A lottery with one winner among 3.40 × 10³⁸ equally likely tickets. Each extra random bit doubles the number of tickets.</p></div></article></div>
+              <div class="model-exact"><h4>Exact numbers for this comparison</h4><dl class="technical-list"><dt>Possible phrases · N = 2ᴱᴺᵀ</dt><dd id="exact-possibilities" class="break-code"></dd><dt>Probability of one correct guess</dt><dd id="one-guess" class="break-code"></dd><dt>Average search · (N + 1) / (2R)</dt><dd id="exact-time" class="break-code"></dd></dl><p>Assumes uniform random generation, no repeated guesses, a fixed or known passphrase, and a known target to verify each candidate. One year is 31,557,600 seconds. Checking rates are illustrations, not measured hardware performance or Bitcoin mining hash rates.</p><p>This models searching for a phrase. It does not measure overall wallet security, other attacks on Bitcoin keys, malware, or exposure. A 512-bit derived seed and checksum bits do not create extra randomness. Unknown or human-chosen generation may have a much smaller search space.</p></div>
+            </div>
           </details>
-          <div class="crack-disclosures">
-            <details id="crack-guide"><summary>Assumptions and limits</summary><p id="crack-assumptions">Estimates need a stated generation or attack model, a known verification target, and a fixed or known passphrase.</p><p id="crack-maximum" class="field-help"></p><p id="crack-passphrase" class="field-help"></p><p class="field-help">This describes phrase guessing only. Exposure, a predictable generator, malware, partial knowledge, and other attacks can bypass this model. Checksum bits and the derived 512-bit seed do not add randomness.</p></details>
-            <details id="crack-math" hidden><summary>Show the calculation</summary><p id="crack-formula" class="break-code"></p><p>Displayed times are rounded to three significant digits. The average assumes no repeated guesses and an equally likely target position. A family-size upper bound gives an upper bound on that model’s average. Checking rates are illustrations, not measured hardware performance. Choosing a faster rate does not change the phrase or its risk finding.</p></details>
-          </div>
         </div>
       </div>
-      <details id="ideal-model" class="panel model-panel"><summary>Compare other phrase lengths</summary>
-        <p class="model-intro">Hypothetical comparison only. These figures do not assess the phrase above. They assume uniformly random generation, a fixed or known passphrase, and a known verification target. Checking rates are illustrations, not hardware benchmarks or mining hash rates.</p>
-        <div class="model-controls"><fieldset><legend>Compare phrase lengths</legend><div class="segmented" id="compare-lengths"><label><input type="radio" name="model-words" value="12" checked><span>12 words</span></label><label><input type="radio" name="model-words" value="15"><span>15</span></label><label><input type="radio" name="model-words" value="18"><span>18</span></label><label><input type="radio" name="model-words" value="21"><span>21</span></label><label><input type="radio" name="model-words" value="24"><span>24 words</span></label></div></fieldset><div class="field"><label for="check-rate">Hypothetical complete checks / second</label><select id="check-rate"><option value="1000000">1 million (10⁶)</option><option value="1000000000">1 billion (10⁹)</option><option value="1000000000000" selected>1 trillion (10¹²)</option></select></div></div>
-        <div class="number-cards"><div><p class="metric-label">Possible phrases</p><p id="possibilities" class="big-number">3.40 × 10³⁸</p><span id="model-bits" class="field-help">128 random bits</span></div><div><p class="metric-label">Average exhaustive search</p><p class="big-number"><span id="average-years">5.39 × 10¹⁸</span><small> years</small></p><span class="field-help">Half the space, on average</span></div></div>
-        <div class="analogy-grid"><article class="analogy"><span class="analogy-symbol" aria-hidden="true">½</span><div><h3>A very long coin flip.</h3><p id="coin-analogy">Imagine guessing the exact outcome of 128 independent, fair coin flips. All of them, in order. That’s the chance of one correct guess.</p></div></article><article class="analogy"><span class="analogy-symbol" aria-hidden="true">№</span><div><h3>One winning ticket.</h3><p id="lottery-analogy">A lottery with one winner among 3.40 × 10³⁸ equally likely tickets. Each extra random bit doubles the number of tickets.</p></div></article></div>
-        <details><summary>See the exact numbers and assumptions</summary><dl class="technical-list"><dt>Possible phrases · N = 2ᴱᴺᵀ</dt><dd id="exact-possibilities" class="break-code"></dd><dt>Probability of one correct guess</dt><dd id="one-guess" class="break-code"></dd><dt>Average search · (N + 1) / (2R)</dt><dd id="exact-time" class="break-code"></dd></dl><p>Assumes uniform random generation, no repeated guesses, a fixed or known passphrase, and a known target to verify each candidate. One year is 31,557,600 seconds. Checking rates are illustrations, not measured hardware performance or Bitcoin mining hash rates.</p><p>This models searching for a phrase. It does not measure overall wallet security, other attacks on Bitcoin keys, malware, or exposure. A 512-bit derived seed and checksum bits do not create extra randomness. Unknown or human-chosen generation may have a much smaller search space.</p></details>
-      </details>
-      <details class="learning-note"><summary>A real example: a faulty generator</summary><p>Milk Sad produced long wallet secrets from just 32 bits of possibilities. The words looked random, but were predictable. <a href="https://milksad.info/disclosure.html" target="_blank" rel="noopener noreferrer">Read the disclosure ↗</a></p></details>
     </section>
 
-    <section id="addresses" class="section" aria-labelledby="addresses-title">
+    <section id="addresses" class="section" hidden aria-labelledby="addresses-title">
       <div class="section-heading"><div><p class="eyebrow">03 / THE BITCOIN PATHS</p><h2 id="addresses-title">One seed. Different destinations.</h2></div></div>
       <p class="section-copy">A derivation path tells a wallet which keys to use. These are common conventions; the words alone don’t identify which path your wallet used.</p>
       <div class="path-reference" role="group" aria-label="Choose a Bitcoin address type"><button type="button" data-address-type="legacy" aria-pressed="false"><span>Legacy <small>BIP44</small></span><code>m/44'/0'/0'/0/0</code><small>1… · P2PKH</small></button><button type="button" data-address-type="nested" aria-pressed="false"><span>Nested SegWit <small>BIP49</small></span><code>m/49'/0'/0'/0/0</code><small>3… · P2SH-P2WPKH</small></button><button type="button" class="selected-reference" data-address-type="native" aria-pressed="true"><span>Native SegWit <small>BIP84</small></span><code>m/84'/0'/0'/0/0</code><small>bc1q… · P2WPKH</small></button><button type="button" data-address-type="taproot" aria-pressed="false"><span>Taproot <small>BIP86</small></span><code>m/86'/0'/0'/0/0</code><small>bc1p… · P2TR</small></button></div>

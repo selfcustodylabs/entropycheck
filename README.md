@@ -10,12 +10,12 @@ The public demo is for public examples and disposable test phrases. Handle real 
 
 - Validates English BIP39 word count, word membership, and checksum live inside the input box, before Analyze is pressed.
 - Supports 12, 15, 18, 21, and 24 words, with browser CSPRNG generation.
-- Reports encoded entropy length and generation-source context separately. It does **not** claim to measure actual randomness from one phrase or assign a safety percentage.
+- Imports raw binary entropy (128, 160, 192, 224, or 256 bits), preserving leading zeros and adding the BIP39 checksum automatically.
+- Reports encoded entropy length and observed in-session generation separately, without asking you to report a source. It does **not** claim to measure actual randomness from one phrase or assign a safety percentage.
 - Leads with a phrase-specific assessment: public/constant phrases, recognized simple constructions, or actual randomness unverified. Source claims never override concrete weaknesses.
 - Shows raw hexadecimal entropy, full-width binary entropy, checksum bits, and complete mnemonic binary.
 - Maps each seed word to its zero-based BIP39 index (0–2047), 11-bit binary representation, and corresponding GitHub line (index + 1) in expandable entropy details. Phrase order is labeled separately.
-- Presents a beginner-first phrase summary, conditional **Time to crack** estimate, and human-scale comparisons. Assumptions, passphrase limits, and formulas remain available in expandable details.
-- Shows conditional years, centuries, 100-year success odds, and coin-flip/lottery analogies in the main report. A collapsed calculator also compares other phrase lengths.
+- Shows the phrase result, a simple analogy, and a conditional guessing-time estimate. One expandable area contains checking speeds, assumptions, exact odds, formulas, and comparisons with other phrase lengths.
 - Derives mainnet and testnet single-signature addresses: BIP44 legacy, BIP49 nested SegWit, BIP84 native SegWit, and BIP86 Taproot.
 - Supports a BIP39 passphrase, accounts, receiving/change branches, and bounded address ranges.
 - Contains no analytics, wallet balance requests, persistent session storage, remote fonts, runtime dependencies, or service workers.
@@ -24,7 +24,13 @@ The phrase alone cannot identify your wallet's derivation path or validate a pas
 
 ## Reading the assessment
 
-Paste or edit the phrase to see immediate word-count, wordlist, and checksum feedback in the input box. Click **Analyze phrase** for the security assessment, or **Generate & analyze** to create and check a test phrase in one step. The analysis button then reads **Analyze again**. Editing the words or generation context clears the old report and addresses until you analyze again. Public examples also analyze immediately; every run provides visible completion feedback.
+Use the **Generate new seed**, **Import seed phrase**, or **Import binary entropy** tabs to choose how to start. **Generate new seed** is the default on first visit and after **Clear all**, offering a test phrase without asking for existing recovery words. Switching tabs preserves the current phrase and report; generated words appear as selectable text with a copy button, and binary import opens the resulting words in the phrase tab. Unanalyzed drafts stay in the phrase tab. Phrase entry accepts English letters and whitespace; numbers and special characters are rejected without altering the words. Paste or edit the phrase to see immediate word-count, wordlist, and checksum feedback in the input box. Click **Analyze phrase** for the security assessment, or **Generate** to create and check a test phrase in one step. The analysis button then reads **Analyze again**. Editing the words clears the old report and addresses until you analyze again. Public examples also analyze immediately; every run provides visible completion feedback.
+
+The homepage shows the input workflow first. Assessment, entropy details, guessing explanations, address tools, and their navigation links appear only after a valid phrase is analyzed. Editing or clearing the phrase hides the report; invalid input keeps its feedback beside the field. Offline setup guidance is collected in the dedicated section below the tool.
+
+To use your own bits, choose **Import binary entropy**, paste `0` and `1` digits, and click **Import & analyze**. Typing accepts only `0` and `1`, with normal editing and clipboard shortcuts. Pasted spaces and line breaks are removed. A paste containing any other character is rejected in full, preserving the existing draft. Unsupported bit lengths cannot be imported. Supply entropy only, without checksum bits: 128/160/192/224/256 bits produce 12/15/18/21/24 words. Import preserves your bits exactly, adds the checksum, replaces the current phrase, and clears the previous passphrase, addresses, and import field. Draft bits do not replace the current phrase until you import them. **Clear all** also removes draft bits.
+
+For a simple dice method, record one bit per independent roll of a fair six-sided die: 1–3 → `0`, 4–6 → `1`. Collect exactly the required number of bits, keeping every outcome in order. This assumes fair, independent rolls; conversion does not remove bias or establish randomness. The page cannot verify the origin of imported bits. Binary entropy reveals the same secret as the recovery words.
 
 The 24-word phrase `abandon` repeated 23 times followed by `art` is structurally valid, but encodes 256 zero bits. EntropyCheck calls it **Unsafe: all-zero phrase** and shows **1 known candidate**, not the ideal 2^256 search space. Zero secrecy in publicly known words does not mean we measured the original generator's entropy. A separate BIP39 passphrase is not evaluated.
 
@@ -32,7 +38,7 @@ The tool also recognizes repeated 1–4 byte blocks, upward/downward byte sequen
 
 For example, the checksum-valid 24-word phrase with 12 `abandon` words, 11 `art` words, then `buddy` belongs to the two-run family. Counting all word choices, split positions, and final entropy choices gives 737,837,056 candidates. At an illustrative one million complete checks per second, the average is about 6.15 minutes and the full family about 12.3 minutes. These figures assume the attacker targets this family, has a known verification target, and knows the passphrase. They are not measured hardware performance, actual source entropy, or a wallet-compromise prediction. A version with an extra word is invalid and receives no crack-time estimate.
 
-When no weakness is recognized, actual source entropy remains unknown, but the main report now explains the potential strength **if securely random**. For 12 words at one trillion complete checks per second, the average exhaustive phrase search is about 5.39 quintillion years, or 5.39 × 10¹⁶ centuries. After 100 years of checking, the modeled success probability is about 1 in 1.08 × 10¹⁷. These figures assume uniform generation, secrecy, no partial knowledge, and a known target and passphrase; they are not a measured property of the input or overall wallet security. Recognized weak/public phrases take precedence, and reported human choices do not receive this random-generation estimate in the main report. See the [revised assessment plan](docs/revised-assessment-plan.md) for the report contract and test requirements.
+When no weakness is recognized, actual source entropy remains unknown, but the main report now explains the potential strength **if securely random**. For 12 words at one trillion complete checks per second, the average exhaustive phrase search is about 5.39 quintillion years, or 5.39 × 10¹⁶ centuries. After 100 years of checking, the modeled success probability is about 1 in 1.08 × 10¹⁷. These figures assume uniform generation, secrecy, no partial knowledge, and a known target and passphrase; they are not a measured property of the input or overall wallet security. Recognized weak/public phrases take precedence. The visible analogy reduces the random model to guessing every fair coin flip in order; known or patterned phrases receive their own simpler explanation. Exact odds and scale stay expandable. Human choices do not justify the uniform-random assumption, even if their words pass every check. See the [revised assessment plan](docs/revised-assessment-plan.md) for the report contract and test requirements.
 
 ## Use offline
 
@@ -77,7 +83,7 @@ The build has no time-dependent fields or machine-specific paths. The Pages `ind
 1. Fork the repository. Update the project links in this README and the footer of `src/index.html` for your GitHub owner/repository, then rebuild the artifact.
 2. Enable Actions in the fork, then choose **Settings → Pages → Source → GitHub Actions**.
 3. Push to `main`, or run the **Verify and publish Pages** workflow manually. Pages deployment runs only after typechecking, core tests, reproducibility verification, and both browser suites pass. Pull requests run verification without publication.
-4. For a release, update the displayed version and package version together, rebuild artifacts, then push a `v*` tag. The release workflow verifies the tagged source and publishes the HTML, checksums, and license notices. It does not overwrite an existing release.
+4. For a release, update the displayed version and package version together, rebuild artifacts, then push a `v*` tag. The release workflow verifies the tagged source and publishes the HTML, checksums, and license notices. An existing mutable release is updated with the verified artifacts when its tag is explicitly replaced.
 
 Runtime behavior and deployment workflows are independent of the owner/repository. HTML downloads use a relative path, so a project site hosted under any repository name works. Footer project/checksum links point to this project's canonical repository until you update them for your fork.
 
@@ -96,7 +102,7 @@ Only public fixtures are used in tests. Never put real recovery material in test
 
 `src/core/` contains the testable analysis, generation, strength, and derivation modules. `src/app.ts` coordinates the UI; `scripts/build.mjs` bundles the standalone artifact. Research citations and recorded revisions are in `docs/`; public standards fixtures are in `tests/fixtures/`.
 
-No backend or public network API is provided. Multisig construction, arbitrary derivation paths, private-key exports, transaction signing, balances, recovery searches, and physical-entropy generation are outside v1.
+No backend or public network API is provided. Multisig construction, arbitrary derivation paths, private-key exports, transaction signing, balances, recovery searches, and direct conversion of dice-roll sequences are outside v1. Physical entropy can be imported as binary bits.
 
 ## License
 

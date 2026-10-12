@@ -1,40 +1,261 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { fileURLToPath } from 'node:url';
 const artifact = new URL('../../entropycheck.html', import.meta.url).href;
 const example = `${'abandon '.repeat(11)}about`;
 
+async function openReportDetails(page: Page) {
+  if (!await page.locator('#report-details').evaluate(node => (node as HTMLDetailsElement).open)) {
+    await page.locator('#report-details > summary').click();
+  }
+}
+
+async function pasteText(page: Page, selector: string, content: string) {
+  // Use a temporary clipboard source rather than another application input.
+  await page.evaluate(content => {
+    const source = document.createElement('textarea');
+    source.id = 'clipboard-fixture';
+    source.value = content;
+    document.body.append(source);
+    source.focus();
+    source.select();
+  }, content);
+  await page.keyboard.press('ControlOrMeta+c');
+  await page.locator('#clipboard-fixture').evaluate(node => node.remove());
+  await page.locator(selector).focus();
+  await page.locator(selector).press('ControlOrMeta+a');
+  await page.locator(selector).press('ControlOrMeta+v');
+}
+
+test('reports appear only after successful analysis and hide on edits, invalid input or clear', async ({ page }) => {
+  await page.goto(artifact);
+  const reports = ['assessment', 'technical-details', 'understand', 'addresses', 'nav-understand', 'nav-addresses'];
+  for (const id of reports) await expect(page.locator(`#${id}`)).toBeHidden();
+  await expect(page.locator('#results-placeholder')).toBeVisible();
+  await page.locator('#tab-phrase').click();
+  await page.locator('#mnemonic').fill(example);
+  for (const id of reports) await expect(page.locator(`#${id}`)).toBeHidden();
+  await page.locator('#analyze-button').click();
+  for (const id of reports) await expect(page.locator(`#${id}`)).toBeVisible();
+  await expect(page.locator('#results-placeholder')).toBeHidden();
+  await expect(page.locator('#understand details')).toHaveCount(1);
+  await expect(page.locator('#report-details')).not.toHaveAttribute('open', '');
+  await page.locator('#mnemonic').fill('invalid');
+  await page.locator('#analyze-button').click();
+  await expect(page.locator('#mnemonic')).toBeFocused();
+  await expect(page.locator('#input-validation')).toContainText('Invalid BIP39');
+  for (const id of reports) await expect(page.locator(`#${id}`)).toBeHidden();
+  await page.locator('#tab-generate').click();
+  await page.locator('#generate').click();
+  for (const id of reports) await expect(page.locator(`#${id}`)).toBeVisible();
+  await page.locator('#clear-all').click();
+  for (const id of reports) await expect(page.locator(`#${id}`)).toBeHidden();
+  await page.locator('#tab-binary').click();
+  await page.locator('#entropy-input').fill('0'.repeat(128));
+  for (const id of reports) await expect(page.locator(`#${id}`)).toBeHidden();
+  await page.locator('#import-entropy').click();
+  for (const id of reports) await expect(page.locator(`#${id}`)).toBeVisible();
+});
+
+test('binary keyboard entry blocks other characters and preserves editing shortcuts', async ({ page }) => {
+  await page.goto(artifact);
+  await page.locator('#tab-binary').click();
+  const bits = page.locator('#entropy-input');
+  await bits.pressSequentially('012abc345 6789!');
+  await bits.press('Enter');
+  await expect(bits).toHaveValue('01');
+  await bits.press('ArrowLeft');
+  await bits.press('Backspace');
+  await expect(bits).toHaveValue('1');
+  await bits.press('ControlOrMeta+a');
+  await bits.press('0');
+  await expect(bits).toHaveValue('0');
+  await bits.press('Home');
+  await bits.press('Delete');
+  await expect(bits).toHaveValue('');
+  await bits.press('Tab');
+  await expect(bits).not.toBeFocused();
+  // Exercise the fallback for input methods that cannot cancel beforeinput.
+  await bits.fill('0011');
+  await bits.evaluate(node => {
+    const field = node as HTMLTextAreaElement;
+    field.value = '0011x';
+    field.dispatchEvent(new Event('input', { bubbles: true }));
+  });
+  await expect(bits).toHaveValue('0011');
+  await expect(page.locator('#entropy-input-feedback')).toContainText('Nothing was inserted');
+});
+
+test('binary paste removes formatting and rejects mixed characters without changing the draft', async ({ page }) => {
+  await page.goto(artifact);
+  const bits = page.locator('#entropy-input');
+  for (const [pasted, expected] of [['00000001 \n'.repeat(16), '00000001'.repeat(16)], ['01x01', '00000001'.repeat(16)]]) {
+    await page.locator('#tab-binary').click();
+    await pasteText(page, '#entropy-input', pasted);
+    await expect(bits).toHaveValue(expected);
+  }
+  await expect(page.locator('#entropy-input-feedback')).toContainText('Nothing was inserted');
+  await expect(page.locator('#import-entropy')).toBeEnabled();
+});
+
+
+test('input tabs support arrow keys, preserve drafts and reports, and reset with Clear All', async ({ page }) => {
+  await page.goto(artifact);
+  const selected = page.getByRole('tab', { selected: true });
+  await expect(selected).toHaveText('Generate new seed');
+  await page.locator('#tab-phrase').click();
+  await expect(page.getByRole('tabpanel')).toHaveCount(1);
+  await page.locator('#mnemonic').fill(example);
+  await page.locator('#analyze-button').click();
+  await page.locator('#address-count').fill('1');
+  await page.locator('#derive').click();
+  await expect(page.locator('#address-rows tr')).toHaveCount(1);
+  await page.locator('#tab-phrase').focus();
+  await page.keyboard.press('ArrowRight');
+  await expect(selected).toHaveText('Import binary entropy');
+  await expect(selected).toBeFocused();
+  await expect(page.locator('#mnemonic')).toBeHidden();
+  await page.locator('#entropy-input').fill('01'.repeat(64));
+  await page.locator('#tab-binary').focus();
+  await page.keyboard.press('ArrowRight');
+  await expect(selected).toHaveText('Generate new seed');
+  await expect(page.locator('#panel-binary')).toBeHidden();
+  await expect(page.locator('#mnemonic')).toHaveValue(example);
+  await expect(page.locator('#address-rows tr')).toHaveCount(1);
+  await expect(page.locator('#risk-title')).toHaveText('Unsafe: all-zero phrase');
+  await page.keyboard.press('End');
+  await expect(selected).toHaveText('Import binary entropy');
+  await expect(page.locator('#entropy-input')).toHaveValue('01'.repeat(64));
+  await page.keyboard.press('Home');
+  await expect(selected).toHaveText('Generate new seed');
+  await page.keyboard.press('ArrowLeft');
+  await expect(selected).toHaveText('Import binary entropy');
+  await page.locator('#tab-phrase').click();
+  await page.locator('#mnemonic').focus();
+  await expect(selected).toHaveText('Import seed phrase');
+  await expect(page.locator('#mnemonic')).toBeEditable();
+  await expect(page.locator('#mnemonic')).toBeFocused();
+  await page.locator('#clear-all').click();
+  await expect(page.locator('#entropy-input')).toHaveValue('');
+  await expect(page.locator('#mnemonic')).toHaveValue('');
+  await expect(page.locator('#simple-analogy')).toBeHidden();
+});
+
+test('simple analogies distinguish known answers, patterns and invalid input', async ({ page }) => {
+  await page.goto(artifact);
+  await page.locator('#tab-phrase').click();
+  await page.locator('#load-example').click();
+  await expect(page.locator('#simple-analogy')).toBeVisible();
+  await expect(page.locator('#analogy-title')).toHaveText('The answer is already known');
+  await expect(page.locator('#analogy-coins')).toBeHidden();
+  await page.locator('#mnemonic').fill('abandon '.repeat(12) + 'art '.repeat(11) + 'buddy');
+  await page.locator('#analyze-button').click();
+  await expect(page.locator('#analogy-title')).toHaveText('A smaller list to try');
+  await expect(page.locator('#analogy-coins')).toBeHidden();
+  await page.locator('#mnemonic').fill('invalid');
+  await page.locator('#analyze-button').click();
+  await expect(page.locator('#simple-analogy')).toBeHidden();
+});
+
+test('raw binary entropy imports offline at every length without browser randomness', async ({ page, context }) => {
+  await context.setOffline(true);
+  await page.addInitScript(() => Object.defineProperty(window, 'crypto', { value: undefined, configurable: true }));
+  await page.goto(artifact);
+  await expect(page.locator('#generate')).toBeDisabled();
+  for (const bits of [128, 160, 192, 224, 256]) {
+    await page.locator('#tab-binary').click();
+    await page.locator('#entropy-input').fill('00000001 '.repeat(bits / 8));
+    await expect(page.locator('#entropy-validation')).toContainText(`${bits} bits → ${bits / 32 * 3} words`);
+    await page.locator('#import-entropy').click();
+    await expect(page.locator('#analysis-feedback')).toContainText('Entropy imported and analyzed');
+    await expect(page.locator('#word-counter')).toHaveText(`${bits / 32 * 3} words`);
+    await expect(page.locator('#raw-binary')).toHaveText('00000001'.repeat(bits / 8));
+    await expect(page.locator('#validity')).toHaveText('Valid BIP39 structure');
+    await expect(page.locator('#source')).toHaveCount(0);
+    await expect(page.locator('#entropy-input')).toHaveValue('');
+    await expect(page.locator('#mnemonic')).toBeFocused();
+  }
+});
+
+test('entropy import validates drafts, replaces secrets and clears old derived results', async ({ page }) => {
+  await page.goto(artifact);
+  await page.locator('#tab-generate').click();
+  await page.locator('#generate').click();
+  await page.locator('#passphrase').fill('old test passphrase');
+  await page.locator('#address-count').fill('1');
+  await page.locator('#derive').click();
+  await expect(page.locator('#address-rows tr')).toHaveCount(1);
+  const previous = await page.locator('#mnemonic').inputValue();
+  await page.locator('#tab-binary').click();
+  for (const invalid of ['0'.repeat(127), '0'.repeat(132)]) {
+    await page.locator('#entropy-input').fill(invalid);
+    await expect(page.locator('#import-entropy')).toBeDisabled();
+    await expect(page.locator('#entropy-input')).toHaveAttribute('aria-invalid', 'true');
+    await expect(page.locator('#mnemonic')).toHaveValue(previous);
+  }
+  await page.locator('#entropy-input').fill('00000000\n'.repeat(16));
+  await expect(page.locator('#entropy-input')).toHaveAttribute('aria-invalid', 'false');
+  await page.locator('#import-entropy').click();
+  await expect(page.locator('#mnemonic')).toHaveValue(example);
+  await expect(page.locator('#passphrase')).toHaveValue('');
+  await expect(page.locator('#address-rows tr')).toHaveCount(0);
+  await expect(page.locator('#risk-title')).toHaveText('Unsafe: all-zero phrase');
+  await expect(page.locator('#source')).toHaveCount(0);
+  await page.locator('#derive').click();
+  await expect(page.locator('#address-rows')).toContainText('bc1qcr8te4kr609gcawutmrza0j4xv80jy8z306fyu');
+  await page.locator('#tab-phrase').click();
+  await page.locator('#mnemonic').fill('abandon about');
+  await expect(page.locator('#derive')).toBeDisabled();
+  await expect(page.locator('#raw-binary')).toHaveText('No valid phrase loaded.');
+});
+
+test('entropy input works on mobile with keyboard and Clear All removes draft bits', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 844 });
+  await page.goto(artifact);
+  await page.locator('#tab-binary').focus();
+  await page.keyboard.press('Enter');
+  await page.locator('#entropy-input').fill('1'.repeat(256));
+  await page.locator('.dice-help > summary').click();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.locator('#import-entropy').focus();
+  await page.keyboard.press('Enter');
+  await expect(page.locator('#word-counter')).toHaveText('24 words');
+  await page.locator('#tab-binary').click();
+  await page.locator('#entropy-input').fill('0'.repeat(128));
+  await page.locator('#clear-all').click();
+  await expect(page.locator('#entropy-input')).toHaveValue('');
+  await expect(page.locator('#import-entropy')).toBeDisabled();
+  await expect(page.locator('#entropy-input')).toHaveAttribute('aria-invalid', 'false');
+  await expect(page.locator('#tab-generate')).toHaveAttribute('aria-selected', 'true');
+  await expect(page.locator('#mnemonic')).toHaveValue('');
+});
+
 for (const location of [artifact, 'http://127.0.0.1:4173']) {
-  test(`connection warning follows browser status at ${location.startsWith('file:') ? 'local file' : 'hosted demo'}`, async ({ page }) => {
-    await page.addInitScript(() => Object.defineProperty(navigator, 'onLine', { configurable: true, get: () => true }));
+  test(`offline guidance remains available without a connection banner at ${location.startsWith('file:') ? 'local file' : 'hosted demo'}`, async ({ page }) => {
     await page.goto(location);
-    await expect(page.locator('#notice-title')).toContainText('Don’t use a real seed phrase');
-    await expect(page.locator('#notice-copy')).toContainText('air-gapped computer');
-    await expect(page.locator('#usage-notice .download-link')).toHaveAttribute('download', 'entropycheck.html');
-    for (const online of [false, true]) {
-      await page.evaluate(online => {
-        Object.defineProperty(navigator, 'onLine', { configurable: true, get: () => online });
-        window.dispatchEvent(new Event(online ? 'online' : 'offline'));
-      }, online);
-      await expect(page.locator('#environment')).toContainText(`BROWSER REPORTS ${online ? 'ONLINE' : 'OFFLINE'}`);
-      await expect(page.locator('#notice-copy')).toContainText(online ? 'Use test phrases only' : 'not proof of an air gap');
-    }
-    if (location.startsWith('file:')) await expect(page.locator('#usage-notice .download-link')).toHaveAttribute('href', artifact);
+    await expect(page.locator('#usage-notice')).toHaveCount(0);
+    await expect(page.locator('#offline')).toBeVisible();
+    await expect(page.locator('#environment')).toContainText('COMPUTES IN YOUR BROWSER');
+    if (location.startsWith('file:')) await expect(page.locator('.site-header .download-link')).toHaveAttribute('href', artifact);
   });
 }
 
 test('phrase actions distinguish pending input from completed generation', async ({ page }) => {
   await page.goto(artifact);
   await expect(page.locator('#analyze-button')).toBeDisabled();
-  await expect(page.locator('#generate')).toHaveAccessibleName('Generate & analyze');
+  await page.locator('#tab-generate').click();
+  await expect(page.locator('#generate')).toHaveAccessibleName('Generate');
   await page.locator('#generate').click();
   await expect(page.locator('#analysis-feedback')).toContainText('Generated and analyzed');
+  await page.locator('#tab-phrase').click();
   await expect(page.locator('#analyze-button')).toHaveAccessibleName('Analyze again');
+  await page.locator('#tab-phrase').click();
   await page.locator('#mnemonic').fill(example);
   await expect(page.locator('#analyze-button')).toHaveAccessibleName('Analyze phrase');
   await expect(page.locator('#phrase-quantity')).toHaveText('Not analyzed');
+  await page.locator('#tab-phrase').click();
   await page.locator('#analyze-button').click();
   await expect(page.locator('#phrase-quantity')).toHaveText('1 known candidate');
-  await expect(page.locator('.plain-language')).not.toHaveAttribute('open', '');
+  await expect(page.locator('#simple-analogy')).toBeVisible();
   await page.locator('#clear-all').click();
   await expect(page.locator('#analyze-button')).toBeDisabled();
 });
@@ -42,6 +263,7 @@ test('phrase actions distinguish pending input from completed generation', async
 test('entropy details show zero-based word indices offline and discard them after edits', async ({ page, context }) => {
   await context.setOffline(true);
   await page.goto(artifact);
+  await page.locator('#tab-phrase').click();
   await page.locator('#load-example').click();
   await page.locator('#technical-details > summary').click();
   const words = page.locator('#word-indices li');
@@ -58,9 +280,11 @@ test('entropy details show zero-based word indices offline and discard them afte
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await expect(page.getByRole('navigation', { name: 'Main navigation' })).toBeVisible();
   }
+  await page.locator('#tab-phrase').click();
   await page.locator('#mnemonic').fill('abandon about');
   await expect(words).toHaveCount(0);
   await expect(page.locator('#raw-binary')).toHaveText('No valid phrase loaded.');
+  await page.locator('#tab-phrase').click();
   await page.locator('#load-example').click();
   await expect(words).toHaveCount(12);
   await page.locator('#clear-all').click();
@@ -70,6 +294,7 @@ test('entropy details show zero-based word indices offline and discard them afte
 
 test('address type cards support keyboard selection and invalidate outdated addresses', async ({ page }) => {
   await page.goto(artifact);
+  await page.locator('#tab-phrase').click();
   await page.locator('#load-example').click();
   await page.locator('#address-count').fill('1');
   await page.locator('#derive').click();
@@ -106,12 +331,14 @@ test('file works with networking blocked, no storage writes or runtime requests'
   });
   await page.goto(artifact);
   await expect(page.locator('#environment')).toContainText('LOCAL FILE');
+  await page.locator('#tab-phrase').click();
   await page.locator('#load-example').click();
   await expect(page.locator('#validity')).toHaveText('Valid BIP39 structure');
   await expect(page.locator('#source-title')).toContainText('Public phrase');
   await page.locator('#derive').click();
   await expect(page.locator('#address-rows tr')).toHaveCount(20);
   await expect(page.locator('#address-rows')).toContainText('bc1qcr8te4kr609gcawutmrza0j4xv80jy8z306fyu');
+  await page.locator('#tab-generate').click();
   await page.locator('#generate').click();
   await expect(page.locator('#source-title')).toHaveText('Browser randomness requested');
   await expect(page.locator('#validity')).toHaveText('Valid BIP39 structure');
@@ -124,7 +351,9 @@ test('hosted and local artifacts are identical and derive the same results', asy
   expect(await response.body()).toEqual(await readFile(fileURLToPath(artifact)));
   await page.goto('http://127.0.0.1:4173');
   await expect(page.locator('#environment')).toContainText('HOSTED DEMO');
+  await page.locator('#tab-phrase').click();
   await page.locator('#mnemonic').fill(example);
+  await page.locator('#tab-phrase').click();
   await page.locator('#analyze-button').click();
   await page.locator('#address-type').selectOption('taproot');
   await page.locator('#address-count').fill('1');
@@ -133,6 +362,7 @@ test('hosted and local artifacts are identical and derive the same results', asy
   const online = await page.locator('#address-rows').innerText();
   const local = await context.newPage();
   await local.goto(artifact);
+  await local.locator('#tab-phrase').click();
   await local.locator('#mnemonic').fill(example);
   await local.locator('#analyze-button').click();
   await local.locator('#address-type').selectOption('taproot');
@@ -144,38 +374,50 @@ test('hosted and local artifacts are identical and derive the same results', asy
 test('all word lengths generate, model updates, and edits lose generation provenance', async ({ page }) => {
   await page.goto(artifact);
   for (const [count, bits] of [[12, 128], [15, 160], [18, 192], [21, 224], [24, 256]]) {
+    await page.locator('#tab-generate').click();
     await page.locator('#generate-length').selectOption(String(count));
+    await page.locator('#tab-generate').click();
     await page.locator('#generate').click();
     await expect(page.locator('#word-counter')).toHaveText(`${count} words`);
     await expect(page.locator('#entropy-bits')).toHaveText(`${bits} bits`);
-    await expect(page.locator('#coin-analogy')).toContainText(`${bits} independent`);
+    await expect(page.locator('#coin-analogy')).toContainText(`${bits} fair coin flips`);
   }
+  await page.locator('#tab-phrase').click();
   await page.locator('#mnemonic').fill(`${await page.locator('#mnemonic').inputValue()} `);
   await expect(page.locator('#risk-title')).toHaveText('Changes not analyzed');
+  await page.locator('#tab-phrase').click();
   await page.locator('#analyze-button').click();
-  await expect(page.locator('#source-title')).toHaveText('Source reported · not verified');
+  await expect(page.locator('#source-title')).toHaveText('Origin unverified');
   await expect(page.locator('#normalization')).toContainText('normalized');
 });
 
 test('invalid phrase blocks derivation and preserves independent validation findings', async ({ page }) => {
   await page.goto(artifact);
+  await page.locator('#tab-phrase').click();
   await page.locator('#mnemonic').fill('abandon about');
+  await page.locator('#tab-phrase').click();
   await page.locator('#analyze-button').click();
   await expect(page.locator('#check-length')).toContainText('unsupported');
   await expect(page.locator('#check-words')).toHaveText('All words recognized');
   await expect(page.locator('#derive')).toBeDisabled();
+  await page.locator('#tab-phrase').click();
   await page.locator('#mnemonic').fill('abandon '.repeat(12));
+  await page.locator('#tab-phrase').click();
   await page.locator('#analyze-button').click();
   await expect(page.locator('#check-checksum')).toHaveText('Does not match');
   await expect(page.locator('#entropy-bits')).toHaveText('N/A bits');
+  await page.locator('#tab-phrase').click();
   await page.locator('#mnemonic').fill(example.replace('about', '<script>alert(1)</script>'));
+  await page.locator('#tab-phrase').click();
   await page.locator('#analyze-button').click();
-  await expect(page.locator('#validation-detail')).toContainText('positions 12');
+  await expect(page.locator('#mnemonic')).toHaveValue('abandon '.repeat(12));
+  await expect(page.locator('#check-checksum')).toHaveText('Does not match');
   await expect(page.locator('#derive')).toBeDisabled();
 });
 
 test('phrase, passphrase, and path changes immediately clear addresses; pending work cannot restore them', async ({ page }) => {
   await page.goto(artifact);
+  await page.locator('#tab-phrase').click();
   await page.locator('#load-example').click();
   await page.locator('#address-count').fill('1');
   await page.locator('#derive').click();
@@ -199,6 +441,7 @@ test('phrase, passphrase, and path changes immediately clear addresses; pending 
 
 test('Clear All removes entered and derived secrets and resets controls', async ({ page }) => {
   await page.goto(artifact);
+  await page.locator('#tab-phrase').click();
   await page.locator('#load-example').click();
   await page.locator('#passphrase').fill('sensitive-example');
   await page.locator('#show-passphrase').click();
@@ -210,7 +453,7 @@ test('Clear All removes entered and derived secrets and resets controls', async 
   await expect(page.locator('#passphrase')).toHaveAttribute('type', 'password');
   await expect(page.locator('#raw-entropy')).toHaveText('No valid phrase loaded.');
   await expect(page.locator('#address-rows tr')).toHaveCount(0);
-  await expect(page.locator('#mnemonic')).toBeFocused();
+  await expect(page.locator('#tab-generate')).toBeFocused();
 });
 
 test('generation fails closed if secure browser randomness is unavailable', async ({ page }) => {
@@ -218,6 +461,7 @@ test('generation fails closed if secure browser randomness is unavailable', asyn
   await page.goto(artifact);
   await expect(page.locator('#generate')).toBeDisabled();
   await expect(page.locator('#generation-error')).toContainText('unavailable');
+  await page.locator('#tab-phrase').click();
   await page.locator('#load-example').click();
   await expect(page.locator('#validity')).toHaveText('Valid BIP39 structure');
 });
@@ -228,6 +472,7 @@ test('mobile layout fits viewport and core controls work with keyboard', async (
   await page.keyboard.press('Tab');
   await expect(page.locator('.skip-link')).toBeFocused();
   await page.keyboard.press('Enter');
+  await page.locator('#tab-phrase').click();
   await page.locator('#load-example').focus();
   await page.keyboard.press('Enter');
   await expect(page.locator('#validity')).toHaveText('Valid BIP39 structure');
@@ -239,11 +484,14 @@ test('mobile layout fits viewport and core controls work with keyboard', async (
 
 test('model and input bounds remain explicit', async ({ page }) => {
   await page.goto(artifact);
+  await page.locator('#tab-phrase').click();
+  await page.locator('#load-example').click();
   await expect(page.locator('#average-years')).toHaveText('5.39 × 10¹⁸');
   await expect(page.locator('#average-years')).toBeHidden();
-  await page.locator('#ideal-model > summary').click();
+  await openReportDetails(page);
   await page.locator('input[name="model-words"][value="24"]').check();
   await expect(page.locator('#average-years')).toHaveText('1.83 × 10⁵⁷');
+  await page.locator('#tab-phrase').click();
   await page.locator('#load-example').click();
   await page.locator('#account').fill('');
   await page.locator('#derive').click();
@@ -253,9 +501,11 @@ test('model and input bounds remain explicit', async ({ page }) => {
 
 test('24-word zero example has a phrase-specific unsafe result and exact binary', async ({ page }) => {
   await page.goto(artifact);
+  await page.locator('#tab-phrase').click();
   await page.locator('#mnemonic').fill(`${'abandon '.repeat(23)}art`);
   await expect(page.locator('#risk-title')).toHaveText('Changes not analyzed');
   await expect(page.locator('#derive')).toBeDisabled();
+  await page.locator('#tab-phrase').click();
   await page.locator('#analyze-button').click();
   await expect(page.locator('#analysis-feedback')).toContainText('check 1');
   await expect(page.locator('#assessment')).toBeFocused();
@@ -270,14 +520,17 @@ test('24-word zero example has a phrase-specific unsafe result and exact binary'
   await expect(page.locator('#raw-binary')).toHaveText('0'.repeat(256));
   await expect(page.locator('#checksum-binary')).toHaveText('01100110');
   await expect(page.locator('#mnemonic-binary')).toHaveText('0'.repeat(256) + '01100110');
+  await page.locator('#tab-phrase').click();
   await page.locator('#analyze-button').click();
   await expect(page.locator('#analysis-feedback')).toContainText('check 2');
-  await page.locator('#ideal-model > summary').click();
+  await openReportDetails(page);
   await expect(page.locator('#average-years')).toBeVisible();
-  await page.locator('#source').selectOption('wallet');
+  await page.locator('#tab-phrase').click();
+  await page.locator('#mnemonic').fill(`${'abandon '.repeat(23)}art `);
   await expect(page.locator('#average-years')).toBeHidden();
   await expect(page.locator('#phrase-quantity')).toHaveText('Not analyzed');
   await expect(page.locator('#raw-binary')).toHaveText('No valid phrase loaded.');
+  await page.locator('#tab-phrase').click();
   await page.locator('#analyze-button').click();
   await expect(page.locator('#risk-title')).toHaveText('Unsafe: all-zero phrase');
   await page.locator('#clear-all').click();
@@ -291,7 +544,9 @@ test('a broken RNG cannot produce a reassuring generation assessment', async ({ 
     Object.defineProperty(crypto, 'getRandomValues', { value: (bytes: Uint8Array) => { bytes.fill(0); return bytes; } });
   });
   await page.goto(artifact);
+  await page.locator('#tab-generate').click();
   await page.locator('#generate-length').selectOption('24');
+  await page.locator('#tab-generate').click();
   await page.locator('#generate').click();
   await expect(page.locator('#risk-title')).toHaveText('Unsafe: all-zero phrase');
   await expect(page.locator('#phrase-quantity')).toHaveText('1 known candidate');
@@ -301,20 +556,26 @@ test('a broken RNG cannot produce a reassuring generation assessment', async ({ 
 
 test('input box validates length, words and checksum immediately before Analyze', async ({ page }) => {
   await page.goto(artifact);
+  await page.locator('#tab-phrase').click();
   await page.locator('#mnemonic').fill('abandon about');
   await expect(page.locator('#mnemonic')).toHaveAttribute('aria-invalid', 'true');
   await expect(page.locator('#phrase-input #input-validation')).toContainText('found 2');
   await expect(page.locator('#derive')).toBeDisabled();
   await expect(page.locator('#analysis-feedback')).not.toContainText('complete');
+  await page.locator('#tab-phrase').click();
   await page.locator('#mnemonic').fill(example.replace('about', 'notaword'));
   await expect(page.locator('#input-validation')).toContainText('positions 12');
+  await page.locator('#tab-phrase').click();
   await page.locator('#mnemonic').fill('abandon '.repeat(12));
   await expect(page.locator('#input-validation')).toContainText('checksum does not match');
+  await page.locator('#tab-phrase').click();
   await page.locator('#mnemonic').fill('abandon '.repeat(13) + 'art '.repeat(11) + 'buddy');
   await expect(page.locator('#input-validation')).toContainText('found 25');
+  await page.locator('#tab-phrase').click();
   await page.locator('#analyze-button').click();
   await expect(page.locator('#crack-time')).toHaveText('Not applicable to invalid input');
   await expect(page.locator('#crack-controls')).toBeHidden();
+  await page.locator('#tab-phrase').click();
   await page.locator('#mnemonic').fill(` ${example.toUpperCase()} `);
   await expect(page.locator('#mnemonic')).toHaveAttribute('aria-invalid', 'false');
   await expect(page.locator('#input-validation')).toContainText('Structure valid');
@@ -327,8 +588,10 @@ test('input box validates length, words and checksum immediately before Analyze'
 
 test('repeated word runs are weak with a visible conditional time, not a 256-bit claim', async ({ page }) => {
   await page.goto(artifact);
+  await page.locator('#tab-phrase').click();
   await page.locator('#mnemonic').fill('abandon '.repeat(12) + 'art '.repeat(11) + 'buddy');
   await expect(page.locator('#input-validation')).toContainText('Structure valid');
+  await page.locator('#tab-phrase').click();
   await page.locator('#analyze-button').click();
   await expect(page.locator('#risk-title')).toContainText('Unsafe');
   await expect(page.locator('#risk-explanation')).toContainText('2 runs of identical words');
@@ -336,14 +599,17 @@ test('repeated word runs are weak with a visible conditional time, not a 256-bit
   await expect(page.locator('#crack-time')).toHaveText('Up to 6.15 minutes');
   await expect(page.locator('#crack-maximum')).toContainText('≤ 12.3 minutes');
   await expect(page.locator('#average-years')).toBeHidden();
+  await openReportDetails(page);
   await page.locator('#crack-rate').selectOption('1000000000');
   await expect(page.locator('#crack-time')).toHaveText('Up to 369 milliseconds');
   await page.locator('#passphrase').fill('test passphrase');
   await expect(page.locator('#crack-passphrase')).toContainText('assume the attacker already knows it');
+  await page.locator('#tab-phrase').click();
   await page.locator('#mnemonic').fill('abandon about');
   await expect(page.locator('#crack-time')).toHaveText('Analyze a phrase first');
   await expect(page.locator('#crack-controls')).toBeHidden();
   await expect(page.locator('#crack-maximum')).toBeEmpty();
+  await page.locator('#tab-phrase').click();
   await page.locator('#load-example').click();
   await expect(page.locator('#crack-time')).toHaveText('One known phrase to try');
   await page.locator('#clear-all').click();
@@ -357,21 +623,24 @@ test('unrecognized generated output has an explicitly conditional random-search 
     Object.defineProperty(crypto, 'getRandomValues', { value: (array: Uint8Array) => { array.set(bytes); return array; } });
   });
   await page.goto(artifact);
+  await page.locator('#tab-generate').click();
   await page.locator('#generate').click();
   await expect(page.locator('#phrase-quantity')).toHaveText('128 bits if securely random');
   await expect(page.locator('#phrase-interpretation')).toContainText('Actual source entropy remains unknown');
   await expect(page.locator('#crack-basis')).toHaveText('Assuming secure random generation');
-  await expect(page.locator('#crack-controls')).toBeVisible();
+  await expect(page.locator('#crack-controls')).toBeHidden();
+  await openReportDetails(page);
   await page.locator('#crack-rate').selectOption('1000000000000');
   await expect(page.locator('#crack-time')).toHaveText('About 5.39 quintillion years');
   await expect(page.locator('#crack-maximum')).toContainText('10.8 quintillion years');
   await expect(page.locator('#crack-centuries')).toContainText('5.39 × 10¹⁶ centuries');
   await expect(page.locator('#crack-century-chance')).toContainText('1 in 1.08 × 10¹⁷');
-  await expect(page.locator('#phrase-analogy')).toContainText('128 fair coin flips');
+  await expect(page.locator('#analogy-title')).toHaveText('Guess 128 coin flips');
+  await expect(page.locator('#analogy-condition')).toContainText('only if the phrase was generated uniformly at random');
   await expect(page.locator('#crack-lottery')).toContainText('3.40 × 10³⁸ equally likely tickets');
   await expect(page.locator('#random-perspective')).toBeVisible();
-  await expect(page.locator('#crack-guide')).not.toHaveAttribute('open', '');
-  await expect(page.locator('#crack-math')).not.toHaveAttribute('open', '');
+  await expect(page.locator('#understand details')).toHaveCount(1);
+  await page.locator('#report-details > summary').click();
   await expect(page.locator('#average-years')).toBeHidden();
   // Include collapsed educational content and license notices; omit JS/CSS comments.
   const copy = await page.locator('body').evaluate(body => {
@@ -383,7 +652,7 @@ test('unrecognized generated output has an explicitly conditional random-search 
   expect(await page.title()).not.toContain('\u2014');
 });
 
-test('random-search assumptions survive all lengths, contexts, and report transitions offline', async ({ page, context }) => {
+test('random-search assumptions survive all lengths, input tabs, and report transitions offline', async ({ page, context }) => {
   await context.setOffline(true);
   await page.addInitScript(() => {
     const bytes = [37, 194, 16, 133, 75, 228, 60, 169, 4, 218, 121, 44, 87, 178, 98, 11, 95, 203, 7, 166, 72, 189, 49, 110, 211, 66, 17, 158, 241, 103, 6, 127];
@@ -392,42 +661,109 @@ test('random-search assumptions survive all lengths, contexts, and report transi
   await page.goto(artifact);
   const expected = ['5.39 quintillion', '2.32 × 10²⁸', '9.95 × 10³⁷', '4.27 × 10⁴⁷', '1.83 × 10⁵⁷'];
   for (const [index, count] of [12, 15, 18, 21, 24].entries()) {
+    await page.locator('#tab-generate').click();
     await page.locator('#generate-length').selectOption(String(count));
+    await page.locator('#tab-generate').click();
     await page.locator('#generate').click();
+    await openReportDetails(page);
     await page.locator('#crack-rate').selectOption('1000000000000');
     await expect(page.locator('#crack-time')).toHaveText(`About ${expected[index]} years`);
     await expect(page.locator('#phrase-quantity')).toHaveText(`${count / 3 * 32} bits if securely random`);
   }
-  for (const source of ['unknown', 'wallet', 'physical', 'browser']) {
-    await page.locator('#source').selectOption(source);
-    await expect(page.locator('#random-perspective')).toBeHidden();
-    await expect(page.locator('#crack-century-chance')).toBeEmpty();
-    await page.locator('#analyze-button').click();
-    await expect(page.locator('#crack-time')).toContainText('years');
-    await expect(page.locator('#phrase-interpretation')).toContainText('Actual source entropy remains unknown');
-  }
+  const generatedPhrase = await page.locator('#mnemonic').inputValue();
+  await page.locator('#tab-phrase').click();
+  await page.locator('#mnemonic').fill(`${generatedPhrase} `);
+  await expect(page.locator('#random-perspective')).toBeHidden();
+  await expect(page.locator('#simple-analogy')).toBeHidden();
+  await expect(page.locator('#crack-century-chance')).toBeEmpty();
+  await page.locator('#tab-phrase').click();
+  await page.locator('#analyze-button').click();
+  await expect(page.locator('#source-title')).toHaveText('Origin unverified');
+  await expect(page.locator('#crack-time')).toContainText('years');
+  await expect(page.locator('#phrase-interpretation')).toContainText('Actual source entropy remains unknown');
   await page.locator('#passphrase').fill('public test passphrase');
   await expect(page.locator('#crack-passphrase')).toContainText('assume the attacker already knows it');
   await page.setViewportSize({ width: 390, height: 844 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await expect(page.locator('#crack-basis')).toBeVisible();
   await expect(page.locator('#crack-basis')).toHaveText('Assuming secure random generation');
-  await page.locator('#source').selectOption('human');
-  await page.locator('#analyze-button').click();
-  await expect(page.locator('#crack-detail')).toContainText('Human choices do not justify a uniform-random estimate');
-  await expect(page.locator('#random-perspective')).toBeHidden();
-  await expect(page.locator('#phrase-quantity')).toHaveText('Unknown');
-  await page.locator('#source').selectOption('unknown');
+  await page.locator('#tab-phrase').click();
   await page.locator('#mnemonic').fill('abandon '.repeat(12) + 'art '.repeat(11) + 'buddy');
+  await page.locator('#tab-phrase').click();
   await page.locator('#analyze-button').click();
   await expect(page.locator('#crack-time')).toContainText('microseconds');
   await expect(page.locator('#crack-basis')).toHaveText('Conditional estimate');
   await expect(page.locator('#crack-centuries')).toBeEmpty();
   await expect(page.locator('#random-perspective')).toBeHidden();
+  await page.locator('#tab-phrase').click();
   await page.locator('#load-example').click();
   await expect(page.locator('#crack-time')).toHaveText('One known phrase to try');
   await expect(page.locator('#random-perspective')).toBeHidden();
   await page.locator('#clear-all').click();
   await expect(page.locator('#crack-time')).toHaveText('Analyze a phrase first');
   await expect(page.locator('#crack-formula')).toBeEmpty();
+});
+
+
+test('phrase drafts never appear in the generation or binary tabs', async ({ page }) => {
+  await page.goto(artifact);
+  await page.locator('#tab-phrase').click();
+  await page.locator('#mnemonic').fill(example);
+  for (const mode of ['generate', 'binary']) {
+    await page.locator(`#tab-${mode}`).click();
+    await expect(page.locator('#mnemonic')).toBeHidden();
+    await expect(page.locator('#generated-result')).toBeHidden();
+    await expect(page.getByRole('tabpanel')).not.toContainText(example);
+  }
+  await page.locator('#tab-phrase').click();
+  await expect(page.locator('#mnemonic')).toHaveValue(example);
+});
+
+test('generated phrases are selectable text with a working copy button and clear on edits', async ({ page }) => {
+  await page.goto(artifact);
+  await page.locator('#generate').click();
+  const phrase = await page.locator('#mnemonic').inputValue();
+  await expect(page.locator('#generated-phrase')).toHaveText(phrase);
+  await expect(page.locator('#panel-generate textarea')).toHaveCount(0);
+  await page.locator('#copy-phrase').click();
+  await expect(page.locator('#phrase-copy-feedback')).toHaveText('Copied to clipboard.');
+  await page.locator('#edit-phrase').click();
+  await expect(page.locator('#mnemonic')).toBeFocused();
+  await page.locator('#mnemonic').press('ControlOrMeta+a');
+  await page.locator('#mnemonic').press('ControlOrMeta+v');
+  await expect(page.locator('#mnemonic')).toHaveValue(phrase);
+  await page.locator('#mnemonic').fill('abandon about');
+  await page.locator('#tab-generate').click();
+  await expect(page.locator('#generated-result')).toBeHidden();
+  await expect(page.locator('#generated-phrase')).toBeEmpty();
+  await page.locator('#generate').click();
+  await page.locator('#clear-all').click();
+  await expect(page.locator('#generated-phrase')).toBeEmpty();
+  await expect(page.locator('#phrase-copy-feedback')).toBeEmpty();
+});
+
+test('phrase input accepts letters and whitespace, rejects mixed pastes and mobile edits', async ({ page }) => {
+  await page.goto(artifact);
+  await page.locator('#tab-phrase').click();
+  const phrase = page.locator('#mnemonic');
+  await phrase.pressSequentially('Abandon 123!@#$ about');
+  await expect(phrase).toHaveValue('Abandon  about');
+  await phrase.press('ControlOrMeta+a');
+  await phrase.press('Backspace');
+  await expect(phrase).toHaveValue('');
+  await pasteText(page, '#mnemonic', `  ${example.toUpperCase()}\n`);
+  await expect(phrase).toHaveValue(`  ${example.toUpperCase()}\n`);
+  for (const invalid of ['abandon1 about', 'abandon-about', 'abandon 🪙 about']) {
+    await pasteText(page, '#mnemonic', invalid);
+    await expect(phrase).toHaveValue(`  ${example.toUpperCase()}\n`);
+    await expect(page.locator('#phrase-input-feedback')).toContainText('Nothing was inserted');
+  }
+  await phrase.evaluate(node => {
+    const field = node as HTMLTextAreaElement;
+    field.value += '123';
+    field.dispatchEvent(new Event('input', { bubbles: true }));
+  });
+  await expect(phrase).toHaveValue(`  ${example.toUpperCase()}\n`);
+  await page.locator('#analyze-button').click();
+  await expect(page.locator('#validity')).toHaveText('Valid BIP39 structure');
 });

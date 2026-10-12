@@ -1,8 +1,8 @@
-import { analyzeMnemonic, validateMnemonicStructure, validationFindings, assessSource, isWordCount, type GenerationSource, type MnemonicValidation } from './core/analysis.ts';
+import { analyzeMnemonic, validateMnemonicStructure, validationFindings, assessSource, isWordCount, type MnemonicValidation } from './core/analysis.ts';
 import { modelCandidateSearch, formatDuration } from './core/crack-time.ts';
 import { assessPhrase } from './core/risk.ts';
 import { modelStrength, scientific, readableYears } from './core/strength.ts';
-import { generatePhrase } from './core/generation.ts';
+import { generatePhrase, importBinaryEntropy, validateBinaryEntropy } from './core/generation.ts';
 import { deriveAddresses, accountPath, ADDRESS_TYPES, type AddressType, type AddressResult, type DerivationOptions } from './core/derivation.ts';
 import publicPhrases from './public-phrases.json' with { type: 'json' };
 
@@ -12,7 +12,7 @@ function element<T extends HTMLElement = HTMLElement>(id: string): T {
   return result as T;
 }
 const input = element<HTMLTextAreaElement>('mnemonic');
-const source = element<HTMLSelectElement>('source');
+const entropyInput = element<HTMLTextAreaElement>('entropy-input');
 const passphrase = element<HTMLInputElement>('passphrase');
 const deriveButton = element<HTMLButtonElement>('derive');
 let analysis = analyzeMnemonic('');
@@ -20,6 +20,23 @@ let generatedHere = false;
 let analysisRuns = 0;
 let addressResults: AddressResult[] = [];
 let activeDerivation: AbortController | undefined;
+type InputMode = 'generate' | 'phrase' | 'binary';
+let inputMode: InputMode = 'generate';
+
+function setInputMode(mode: InputMode) {
+  inputMode = mode;
+  for (const name of ['generate', 'phrase', 'binary'] as const) {
+    const selected = name === mode;
+    const tab = element<HTMLButtonElement>(`tab-${name}`);
+    tab.setAttribute('aria-selected', String(selected));
+    tab.tabIndex = selected ? 0 : -1;
+    element(`panel-${name}`).hidden = !selected;
+  }
+  // Draft words stay in the phrase tab; only generated words have a separate display.
+  element('generated-result').hidden = !generatedHere;
+  text('generated-phrase', generatedHere ? input.value : '');
+  element('generation-replaces').hidden = !input.value;
+}
 
 function text(id: string, value: string) { element(id).textContent = value; }
 function value(id: string) { return element<HTMLInputElement | HTMLSelectElement>(id).value; }
@@ -38,14 +55,20 @@ function invalidateAddresses() {
 }
 
 function renderSource() {
-  const assessment = assessSource(source.value as GenerationSource, analysis.knownPublic, generatedHere);
+  const assessment = assessSource(generatedHere ? 'browser' : 'unknown', analysis.knownPublic, generatedHere);
   element('source-assessment').dataset.kind = assessment.kind;
   text('source-title', assessment.title);
   text('source-detail', assessment.detail);
 }
 
 function renderAssessment() {
-  const risk = assessPhrase(analysis, source.value as GenerationSource, generatedHere);
+  for (const id of ['assessment', 'technical-details', 'understand', 'addresses', 'nav-understand', 'nav-addresses']) {
+    element(id).hidden = !analysis.valid;
+  }
+  element('analysis-grid').classList.toggle('has-results', analysis.valid);
+  element('results-placeholder').hidden = analysis.valid;
+  if (!analysis.valid) element<HTMLDetailsElement>('technical-details').open = false;
+  const risk = assessPhrase(analysis, generatedHere ? 'browser' : 'unknown', generatedHere);
   element('risk-summary').dataset.kind = risk.kind;
   element('phrase-perspective').dataset.kind = risk.kind;
   text('risk-title', risk.title);
@@ -53,9 +76,14 @@ function renderAssessment() {
   text('phrase-quantity', risk.quantity);
   text('phrase-quantity-label', risk.quantityLabel);
   text('phrase-interpretation', risk.interpretation);
-  text('phrase-analogy', risk.analogy);
+  element('simple-analogy').hidden = !analysis.valid;
+  const random = risk.kind === 'unverified';
+  element('analogy-coins').hidden = !random;
+  text('analogy-title', random ? `Guess ${analysis.encodedEntropyBits} coin flips` : risk.candidates === 1n ? 'The answer is already known' : 'A smaller list to try');
+  text('phrase-analogy', random ? 'Call heads or tails correctly every time, in the right order. One wrong flip means a different phrase.' : risk.candidates === 1n ? 'Like a lock with its combination written beside it. An attacker can try the exact words.' : 'Like a lock whose combination follows a pattern. An attacker can work through the matching combinations.');
+  text('analogy-condition', random ? 'Same chance as one guess, only if the phrase was generated uniformly at random and kept secret. The page cannot prove this.' : 'More words do not undo a known answer or a recognizable pattern.');
   renderCrackTime();
-  element<HTMLDetailsElement>('ideal-model').open = false;
+  element<HTMLDetailsElement>('report-details').open = false;
   invalidateAddresses();
   text('word-counter', `${analysis.wordCount} ${analysis.wordCount === 1 ? 'word' : 'words'}`);
   text('normalization', analysis.normalizationChanged ? 'Analysis uses lowercase words and single spaces. Capitalization and extra whitespace are normalized; words are never replaced.' : '');
@@ -103,6 +131,10 @@ function renderAssessment() {
 }
 
 function analyze(reason = 'Analysis complete') {
+  acceptedPhrase = input.value;
+  text('phrase-input-feedback', '');
+  text('phrase-copy-feedback', '');
+  setInputMode(inputMode);
   analysis = analyzeMnemonic(input.value);
   renderAssessment();
   renderInputValidation(analysis, true);
@@ -113,6 +145,8 @@ function analyze(reason = 'Analysis complete') {
 }
 
 function markPending() {
+  setInputMode(inputMode);
+  text('phrase-copy-feedback', '');
   analysis = analyzeMnemonic('');
   renderAssessment();
   const live = validateMnemonicStructure(input.value);
@@ -123,12 +157,12 @@ function markPending() {
   text('word-counter', `${count} ${count === 1 ? 'word' : 'words'}`);
   if (count) {
     text('risk-title', 'Changes not analyzed');
-    text('risk-explanation', 'Click Analyze phrase to check the current words and generation context.');
+    text('risk-explanation', 'Click Analyze phrase to check the current words.');
     text('validity', 'Analysis required');
-    text('source-title', 'Context awaiting analysis');
-    text('source-detail', 'The selected source will be considered when you analyze this phrase.');
+    text('source-title', 'Origin unverified');
+    text('source-detail', 'The words cannot prove how they were generated or whether they are secret.');
   }
-  text('analysis-feedback', count ? 'Phrase or context changed. Click Analyze phrase.' : '');
+  text('analysis-feedback', count ? 'Phrase changed. Click Analyze phrase.' : '');
 }
 
 function renderInputValidation(result: MnemonicValidation, completed = false) {
@@ -142,14 +176,30 @@ function renderInputValidation(result: MnemonicValidation, completed = false) {
   text('normalization', result.normalizationChanged ? 'Validation uses lowercase words and single spaces. Capitalization and extra whitespace are normalized; words are never replaced.' : '');
 }
 
+function renderEntropyValidation() {
+  const result = validateBinaryEntropy(entropyInput.value);
+  const empty = result.bitCount === 0;
+  entropyInput.setAttribute('aria-invalid', String(!empty && result.error !== null));
+  element('entropy-input-box').dataset.state = empty ? 'empty' : result.error ? 'invalid' : 'valid';
+  element<HTMLButtonElement>('import-entropy').disabled = result.error !== null;
+  text('entropy-validation', empty ? 'Enter binary entropy to create a phrase.' : result.error
+    ?? `${result.bitCount} bits → ${result.wordCount} words. Ready to import; checksum will be added automatically.`);
+}
+
+function clearEntropyInput() {
+  entropyInput.value = '';
+  acceptedEntropy = '';
+  text('entropy-input-feedback', '');
+  renderEntropyValidation();
+}
+
 function renderCrackTime() {
-  const risk = assessPhrase(analysis, source.value as GenerationSource, generatedHere);
+  const risk = assessPhrase(analysis, generatedHere ? 'browser' : 'unknown', generatedHere);
   const randomModel = risk.kind === 'unverified';
   const available = risk.candidates !== null || randomModel;
   element('crack-controls').hidden = !available;
   element('crack-math').hidden = !available;
   element('random-perspective').hidden = !randomModel;
-  element<HTMLDetailsElement>('crack-math').open = false;
   text('crack-formula', ''); text('crack-maximum', ''); text('crack-passphrase', '');
   text('crack-centuries', ''); text('crack-century-chance', ''); text('crack-lottery', '');
   text('crack-basis', randomModel ? 'Assuming secure random generation' : 'Conditional estimate');
@@ -194,8 +244,8 @@ function renderModel() {
   text('exact-possibilities', model.possibilities.toString());
   text('one-guess', `1 / ${model.possibilities} ≈ ${scientific(model.oneGuessProbability)}`);
   text('exact-time', `${model.averageSecondsNumerator} / ${model.averageSecondsDenominator} seconds ≈ ${scientific(model.averageYears)} years`);
-  text('coin-analogy', `Imagine guessing the exact outcome of ${model.bits} independent, fair coin flips. All of them, in order. That’s the chance of one correct guess.`);
-  text('lottery-analogy', `A lottery with one winner among approximately ${scientific(model.possibilities)} equally likely tickets. Each extra random bit doubles the number of tickets.`);
+  text('coin-analogy', `${model.bits} fair coin flips. Guess every result in order, with no mistakes. That is one correct phrase guess under this model.`);
+  text('lottery-analogy', 'One winning ticket in a huge draw. Each extra random bit doubles the tickets; your one guess still picks just one.');
 }
 
 async function copyText(content: string) {
@@ -264,7 +314,10 @@ async function derive() {
 }
 
 function clearAll() {
-  input.value = ''; passphrase.value = ''; source.value = 'unknown'; generatedHere = false;
+  clearEntropyInput();
+  input.value = ''; acceptedPhrase = ''; passphrase.value = ''; generatedHere = false;
+  text('phrase-input-feedback', '');
+  setInputMode('generate');
   passphrase.type = 'password';
   element('show-passphrase').setAttribute('aria-pressed', 'false'); text('show-passphrase', 'Show');
   for (const [id, val] of Object.entries({ 'generate-length': '12', 'example-length': '12', network: 'mainnet', 'address-type': 'native', account: '0', branch: '0', 'start-index': '0', 'address-count': '20', 'check-rate': '1000000000000', 'crack-rate': '1000000' })) setValue(id, val);
@@ -291,21 +344,129 @@ document.querySelectorAll<HTMLButtonElement>('[data-address-type]').forEach(butt
 });
 element('address-type').addEventListener('change', renderAddressSelection);
 
-input.addEventListener('input', () => { generatedHere = false; markPending(); });
-source.addEventListener('change', markPending);
-element('analyze-button').addEventListener('click', () => { analyze(); element('assessment').focus(); element('assessment').scrollIntoView({ block: 'nearest' }); });
-element('clear-all').addEventListener('click', () => { clearAll(); input.focus(); });
+const inputModes = ['generate', 'phrase', 'binary'] as const;
+for (const [index, mode] of inputModes.entries()) {
+  const tab = element(`tab-${mode}`);
+  tab.addEventListener('click', () => setInputMode(mode));
+  tab.addEventListener('keydown', event => {
+    const next = event.key === 'ArrowRight' ? (index + 1) % 3 : event.key === 'ArrowLeft' ? (index + 2) % 3 : event.key === 'Home' ? 0 : event.key === 'End' ? 2 : null;
+    if (next === null) return;
+    event.preventDefault();
+    setInputMode(inputModes[next]);
+    element(`tab-${inputModes[next]}`).focus();
+  });
+}
+element('edit-phrase').addEventListener('click', () => { setInputMode('phrase'); input.focus(); });
+element('copy-phrase').addEventListener('click', async () => {
+  await copyText(element('generated-phrase').textContent ?? '');
+  text('phrase-copy-feedback', element('copy-status').textContent ?? '');
+});
+let acceptedPhrase = '';
+function rejectPhraseInput() {
+  text('phrase-input-feedback', 'Use English letters and spaces only. Nothing was inserted.');
+}
+input.addEventListener('keydown', event => {
+  if (!event.ctrlKey && !event.metaKey && !event.altKey && event.key.length === 1 && !/^[a-z\s]$/i.test(event.key)) {
+    event.preventDefault();
+    rejectPhraseInput();
+  }
+});
+input.addEventListener('beforeinput', event => {
+  if (event.data && /[^a-z\s]/i.test(event.data)) {
+    event.preventDefault();
+    rejectPhraseInput();
+  }
+});
+input.addEventListener('paste', event => {
+  if (event.clipboardData && /[^a-z\s]/i.test(event.clipboardData.getData('text/plain'))) {
+    event.preventDefault();
+    rejectPhraseInput();
+  }
+});
+input.addEventListener('input', () => {
+  // Reject the whole edit rather than silently changing recovery words.
+  if (/[^a-z\s]/i.test(input.value)) {
+    input.value = acceptedPhrase;
+    rejectPhraseInput();
+    return;
+  }
+  acceptedPhrase = input.value;
+  text('phrase-input-feedback', '');
+  generatedHere = false;
+  markPending();
+});
+let acceptedEntropy = '';
+function rejectEntropyInput() {
+  text('entropy-input-feedback', 'Only 0 and 1 are accepted. Nothing was inserted.');
+}
+entropyInput.addEventListener('keydown', event => {
+  // Preserve navigation, deletion and clipboard/selection shortcuts.
+  if (!event.ctrlKey && !event.metaKey && !event.altKey &&
+      ((event.key.length === 1 && !/^[01]$/.test(event.key)) || event.key === 'Enter')) {
+    event.preventDefault();
+    rejectEntropyInput();
+  }
+});
+entropyInput.addEventListener('beforeinput', event => {
+  if (event.data && /[^01\s]/.test(event.data)) {
+    event.preventDefault();
+    rejectEntropyInput();
+  }
+});
+entropyInput.addEventListener('paste', event => {
+  if (!event.clipboardData) return;
+  const pasted = event.clipboardData.getData('text/plain');
+  if (/[^01\s]/.test(pasted)) {
+    event.preventDefault();
+    rejectEntropyInput();
+  }
+});
+entropyInput.addEventListener('input', () => {
+  // Cover mobile input, drops and browsers that cannot cancel beforeinput.
+  if (/[^01\s]/.test(entropyInput.value)) {
+    entropyInput.value = acceptedEntropy;
+    rejectEntropyInput();
+  } else {
+    const caret = entropyInput.value.slice(0, entropyInput.selectionStart).replace(/\s/g, '').length;
+    entropyInput.value = entropyInput.value.replace(/\s/g, '');
+    entropyInput.setSelectionRange(caret, caret);
+    acceptedEntropy = entropyInput.value;
+    text('entropy-input-feedback', '');
+  }
+  renderEntropyValidation();
+});
+element('import-entropy').addEventListener('click', () => {
+  // Validate before replacing any current phrase or results.
+  let phrase: string;
+  try { phrase = importBinaryEntropy(entropyInput.value); }
+  catch { renderEntropyValidation(); return; }
+  input.value = phrase; passphrase.value = ''; generatedHere = false;
+  text('generation-error', '');
+  clearEntropyInput();
+  setInputMode('phrase');
+  analyze('Entropy imported and analyzed');
+  input.focus();
+});
+element('analyze-button').addEventListener('click', () => {
+  analyze();
+  const target = analysis.valid ? element('assessment') : input;
+  target.focus();
+  target.scrollIntoView({ block: 'nearest' });
+});
+element('clear-all').addEventListener('click', () => { clearAll(); element('tab-generate').focus(); });
 element('generate').addEventListener('click', () => {
   try {
     const phrase = generatePhrase(Number(value('generate-length')));
+    clearEntropyInput();
     // A passphrase from a previous phrase must not be carried into a newly generated one.
-    passphrase.value = ''; input.value = phrase; source.value = 'browser'; generatedHere = true;
+    passphrase.value = ''; input.value = phrase; generatedHere = true;
     text('generation-error', ''); analyze('Generated and analyzed');
   } catch (error) { text('generation-error', error instanceof Error ? error.message : 'Secure generation failed.'); }
 });
 element('load-example').addEventListener('click', () => {
+  clearEntropyInput();
   input.value = publicPhrases.find(phrase => phrase.split(' ').length === Number(value('example-length')))!;
-  passphrase.value = ''; source.value = 'public'; generatedHere = false; text('generation-error', ''); analyze('Public example loaded and analyzed');
+  passphrase.value = ''; generatedHere = false; text('generation-error', ''); analyze('Public example loaded and analyzed');
 });
 for (const id of ['network', 'address-type', 'account', 'branch', 'start-index', 'address-count', 'passphrase']) {
   element(id).addEventListener('input', invalidateAddresses);
@@ -324,24 +485,10 @@ element('show-passphrase').addEventListener('click', () => {
   element('show-passphrase').setAttribute('aria-pressed', String(show));
   text('show-passphrase', show ? 'Hide' : 'Show');
 });
-function renderConnectionNotice() {
-  const local = location.protocol === 'file:';
-  const online = navigator.onLine;
-  element('usage-notice').dataset.connection = online ? 'online' : 'offline';
-  text('environment', `${local ? 'LOCAL FILE' : 'HOSTED DEMO'} · BROWSER REPORTS ${online ? 'ONLINE' : 'OFFLINE'}`);
-  text('notice-title', online ? 'You appear to be online. Don’t use a real seed phrase.' : 'Your browser reports offline.');
-  text('notice-copy', online
-    ? 'Use test phrases only. Download and verify this page, then open it on a trusted, disconnected device, such as an air-gapped computer. A local file can still be online.'
-    : 'This is not proof of an air gap. Before using a real seed phrase, verify the downloaded file and use a trusted, disconnected device.');
-}
+text('environment', `${location.protocol === 'file:' ? 'LOCAL FILE' : 'HOSTED DEMO'} · COMPUTES IN YOUR BROWSER`);
 if (location.protocol === 'file:') {
   document.querySelectorAll<HTMLAnchorElement>('.download-link').forEach(link => { link.href = location.href.split('#')[0]; });
 }
-// Use the browser's connection hint without sending a network probe.
-window.addEventListener('online', renderConnectionNotice);
-window.addEventListener('offline', renderConnectionNotice);
-window.addEventListener('pageshow', renderConnectionNotice);
-renderConnectionNotice();
 clearAll();
 if (typeof globalThis.crypto?.getRandomValues !== 'function') {
   element<HTMLButtonElement>('generate').disabled = true;

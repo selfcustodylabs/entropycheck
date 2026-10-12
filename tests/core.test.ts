@@ -10,7 +10,7 @@ import * as ecc from '@bitcoinerlab/secp256k1';
 import * as bitcoin from 'bitcoinjs-lib';
 import { analyzeMnemonic, validateMnemonicStructure, validationFindings, assessSource, normalizeMnemonic, WORD_COUNTS } from '../src/core/analysis.ts';
 import { assessPhrase, findPatterns } from '../src/core/risk.ts';
-import { generatePhrase } from '../src/core/generation.ts';
+import { generatePhrase, importBinaryEntropy, validateBinaryEntropy } from '../src/core/generation.ts';
 import { modelCandidateSearch, formatDuration } from '../src/core/crack-time.ts';
 import { modelStrength, scientific, readableYears, SECONDS_PER_YEAR } from '../src/core/strength.ts';
 import { deriveAddresses, validateOptions, accountPath, ADDRESS_TYPES, type DerivationOptions } from '../src/core/derivation.ts';
@@ -20,6 +20,37 @@ const phrase = vectors[0][1];
 const defaults: DerivationOptions = { network: 'mainnet', addressType: 'native', account: 0, change: 0, startIndex: 0, count: 2 };
 bitcoin.initEccLib(ecc);
 const independentBip32 = BIP32Factory(ecc);
+
+test('binary entropy imports match all published BIP39 vectors including leading zeros', () => {
+  for (const [hex, mnemonic] of vectors) {
+    const binary = Array.from(Buffer.from(hex, 'hex'), byte => byte.toString(2).padStart(8, '0')).join('');
+    assert.equal(importBinaryEntropy(binary), mnemonic);
+    assert.equal(importBinaryEntropy(` \n${binary.match(/.{8}/g)!.join(' \t\n')}\n`), mnemonic);
+  }
+});
+
+test('binary entropy preserves every bit at all five lengths and adds only the checksum', () => {
+  for (const bits of [128, 160, 192, 224, 256]) {
+    for (const binary of ['0'.repeat(bits), '1'.repeat(bits), '00000001'.repeat(bits / 8)]) {
+      const validation = validateBinaryEntropy(binary);
+      assert.equal(validation.error, null);
+      assert.equal(validation.wordCount, bits / 32 * 3);
+      const result = analyzeMnemonic(importBinaryEntropy(binary));
+      assert.equal(result.valid, true);
+      assert.equal(result.entropyBinary, binary);
+      assert.equal(result.checksumBinary?.length, bits / 32);
+    }
+  }
+});
+
+test('binary entropy rejects invalid characters, unsupported lengths and checksum-inclusive input', () => {
+  for (const raw of ['', ' \t\n', '0'.repeat(127), '1'.repeat(129), '0'.repeat(132), '0'.repeat(264), '1'.repeat(512)]) {
+    assert.throws(() => importBinaryEntropy(raw), /exactly 128, 160, 192, 224, or 256 bits/);
+  }
+  for (const raw of ['0b' + '0'.repeat(128), '0'.repeat(128) + '2', '01,'.repeat(64), '01_'.repeat(64), '０'.repeat(128), '<script>']) {
+    assert.throws(() => importBinaryEntropy(raw), /only 0 and 1/);
+  }
+});
 
 test('word indices preserve zero-based BIP39 values, 11 bits, and one-based GitHub lines', () => {
   const zero = analyzeMnemonic(phrase);

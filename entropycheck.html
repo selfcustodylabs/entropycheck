@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="referrer" content="no-referrer">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-T+fpb+IPCipdLAdfjCfaUasJJIxDzR3X3LmVSsu2sUw='; style-src 'sha256-Vvmo1Eb+uN+hn1LpZzW/3terG1i6RL9xYfdkO+BBXcU='; img-src data:; connect-src 'none'; form-action 'none'; base-uri 'none'; object-src 'none'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-FExe5fBVil1sP21rY6KqwHqYgd0/yKUc5KSi3lqmoHM='; style-src 'sha256-7Iuzvv7JDTODjDKeMN7pF9SJTDQXZvJ2BdAMtnAlufs='; img-src data:; connect-src 'none'; form-action 'none'; base-uri 'none'; object-src 'none'">
   <meta name="description" content="Understand BIP39 seed phrases, explore entropy, and derive Bitcoin addresses. A self-contained tool that also works offline.">
   <title>EntropyCheck | Understand your Bitcoin seed</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='10' fill='%23c94d20'/%3E%3Cpath d='M12 11h16v5H17v3h9v4h-9v3h11v4H12z' fill='white'/%3E%3C/svg%3E">
@@ -206,15 +206,6 @@ main {
   padding: 19px 0;
   text-transform: uppercase;
 }
-.environment-strip > span:first-child:before {
-  content: "";
-  display: inline-block;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #73846d;
-  margin: 0 8px 1px 0;
-}
 .environment-strip > span:last-child {
   letter-spacing: .4px;
 }
@@ -301,14 +292,9 @@ main {
   margin-left: 4px;
 }
 .notice[data-connection="online"] { border-color: #bd5d34; background: #fff0e5; color: #783515; }
-.notice-actions { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-top: 10px; font-weight: 600; }
-.notice-actions a { margin: 0; }
+.notice p { display: inline; }
+.notice .notice-guide { display: inline-block; font-weight: 600; margin-left: 8px; }
 .input-heading { margin-bottom: 20px; }
-.key-concepts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-bottom: 22px; }
-.key-concepts article { padding: 20px; background: #ecf0e5; border: 1px solid #d8dfcf; border-radius: 10px; }
-.key-concepts h3 { margin: 8px 0; }
-.key-concepts p { font-size: 14px; color: #526049; }
-@media (max-width: 700px) { .key-concepts { grid-template-columns: 1fr; gap: 10px; } }
 .section {
   margin: 56px 0;
 }
@@ -387,6 +373,8 @@ main {
   gap: 22px;
   align-items: stretch;
 }
+.analysis-grid:not(.has-results) { grid-template-columns: minmax(0, 1fr); }
+.results-placeholder { margin: 16px 0 0; color: var(--muted); font-size: 14px; }
 .panel {
   background: var(--white);
   border: 1px solid var(--line);
@@ -464,15 +452,34 @@ select:focus {
 }
 .generate-row {
   display: flex;
-  gap: 9px;
-  margin-top: 17px;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
 }
 .generate-row select {
-  width: 105px;
+  width: 124px;
 }
 .generate-row .button {
-  flex: 1;
+  flex: 0 0 auto;
+  min-width: 130px;
 }
+.generation-start { display: grid; grid-template-columns: minmax(0, 1fr) 280px; align-items: center; gap: 48px; padding: 12px 16px 8px; }
+.generation-copy h3 { margin: 0 0 10px; font-size: clamp(24px, 3vw, 30px); letter-spacing: -.7px; }
+.generation-copy > p:first-of-type { max-width: 460px; margin: 0 0 24px; color: var(--muted); font-size: 15px; line-height: 1.7; }
+.generation-copy > label { font-size: 12px; }
+.generation-note { margin: 14px 0 0; font-size: 12px; }
+.seed-preview { padding: 22px; border: 1px solid #e4dccb; border-radius: 14px; background: #faf6ec; transform: rotate(2deg); }
+.seed-preview-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; color: #967c54; font-size: 12px; }
+.seed-preview-heading > :first-child { font-family: monospace; letter-spacing: 3px; }
+.seed-preview-words { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+.seed-preview-words > span { display: flex; align-items: center; gap: 10px; padding: 10px; border: 1px solid #e9e2d6; border-radius: 5px; background: #fffdf8; color: #a99b82; font: 10px monospace; }
+.seed-preview-words i { width: 100%; height: 5px; border-radius: 4px; background: #dbcfb6; }
+.seed-preview-words > :nth-child(3n) i { width: 65%; }
+.seed-preview > p { margin: 16px 0 0; text-align: center; color: #877451; font-size: 11px; }
+.analysis-grid.has-results .generation-start { grid-template-columns: minmax(0, 1fr); padding: 0; }
+.analysis-grid.has-results .seed-preview { display: none; }
+#generation-replaces { padding-top: 12px; border-top: 1px solid var(--line); }
+#analysis-feedback:empty { display: none; }
 .example-row {
   display: flex;
   align-items: center;
@@ -1088,10 +1095,7 @@ footer .brand {
   .number-cards > div + div {
     padding-left: 25px;
   }
-  .generate-row .button {
-    font-size: 11px;
-    padding: 10px;
-  }
+  .generation-start { gap: 24px; padding: 8px 0; }
   .example-row {
     gap: 5px;
   }
@@ -1185,9 +1189,8 @@ footer .brand {
   .source-field {
     margin: 16px 0;
   }
-  .generate-row .button {
-    font-size: 12px;
-  }
+  .generation-start { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .seed-preview { display: none; }
   .assessment-kicker {
     margin-top: 20px;
   }
@@ -1329,15 +1332,21 @@ footer .brand {
 .structure-status { font-weight: 700; margin-bottom: 6px; }
 .phrase-perspective { margin-bottom: 20px; border-left-width: 5px; padding: 0; overflow: hidden; }
 .phrase-perspective .big-number { font-size: clamp(1.6rem, 4vw, 2.6rem); overflow-wrap: anywhere; }
-.perspective-lead { display: grid; grid-template-columns: 1fr; gap: 18px; padding: clamp(24px, 4vw, 32px); }
+.perspective-lead { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: center; gap: 28px; padding: clamp(24px, 4vw, 32px); }
+.perspective-lead > * { min-width: 0; }
 .perspective-result .big-number { margin: 8px 0 16px; }
 .perspective-summary { max-width: 760px; margin-bottom: 0; font-size: 1.04rem; line-height: 1.7; }
-.plain-language { margin: 0; padding: 14px 18px; border-radius: 10px; background: #f5eee1; border: 1px solid #ded2c0; }
-.plain-language p:last-child { margin: 10px 0 0; font-size: 1.06rem; line-height: 1.65; }
-.phrase-perspective[data-kind="unsafe"] .plain-language,
-.phrase-perspective[data-kind="weak"] .plain-language { background: #ffe4d8; border-color: #d89b84; }
-#ideal-model > summary { font-size: 1rem; line-height: 1.6; }
-#ideal-model[open] > summary { margin-bottom: 24px; }
+.simple-analogy { padding: 22px; border-radius: 10px; background: #f5eee1; border: 1px solid #ded2c0; }
+.simple-analogy h3 { margin: 8px 0; font-size: 24px; }
+.simple-analogy > p { max-width: 660px; }
+.simple-analogy .field-help { margin-bottom: 0; }
+.coin-strip { display: flex; gap: 8px; margin-bottom: 20px; }
+.coin-strip span { display: grid; place-items: center; width: 38px; height: 38px; border: 1px solid #b89d6e; border-radius: 50%; background: #fff9e9; color: #6a481c; font-weight: 700; }
+.coin-strip span:nth-last-child(2) { border-style: dashed; background: transparent; }
+.coin-strip span:last-child { border: 0; background: transparent; }
+.phrase-perspective[data-kind="unsafe"] .simple-analogy,
+.phrase-perspective[data-kind="weak"] .simple-analogy { background: #ffe4d8; border-color: #d89b84; }
+#ideal-model { border-top: 1px solid var(--line); padding: 24px 0 0; margin-top: 24px; }
 #ideal-model .model-intro { padding: 16px; background: #f5eee1; border-left: 3px solid #b2652e; }
 #analysis-feedback { min-height: 1.5em; }
 @media print { #raw-binary, #checksum-binary, #mnemonic-binary { display: none !important; } }
@@ -1350,23 +1359,22 @@ footer .brand {
 .phrase-input[data-state="invalid"] .input-validation { color: #8c2814; background: #fff0e9; }
 .crack-section { border-top: 1px solid var(--line); padding: clamp(24px, 4vw, 42px); background: #fbfaf6; }
 .crack-section h3 { margin: 4px 0 0; font-size: clamp(1.35rem, 2vw, 1.65rem); }
-.crack-result-card { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(260px, .75fr); gap: 28px; align-items: end; margin-top: 24px; padding: 24px; border: 1px solid var(--line); border-radius: 10px; background: #fff; }
+.crack-result-card { margin-top: 18px; }
 .crack-result-copy .big-number { margin: 8px 0 12px; }
 .crack-result-copy > :last-child { margin-bottom: 0; }
-#crack-controls { max-width: none; }
+#crack-controls { max-width: 420px; margin-top: 20px; }
 #crack-controls .field-help { margin-bottom: 0; }
 .random-perspective { margin-top: 24px; }
-.random-perspective > summary { font-size: .93rem; }
-.random-perspective[open] > summary { margin-bottom: 14px; }
+.report-details { margin-top: 20px; border-top: 1px solid var(--line); padding-top: 18px; }
+.report-details > summary { font-size: .93rem; }
 .perspective-facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
 .perspective-facts article { padding: 18px; border: 1px solid var(--line); border-radius: 9px; background: #fff; }
 .perspective-facts article p:last-child { margin: 7px 0 0; font-size: 1.02rem; line-height: 1.55; }
 .lottery-analogy { margin: 14px 0 0; padding: 18px 20px; border-left: 3px solid var(--accent); background: #f5eee1; font-style: italic; line-height: 1.65; }
 .crack-disclosures { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 22px; }
-.crack-disclosures details { margin: 0; padding: 15px 17px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
-.crack-disclosures details[hidden] { display: none; }
-.crack-disclosures summary { font-size: .93rem; }
-.crack-disclosures details p { font-size: .9rem; line-height: 1.65; }
+.crack-disclosures > div { min-width: 0; }
+.crack-disclosures h4 { margin: 0 0 12px; }
+.crack-disclosures p { font-size: .9rem; line-height: 1.65; }
 @media (max-width: 760px) {
   .perspective-lead,
   .crack-result-card { grid-template-columns: 1fr; }
@@ -1376,16 +1384,15 @@ footer .brand {
   .crack-section #crack-basis { display: inline-block; }
   .perspective-lead,
   .crack-section { padding: 24px; }
-  .crack-result-card { padding: 19px; gap: 20px; }
 }
 
 /* Give technical material its own workspace, separate from the verdict. */
-.entropy-panel { margin-top: 18px; padding: 0; overflow: hidden; border-color: #c8794e; }
-.entropy-panel > summary { padding: 22px 26px; font-size: 17px; color: #873411; background: #fae9d9; box-shadow: inset 5px 0 var(--accent); }
-.entropy-panel > summary:hover { background: #f5ddc5; }
+.entropy-panel { margin-top: 18px; padding: 0; overflow: hidden; border-color: var(--line); }
+.entropy-panel > summary { padding: 22px 26px; font-size: 17px; color: var(--ink); background: var(--pale); }
+.entropy-panel > summary:hover { background: #e8eadf; }
 .entropy-panel > summary:focus-visible { outline-offset: -4px; }
-.entropy-panel[open] > summary { margin-bottom: 0; border-bottom: 1px solid #c8794e; }
-.summary-hint { margin-left: 14px; color: #804323; font-size: 13px; font-weight: 400; }
+.entropy-panel[open] > summary { margin-bottom: 0; border-bottom: 1px solid var(--line); }
+.summary-hint { margin-left: 14px; color: var(--muted); font-size: 13px; font-weight: 400; }
 .entropy-panel > :not(summary) { margin: 24px 26px; }
 .entropy-intro p { max-width: 760px; color: var(--muted); margin-bottom: 0; }
 .index-guide { padding: 18px 20px; background: #f5eee1; border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; }
@@ -1410,6 +1417,15 @@ footer .brand {
 .risk-summary { margin-top: 16px; }
 .risk-summary p:last-child { font-size: 14px; }
 .phrase-input[data-state="valid"] .input-validation { background: #f0f3ec; }
+.seed-tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; padding: 4px; border: 1px solid var(--line); border-radius: 10px; background: var(--pale); margin-bottom: 24px; }
+.seed-tabs button { padding: 12px 8px; border: 0; border-radius: 7px; color: var(--muted); background: transparent; font-size: 13px; font-weight: 600; line-height: 1.5; }
+.seed-tabs button[aria-selected="true"] { background: var(--accent); color: white; }
+.seed-tabs button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.seed-panel > .field-help:first-child { margin-top: 0; }
+#phrase-workspace { margin-top: 24px; }
+#edit-phrase { margin-top: 12px; }
+#entropy-input { font-family: monospace; overflow-wrap: anywhere; }
+.dice-help { margin-top: 16px; }
 .phrase-perspective .big-number { font-variant-numeric: tabular-nums; letter-spacing: -.045em; }
 .subtle-tag { line-height: 1.5; }
 .path-reference button span { font-size: 14px; }
@@ -1452,8 +1468,9 @@ footer .brand {
   .derivation-controls { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .derivation-controls .field:nth-child(-n+2) { grid-column: 1 / -1; }
   .perspective-lead, .crack-section { padding: 20px; }
-  .crack-result-card { padding: 16px; }
-  .perspective-summary, .plain-language p:last-child { font-size: 15px; }
+  .coin-strip { gap: 6px; }
+  .coin-strip span { width: 32px; height: 32px; }
+  .perspective-summary, .simple-analogy > p { font-size: 15px; }
   .crack-result-copy > :last-child { font-size: 14px; }
   .crack-section #crack-basis { font-size: 11px; }
   .offline-section p { max-width: none; }
@@ -1462,7 +1479,9 @@ footer .brand {
   main { padding: 0 14px; }
   .site-header { padding-left: 14px; padding-right: 14px; }
   .word-indices { grid-template-columns: 1fr; }
-  .generate-row .button { flex-basis: 100%; }
+  .generate-row { gap: 8px; }
+  .generate-row select { width: 108px; padding-left: 10px; padding-right: 10px; }
+  .generate-row .button { min-width: 112px; padding: 12px; }
   .path-reference { grid-template-columns: 1fr; }
   .segmented span { padding: 9px 6px; }
 }
@@ -1470,13 +1489,32 @@ footer .brand {
   .site-header { position: static; }
   #word-indices { display: none !important; }
 }
+
+/* Small inline illustrations keep every workflow self-contained offline. */
+.import-intro { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-bottom: 20px; }
+.import-intro h3 { font-size: clamp(23px, 3vw, 30px); letter-spacing: -.7px; }
+.workflow-art { width: 180px; max-width: 35%; flex-shrink: 0; height: auto; }
+.generated-result { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--line); }
+.generated-phrase { font-size: 19px; line-height: 1.9; word-spacing: .3em; user-select: text; }
+.copy-icon { display: grid; place-items: center; flex-shrink: 0; width: 44px; height: 44px; border: 1px solid var(--line); border-radius: 8px; color: var(--accent); background: var(--white); }
+.copy-icon:hover { background: var(--pale); }
+#phrase-copy-feedback:empty { display: none; }
+.crack-result-card { display: flex; align-items: center; gap: 30px; }
+.crack-result-copy { min-width: 0; flex: 1; }
+.guessing-art { width: 160px; flex-shrink: 0; }
+@media (max-width: 700px) {
+  .import-intro { gap: 12px; }
+  .workflow-art { width: 120px; }
+  .crack-result-card { flex-direction: column; align-items: flex-start; gap: 14px; }
+  .guessing-art { width: 120px; align-self: center; }
+}
 </style>
 </head>
 <body>
   <a class="skip-link" href="#analyze">Skip to tool</a>
   <header class="site-header">
     <a class="brand" href="#top" aria-label="EntropyCheck home"><span class="brand-mark" aria-hidden="true">E<span>·</span></span>EntropyCheck<span class="version">v1.0</span></a>
-    <nav aria-label="Main navigation"><a href="#analyze"><span aria-hidden="true">01</span> Analyze</a><a href="#understand"><span aria-hidden="true">02</span> Understand</a><a href="#addresses"><span aria-hidden="true">03</span> Addresses</a></nav>
+    <nav aria-label="Main navigation"><a href="#analyze"><span aria-hidden="true">01</span> Analyze</a><a id="nav-understand" href="#understand" hidden><span aria-hidden="true">02</span> Understand</a><a id="nav-addresses" href="#addresses" hidden><span aria-hidden="true">03</span> Addresses</a></nav>
     <a class="button small download-link" href="./entropycheck.html" download="entropycheck.html">Download offline <span aria-hidden="true">↗</span></a>
   </header>
   <main id="top">
@@ -1485,26 +1523,82 @@ footer .brand {
       <div><p class="eyebrow">YOUR BITCOIN SEED, EXPLAINED.</p><h1 id="hero-title">Understand the strength<br>behind your seed.</h1><p class="hero-copy">From recovery words to risk, randomness, and Bitcoin addresses.<br class="desktop-break"> A private, browser-local workspace for learning how it all fits together.</p><div class="hero-facts"><span>No accounts</span><span>No data uploads</span><span>Works offline</span></div></div>
       <div class="hero-aside" aria-hidden="true"><div class="bit-grid"><span>0</span><span>1</span><span>0</span><span>1</span><span>1</span><span>0</span><span>1</span><span>0</span><span>0</span><span>0</span><span>1</span><span>1</span><span>1</span><span>0</span><span>0</span><span>1</span></div><p>RANDOMNESS → WORDS</p></div>
     </section>
-    <aside class="notice" id="usage-notice" role="status" aria-live="polite" aria-atomic="true"><span class="notice-icon" aria-hidden="true">!</span><div><p><strong id="notice-title">For testing and learning.</strong> <span id="notice-copy">Use public examples or disposable test phrases here. Handle real recovery phrases only with a verified offline copy on a trusted, disconnected device.</span></p><div class="notice-actions"><a class="download-link" href="./entropycheck.html" download="entropycheck.html">Download offline HTML ↓</a><a href="#offline">How to use it offline →</a></div></div></aside>
     <noscript><p class="notice">JavaScript is required for this local calculator. Nothing is submitted to a server.</p></noscript>
 
     <section id="analyze" class="section" aria-labelledby="analyze-title">
-      <div class="section-heading"><div><p class="eyebrow">01 / THE PHRASE</p><h2 id="analyze-title">Start with the words.</h2><p class="section-copy">Paste a test phrase to check it, or explore with a generated example.</p></div><button id="clear-all" class="text-button" type="button">Clear all <span aria-hidden="true">↺</span></button></div>
-      <div class="analysis-grid">
+      <div class="section-heading"><div><p class="eyebrow">01 / THE PHRASE</p><h2 id="analyze-title">Start with words or bits.</h2><p class="section-copy">Paste a test phrase, import raw binary entropy, or explore with a generated example.</p></div><button id="clear-all" class="text-button" type="button">Clear all <span aria-hidden="true">↺</span></button></div>
+      <div class="analysis-grid" id="analysis-grid">
         <div class="panel input-panel">
-          <h3 class="input-heading">Use an existing phrase</h3>
-          <div class="label-row"><label for="mnemonic">BIP39 recovery phrase</label><span id="word-counter" class="muted">0 words</span></div>
-          <div id="phrase-input" class="phrase-input"><textarea id="mnemonic" rows="4" placeholder="Paste a test phrase, or generate one below to explore." spellcheck="false" autocomplete="off" autocapitalize="off" autocorrect="off" aria-describedby="input-validation phrase-help normalization" aria-invalid="false"></textarea><p id="input-validation" class="input-validation" role="status" aria-live="polite">Enter a phrase to check its structure.</p></div>
-          <p id="phrase-help" class="field-help">English · 12, 15, 18, 21, or 24 words. All calculations happen in this page.</p>
-          <p id="normalization" class="field-help"></p>
-          <div class="field source-field"><label for="source">How was it generated? <span class="optional">Optional</span></label><select id="source"><option value="unknown">I don’t know / prefer not to say</option><option value="wallet">A wallet’s random generator</option><option value="browser">A browser’s cryptographic random generator</option><option value="physical">Physical randomness (dice, coins, etc.)</option><option value="human">Words chosen by a person</option><option value="public">A public example</option></select><p class="field-help">This context is self-reported. The phrase cannot verify its source.</p></div>
-          <button id="analyze-button" type="button" class="button primary" disabled><span id="analyze-label">Analyze phrase</span> <span aria-hidden="true">→</span></button>
+          <div class="seed-tabs" role="tablist" aria-label="Start with a seed phrase or entropy">
+            <button id="tab-generate" type="button" role="tab" aria-selected="true" aria-controls="panel-generate">Generate new seed</button>
+            <button id="tab-phrase" type="button" role="tab" aria-selected="false" aria-controls="panel-phrase" tabindex="-1">Import seed phrase</button>
+            <button id="tab-binary" type="button" role="tab" aria-selected="false" aria-controls="panel-binary" tabindex="-1">Import binary entropy</button>
+          </div>
+          <div id="panel-generate" class="seed-panel" role="tabpanel" aria-labelledby="tab-generate">
+            <div class="generation-start">
+              <div class="generation-copy">
+                <h3>Explore a fresh seed.</h3>
+                <p id="generate-help">Create a test phrase and explore its words, entropy, and Bitcoin addresses.</p>
+                <label for="generate-length">Phrase length</label>
+                <div class="generate-row"><select id="generate-length"><option value="12">12 words</option><option value="15">15 words</option><option value="18">18 words</option><option value="21">21 words</option><option value="24">24 words</option></select><button class="button primary" id="generate" type="button" aria-describedby="generate-help generation-replaces">Generate <span aria-hidden="true">→</span></button></div>
+                <p class="field-help generation-note">Browser-generated randomness. Analyzed automatically.</p>
+              </div>
+              <div class="seed-preview" aria-hidden="true">
+                <div class="seed-preview-heading"><span>0101</span><span>→</span><span>Words</span></div>
+                <div class="seed-preview-words"><span>01<i></i></span><span>02<i></i></span><span>03<i></i></span><span>04<i></i></span><span>05<i></i></span><span>06<i></i></span></div>
+                <p>Small words. A world of possibilities.</p>
+              </div>
+            </div>
+            <p id="generation-replaces" class="field-help" hidden>Generating again replaces the current phrase and clears its passphrase and addresses.</p>
+            <div id="generated-result" class="generated-result" hidden>
+              <div class="label-row"><h3>Your generated phrase</h3><button id="copy-phrase" class="copy-icon" type="button" aria-label="Copy generated seed phrase" title="Copy seed phrase"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="8" y="8" width="12" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg></button></div>
+              <p id="generated-phrase" class="generated-phrase"></p>
+              <p id="phrase-copy-feedback" class="field-help" role="status"></p>
+              <button id="edit-phrase" type="button" class="text-button">Edit in Import seed phrase →</button>
+            </div>
+            <p id="generation-error" class="field-error" role="status"></p>
+          </div>
+          <div id="panel-phrase" class="seed-panel" role="tabpanel" aria-labelledby="tab-phrase" hidden>
+            <div class="import-intro">
+              <div><h3>Explore your words.</h3><p class="field-help">Check an existing phrase, or load a public example to explore.</p></div>
+              <svg class="workflow-art" viewBox="0 0 220 150" fill="none" aria-hidden="true">
+                <rect x="26" y="20" width="139" height="112" rx="12" fill="#f0f1e9" transform="rotate(-6 26 20)"/>
+                <rect x="42" y="14" width="139" height="112" rx="12" fill="#faf6ec" stroke="#e4dccb"/>
+                <path d="M61 39h34M61 58h23M61 77h34M113 39h47M113 58h34M113 77h47M61 99h62" stroke="#c6b893" stroke-width="5" stroke-linecap="round"/>
+                <circle cx="167" cy="104" r="26" fill="#fffdf8" stroke="#b7461c" stroke-width="2"/><path d="m185 123 18 18M157 104l7 7 13-15" stroke="#b7461c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="example-row"><button class="text-button" id="load-example" type="button">Load a public example <span aria-hidden="true">→</span></button><select id="example-length" aria-label="Public example length"><option value="12">12 words</option><option value="24">24 words</option></select></div>
+            <div id="phrase-workspace">
+              <div class="label-row"><label id="phrase-label" for="mnemonic">BIP39 recovery phrase</label><span id="word-counter" class="muted">0 words</span></div>
+              <div id="phrase-input" class="phrase-input"><textarea id="mnemonic" rows="4" placeholder="Paste your English BIP39 recovery phrase." spellcheck="false" autocomplete="off" autocapitalize="off" autocorrect="off" aria-describedby="input-validation phrase-help normalization phrase-input-feedback" aria-invalid="false"></textarea><p id="input-validation" class="input-validation" role="status" aria-live="polite">Enter a phrase to check its structure.</p></div>
+              <p id="phrase-input-feedback" class="field-error" role="status"></p>
+              <p id="phrase-help" class="field-help">English letters and spaces only · 12, 15, 18, 21, or 24 words. All calculations happen in this page.</p>
+              <p id="normalization" class="field-help"></p>
+              <button id="analyze-button" type="button" class="button primary" disabled><span id="analyze-label">Analyze phrase</span> <span aria-hidden="true">→</span></button>
+            </div>
+          </div>
+          <div id="panel-binary" class="seed-panel" role="tabpanel" aria-labelledby="tab-binary" hidden>
+            <div class="import-intro">
+              <div><h3>Begin with the bits.</h3><p class="field-help">Turn your binary entropy into recovery words.</p></div>
+              <svg class="workflow-art" viewBox="0 0 220 150" fill="none" aria-hidden="true">
+                <rect x="18" y="16" width="132" height="106" rx="12" fill="#faf6ec" stroke="#e4dccb"/>
+                <g fill="#967c54" font-family="monospace" font-size="18" letter-spacing="9"><text x="37" y="47">01010</text><text x="37" y="75">10001</text><text x="37" y="103">01101</text></g>
+                <path d="M141 87h43m-9-9 9 9-9 9" stroke="#b7461c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <rect x="123" y="109" width="81" height="29" rx="7" fill="#f0f1e9" stroke="#dedfd6"/><path d="M138 123h50" stroke="#9ba88b" stroke-width="5" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <p id="entropy-help" class="field-help">Enter 128, 160, 192, 224, or 256 bits for 12, 15, 18, 21, or 24 words. Type only 0 and 1. Spaces and line breaks in pasted bits are removed. Enter entropy only: the BIP39 checksum is added automatically. Leading zeros are preserved.</p>
+            <label for="entropy-input">Raw entropy bits</label>
+            <div id="entropy-input-box" class="phrase-input"><textarea id="entropy-input" rows="4" inputmode="numeric" placeholder="Paste your bits here: 01001011…" spellcheck="false" autocomplete="off" autocapitalize="off" autocorrect="off" aria-describedby="entropy-help entropy-validation entropy-input-feedback" aria-invalid="false"></textarea><p id="entropy-validation" class="input-validation" role="status" aria-live="polite">Enter binary entropy to create a phrase.</p></div>
+            <p id="entropy-input-feedback" class="field-error" role="status"></p>
+            <details class="dice-help"><summary>Using dice or coins?</summary><p>For each independent roll of a fair six-sided die, record 0 for 1–3 or 1 for 4–6. Each roll gives one bit, so collect exactly the number of bits you need. For a fair coin, choose heads = 0 and tails = 1 before you start. Keep every outcome in order; do not choose or rearrange bits.</p><p>This assumes fair, independent outcomes. Conversion cannot remove bias or prove randomness.</p></details>
+            <p class="field-help">Import replaces the current phrase and clears its passphrase and addresses. These bits reveal the same secret as the words.</p>
+            <button id="import-entropy" type="button" class="button primary" disabled>Import &amp; analyze</button>
+          </div>
           <p id="analysis-feedback" class="field-help" role="status"></p>
-          <div class="explore-tools"><h3>Or generate a test phrase</h3><p id="generate-help" class="field-help">Creates new words and analyzes them in one step.</p><div class="generate-row"><label class="sr-only" for="generate-length">Generated phrase length</label><select id="generate-length"><option value="12">12 words</option><option value="15">15 words</option><option value="18">18 words</option><option value="21">21 words</option><option value="24">24 words</option></select><button class="button primary" id="generate" type="button" aria-describedby="generate-help"><span aria-hidden="true">＋</span> Generate &amp; analyze</button></div>
-          <p id="generation-error" class="field-error" role="status"></p>
-          <div class="example-row"><button class="text-button" id="load-example" type="button">Load a public example <span aria-hidden="true">→</span></button><select id="example-length" aria-label="Public example length"><option value="12">12 words</option><option value="24">24 words</option></select></div></div>
         </div>
-        <div class="panel assessment-panel" id="assessment" tabindex="-1" aria-labelledby="assessment-title">
+        <div class="panel assessment-panel" id="assessment" hidden tabindex="-1" aria-labelledby="assessment-title">
           <div class="label-row"><h3 id="assessment-title">What we can tell you</h3><span class="status-dot" aria-hidden="true"></span></div>
           <div id="risk-summary" class="risk-summary"><p class="assessment-kicker">PHRASE ASSESSMENT</p><h3 class="assessment-status" id="risk-title">Analyze a phrase to see its risk</h3><p id="risk-explanation"></p></div>
           <div id="assessment-summary"><p class="structure-status" id="validity">Waiting for a phrase</p><p class="muted" id="validation-detail">Enter words to check their length, wordlist, and checksum.</p></div>
@@ -1515,7 +1609,8 @@ footer .brand {
           <div id="assessment-next" class="assessment-next" hidden><a href="#understand">Understand the guessing time <span aria-hidden="true">↓</span></a><a href="#addresses">Explore Bitcoin addresses <span aria-hidden="true">↓</span></a></div>
         </div>
       </div>
-      <details id="technical-details" class="panel entropy-panel">
+      <p id="results-placeholder" class="results-placeholder">Your assessment, entropy details, and address tools will appear after a valid phrase is analyzed.</p>
+      <details id="technical-details" class="panel entropy-panel" hidden>
         <summary>Entropy details <span class="summary-hint">Explore the numbers behind your words →</span></summary>
         <div class="entropy-intro"><h3>Every word represents a number.</h3><p>The English BIP39 list contains 2,048 words, indexed from <strong>0 to 2047</strong>. Each index becomes 11 binary digits. Together, those digits encode the entropy and its checksum.</p></div>
         <div class="index-guide"><strong>Index 0 = abandon.</strong><p>The <a href="https://github.com/bitcoin/bips/blob/master/bip-0039/english.txt" target="_blank" rel="noopener noreferrer">official word list on GitHub ↗</a> displays lines starting at 1. To find a word there, add 1 to its BIP39 index: <strong>index 1477 → line 1478</strong>. “Word 1” below means the first word in your phrase, not its wordlist index.</p></div>
@@ -1530,42 +1625,54 @@ footer .brand {
       </details>
     </section>
 
-    <section id="understand" class="section" aria-labelledby="understand-title">
-      <div class="section-heading"><div><p class="eyebrow">02 / THE POSSIBILITIES</p><h2 id="understand-title">What do these words really tell us?</h2><p class="section-copy">Three things matter: valid words, random generation, and secrecy.</p></div></div>
-      <div class="key-concepts"><article><span class="small-label">01 / STRUCTURE</span><h3>Valid doesn’t mean secure.</h3><p>The checksum catches some mistakes. It cannot prove randomness.</p></article><article><span class="small-label">02 / RANDOMNESS</span><h3>How it was made matters.</h3><p>More words help only if they come from secure randomness.</p></article><article><span class="small-label">03 / SECRECY</span><h3>Public words aren’t secret.</h3><p>A shared or exposed phrase can be tried directly.</p></article></div>
+    <section id="understand" class="section" hidden aria-labelledby="understand-title">
+      <div class="section-heading"><div><p class="eyebrow">02 / THE POSSIBILITIES</p><h2 id="understand-title">How hard is this phrase to guess?</h2><p class="section-copy">A simple picture of the result. Valid words alone cannot prove randomness or secrecy.</p></div></div>
       <div id="phrase-perspective" class="panel phrase-perspective">
         <div class="perspective-lead">
           <div class="perspective-result"><p class="metric-label" id="phrase-quantity-label">Actual source entropy</p><p class="big-number" id="phrase-quantity">Not analyzed</p><p id="phrase-interpretation" class="perspective-summary"></p></div>
-          <details class="plain-language"><summary>A simple analogy</summary><p id="phrase-analogy"></p></details>
+          <div id="simple-analogy" class="simple-analogy" hidden>
+            <div id="analogy-coins" class="coin-strip" aria-hidden="true"><span>H</span><span>T</span><span>H</span><span>?</span><span>…</span></div>
+            <p class="metric-label">Picture it simply</p><h3 id="analogy-title"></h3><p id="phrase-analogy"></p>
+            <p id="analogy-condition" class="field-help"></p>
+          </div>
         </div>
         <div class="crack-section" aria-labelledby="crack-heading">
-          <div class="label-row"><h3 id="crack-heading">How hard would it be to guess?</h3><span id="crack-basis" class="subtle-tag">Conditional estimate</span></div>
+          <div class="label-row"><h3 id="crack-heading">Estimated guessing effort</h3><span id="crack-basis" class="subtle-tag">Conditional estimate</span></div>
           <div class="crack-result-card">
+            <svg class="guessing-art" viewBox="0 0 200 160" fill="none" aria-hidden="true">
+              <circle cx="100" cy="80" r="69" fill="#f0f1e9"/>
+              <g stroke="#d4d8c9" stroke-width="1.5"><path d="M28 55h34m76 0h34M20 80h42m76 0h42M28 105h34m76 0h34"/><circle cx="24" cy="55" r="3"/><circle cx="176" cy="55" r="3"/><circle cx="16" cy="80" r="3"/><circle cx="184" cy="80" r="3"/><circle cx="24" cy="105" r="3"/><circle cx="176" cy="105" r="3"/></g>
+              <path d="M76 32c0 27 4 32 24 48-20 16-24 21-24 48h48c0-27-4-32-24-48 20-16 24-21 24-48Z" fill="#fffdf8" stroke="#967c54" stroke-width="2"/>
+              <path d="M82 48h36c-2 10-8 16-18 23-10-7-16-13-18-23ZM82 122c2-12 8-19 18-27 10 8 16 15 18 27Z" fill="#d9ab79"/>
+              <path d="M71 31h58M71 129h58M100 80v7" stroke="#b7461c" stroke-width="4" stroke-linecap="round"/>
+            </svg>
             <div class="crack-result-copy"><p class="metric-label">Average search time</p><p id="crack-time" class="big-number">Analyze a phrase first</p><p id="crack-detail"></p></div>
+          </div>
+          <p id="crack-passphrase" class="field-help"></p>
+          <details id="report-details" class="report-details">
+            <summary>Explore the calculation and compare lengths</summary>
             <div id="crack-controls" class="field" hidden><label for="crack-rate">Try a hypothetical checking speed</label><select id="crack-rate"><option value="1000000">1 million checks/second</option><option value="1000000000">1 billion checks/second</option><option value="1000000000000">1 trillion checks/second</option></select><p class="field-help">For comparison only. These are complete seed checks, not Bitcoin mining hashes.</p></div>
-          </div>
-          <details id="random-perspective" class="random-perspective" hidden>
-            <summary>Put that number in perspective</summary>
-            <div class="perspective-facts"><article><p class="metric-label">Measured in centuries</p><p id="crack-centuries"></p></article><article><p class="metric-label">Chance after 100 years</p><p id="crack-century-chance"></p></article></div>
-            <p id="crack-lottery" class="lottery-analogy"></p>
+            <div id="random-perspective" class="random-perspective" hidden>
+              <div class="perspective-facts"><article><p class="metric-label">Measured in centuries</p><p id="crack-centuries"></p></article><article><p class="metric-label">Chance after 100 years</p><p id="crack-century-chance"></p></article></div>
+              <p id="crack-lottery" class="lottery-analogy"></p>
+            </div>
+            <div class="crack-disclosures">
+              <div id="crack-guide"><h4>Assumptions and limits</h4><p id="crack-assumptions">Estimates need a stated generation or attack model, a known verification target, and a fixed or known passphrase.</p><p id="crack-maximum" class="field-help"></p><p class="field-help">This describes phrase guessing only. Exposure, a predictable generator, malware, partial knowledge, and other attacks can bypass this model. Checksum bits and the derived 512-bit seed do not add randomness.</p></div>
+              <div id="crack-math" hidden><h4>The calculation</h4><p id="crack-formula" class="break-code"></p><p>Displayed times are rounded to three significant digits. The average assumes no repeated guesses and an equally likely target position. A family-size upper bound gives an upper bound on that model’s average. Checking rates are illustrations, not measured hardware performance. Choosing a faster rate does not change the phrase or its risk finding.</p></div>
+            </div>
+            <div id="ideal-model" class="model-panel"><h4>Compare other phrase lengths</h4>
+              <p class="model-intro">Hypothetical comparison only. These figures do not assess the phrase above. They assume uniformly random generation, a fixed or known passphrase, and a known verification target. Checking rates are illustrations, not hardware benchmarks or mining hash rates.</p>
+              <div class="model-controls"><fieldset><legend>Compare phrase lengths</legend><div class="segmented" id="compare-lengths"><label><input type="radio" name="model-words" value="12" checked><span>12 words</span></label><label><input type="radio" name="model-words" value="15"><span>15</span></label><label><input type="radio" name="model-words" value="18"><span>18</span></label><label><input type="radio" name="model-words" value="21"><span>21</span></label><label><input type="radio" name="model-words" value="24"><span>24 words</span></label></div></fieldset><div class="field"><label for="check-rate">Hypothetical complete checks / second</label><select id="check-rate"><option value="1000000">1 million (10⁶)</option><option value="1000000000">1 billion (10⁹)</option><option value="1000000000000" selected>1 trillion (10¹²)</option></select></div></div>
+              <div class="number-cards"><div><p class="metric-label">Possible phrases</p><p id="possibilities" class="big-number">3.40 × 10³⁸</p><span id="model-bits" class="field-help">128 random bits</span></div><div><p class="metric-label">Average exhaustive search</p><p class="big-number"><span id="average-years">5.39 × 10¹⁸</span><small> years</small></p><span class="field-help">Half the space, on average</span></div></div>
+              <div class="analogy-grid"><article class="analogy"><span class="analogy-symbol" aria-hidden="true">½</span><div><h3>Guess every flip.</h3><p id="coin-analogy">Imagine guessing the exact outcome of 128 independent, fair coin flips. All of them, in order. That’s the chance of one correct guess.</p></div></article><article class="analogy"><span class="analogy-symbol" aria-hidden="true">№</span><div><h3>Pick one ticket.</h3><p id="lottery-analogy">A lottery with one winner among 3.40 × 10³⁸ equally likely tickets. Each extra random bit doubles the number of tickets.</p></div></article></div>
+              <div class="model-exact"><h4>Exact numbers for this comparison</h4><dl class="technical-list"><dt>Possible phrases · N = 2ᴱᴺᵀ</dt><dd id="exact-possibilities" class="break-code"></dd><dt>Probability of one correct guess</dt><dd id="one-guess" class="break-code"></dd><dt>Average search · (N + 1) / (2R)</dt><dd id="exact-time" class="break-code"></dd></dl><p>Assumes uniform random generation, no repeated guesses, a fixed or known passphrase, and a known target to verify each candidate. One year is 31,557,600 seconds. Checking rates are illustrations, not measured hardware performance or Bitcoin mining hash rates.</p><p>This models searching for a phrase. It does not measure overall wallet security, other attacks on Bitcoin keys, malware, or exposure. A 512-bit derived seed and checksum bits do not create extra randomness. Unknown or human-chosen generation may have a much smaller search space.</p></div>
+            </div>
           </details>
-          <div class="crack-disclosures">
-            <details id="crack-guide"><summary>Assumptions and limits</summary><p id="crack-assumptions">Estimates need a stated generation or attack model, a known verification target, and a fixed or known passphrase.</p><p id="crack-maximum" class="field-help"></p><p id="crack-passphrase" class="field-help"></p><p class="field-help">This describes phrase guessing only. Exposure, a predictable generator, malware, partial knowledge, and other attacks can bypass this model. Checksum bits and the derived 512-bit seed do not add randomness.</p></details>
-            <details id="crack-math" hidden><summary>Show the calculation</summary><p id="crack-formula" class="break-code"></p><p>Displayed times are rounded to three significant digits. The average assumes no repeated guesses and an equally likely target position. A family-size upper bound gives an upper bound on that model’s average. Checking rates are illustrations, not measured hardware performance. Choosing a faster rate does not change the phrase or its risk finding.</p></details>
-          </div>
         </div>
       </div>
-      <details id="ideal-model" class="panel model-panel"><summary>Compare other phrase lengths</summary>
-        <p class="model-intro">Hypothetical comparison only. These figures do not assess the phrase above. They assume uniformly random generation, a fixed or known passphrase, and a known verification target. Checking rates are illustrations, not hardware benchmarks or mining hash rates.</p>
-        <div class="model-controls"><fieldset><legend>Compare phrase lengths</legend><div class="segmented" id="compare-lengths"><label><input type="radio" name="model-words" value="12" checked><span>12 words</span></label><label><input type="radio" name="model-words" value="15"><span>15</span></label><label><input type="radio" name="model-words" value="18"><span>18</span></label><label><input type="radio" name="model-words" value="21"><span>21</span></label><label><input type="radio" name="model-words" value="24"><span>24 words</span></label></div></fieldset><div class="field"><label for="check-rate">Hypothetical complete checks / second</label><select id="check-rate"><option value="1000000">1 million (10⁶)</option><option value="1000000000">1 billion (10⁹)</option><option value="1000000000000" selected>1 trillion (10¹²)</option></select></div></div>
-        <div class="number-cards"><div><p class="metric-label">Possible phrases</p><p id="possibilities" class="big-number">3.40 × 10³⁸</p><span id="model-bits" class="field-help">128 random bits</span></div><div><p class="metric-label">Average exhaustive search</p><p class="big-number"><span id="average-years">5.39 × 10¹⁸</span><small> years</small></p><span class="field-help">Half the space, on average</span></div></div>
-        <div class="analogy-grid"><article class="analogy"><span class="analogy-symbol" aria-hidden="true">½</span><div><h3>A very long coin flip.</h3><p id="coin-analogy">Imagine guessing the exact outcome of 128 independent, fair coin flips. All of them, in order. That’s the chance of one correct guess.</p></div></article><article class="analogy"><span class="analogy-symbol" aria-hidden="true">№</span><div><h3>One winning ticket.</h3><p id="lottery-analogy">A lottery with one winner among 3.40 × 10³⁸ equally likely tickets. Each extra random bit doubles the number of tickets.</p></div></article></div>
-        <details><summary>See the exact numbers and assumptions</summary><dl class="technical-list"><dt>Possible phrases · N = 2ᴱᴺᵀ</dt><dd id="exact-possibilities" class="break-code"></dd><dt>Probability of one correct guess</dt><dd id="one-guess" class="break-code"></dd><dt>Average search · (N + 1) / (2R)</dt><dd id="exact-time" class="break-code"></dd></dl><p>Assumes uniform random generation, no repeated guesses, a fixed or known passphrase, and a known target to verify each candidate. One year is 31,557,600 seconds. Checking rates are illustrations, not measured hardware performance or Bitcoin mining hash rates.</p><p>This models searching for a phrase. It does not measure overall wallet security, other attacks on Bitcoin keys, malware, or exposure. A 512-bit derived seed and checksum bits do not create extra randomness. Unknown or human-chosen generation may have a much smaller search space.</p></details>
-      </details>
-      <details class="learning-note"><summary>A real example: a faulty generator</summary><p>Milk Sad produced long wallet secrets from just 32 bits of possibilities. The words looked random, but were predictable. <a href="https://milksad.info/disclosure.html" target="_blank" rel="noopener noreferrer">Read the disclosure ↗</a></p></details>
     </section>
 
-    <section id="addresses" class="section" aria-labelledby="addresses-title">
+    <section id="addresses" class="section" hidden aria-labelledby="addresses-title">
       <div class="section-heading"><div><p class="eyebrow">03 / THE BITCOIN PATHS</p><h2 id="addresses-title">One seed. Different destinations.</h2></div></div>
       <p class="section-copy">A derivation path tells a wallet which keys to use. These are common conventions; the words alone don’t identify which path your wallet used.</p>
       <div class="path-reference" role="group" aria-label="Choose a Bitcoin address type"><button type="button" data-address-type="legacy" aria-pressed="false"><span>Legacy <small>BIP44</small></span><code>m/44'/0'/0'/0/0</code><small>1… · P2PKH</small></button><button type="button" data-address-type="nested" aria-pressed="false"><span>Nested SegWit <small>BIP49</small></span><code>m/49'/0'/0'/0/0</code><small>3… · P2SH-P2WPKH</small></button><button type="button" class="selected-reference" data-address-type="native" aria-pressed="true"><span>Native SegWit <small>BIP84</small></span><code>m/84'/0'/0'/0/0</code><small>bc1q… · P2WPKH</small></button><button type="button" data-address-type="taproot" aria-pressed="false"><span>Taproot <small>BIP86</small></span><code>m/86'/0'/0'/0/0</code><small>bc1p… · P2TR</small></button></div>
@@ -5014,13 +5121,13 @@ zoo`.split("\n"));
     }
     return findings.sort((a, b) => patternCandidates(a) < patternCandidates(b) ? -1 : patternCandidates(a) > patternCandidates(b) ? 1 : 0);
   }
-  function assessPhrase(analysis2, source2, generatedHere2 = false) {
+  function assessPhrase(analysis2, source, generatedHere2 = false) {
     const base = { candidates: null, familyBits: null, quantity: "Unknown", quantityLabel: "Actual randomness", interpretation: "The words alone cannot prove how randomly they were chosen.", analogy: "The number of dials on a lock does not tell you how its combination was chosen." };
     if (!analysis2.wordCount) return { ...base, kind: "empty", title: "Analyze a phrase to see its risk", explanation: "The result will distinguish BIP39 capacity from concrete weaknesses and unverified randomness.", quantity: "Not analyzed" };
     if (!analysis2.valid) return { ...base, kind: "invalid", title: "Not valid English BIP39", explanation: "Correct the input from its original source. No phrase-strength conclusion is available for this invalid input.", quantity: "Not assessed" };
     const zero = analysis2.entropyBinary?.split("").every((bit) => bit === "0");
     const ones = analysis2.entropyBinary?.split("").every((bit) => bit === "1");
-    if (zero || ones || analysis2.knownPublic || source2 === "public") {
+    if (zero || ones || analysis2.knownPublic || source === "public") {
       const title = zero ? "Unsafe: all-zero phrase" : ones ? "Unsafe: all-one phrase" : analysis2.knownPublic ? "Unsafe: public test phrase" : "Unsafe: reported public phrase";
       const why = zero ? `All ${analysis2.encodedEntropyBits} decoded entropy bits are zero. This public, deterministic construction reproduces these exact words.` : ones ? `All ${analysis2.encodedEntropyBits} decoded entropy bits are one. This public, deterministic construction reproduces these exact words.` : analysis2.knownPublic ? "These exact words match a bundled, publicly documented BIP39 test vector." : "You reported that these words are public.";
       return {
@@ -5047,16 +5154,16 @@ zoo`.split("\n"));
       candidates: patternCandidates(pattern),
       familyBits: pattern.familyBits
     };
-    if (source2 === "human") return { ...base, kind: "caution", title: "Human-chosen: strength is not established", explanation: "Human choices can be predictable even when no simple pattern is detected. This tool cannot assign effective entropy to this phrase. Do not substitute hand-picked words for secure random generation." };
+    if (source === "human") return { ...base, kind: "caution", title: "Human-chosen: strength is not established", explanation: "Human choices can be predictable even when no simple pattern is detected. This tool cannot assign effective entropy to this phrase. Do not substitute hand-picked words for secure random generation." };
     return {
       ...base,
       kind: "unverified",
-      title: generatedHere2 && source2 === "browser" ? "No recognized weakness found · not a safety certificate" : "Actual randomness is unverified",
+      title: generatedHere2 && source === "browser" ? "No recognized weakness found · not a safety certificate" : "Actual randomness is unverified",
       quantity: `${analysis2.encodedEntropyBits} bits if securely random`,
       quantityLabel: "Conditional strength",
       interpretation: "No recognized weakness found. This strength assumes secure random generation and secret words. Actual source entropy remains unknown.",
       analogy: `Think of guessing ${analysis2.encodedEntropyBits} fair coin flips, all in the correct order. That is the chance of getting this phrase in one random guess.`,
-      explanation: generatedHere2 && source2 === "browser" ? `The browser requested ${analysis2.encodedEntropyBits} bits from its cryptographic RNG in this session. That is nominal capacity, not measured entropy. A compromised or predictable generator can still produce ordinary-looking words.` : "No bundled public example or supported simple construction was recognized. This does not prove secrecy or random generation; a predictable generator can produce ordinary-looking words."
+      explanation: generatedHere2 && source === "browser" ? `The browser requested ${analysis2.encodedEntropyBits} bits from its cryptographic RNG in this session. That is nominal capacity, not measured entropy. A compromised or predictable generator can still produce ordinary-looking words.` : "No bundled public example or supported simple construction was recognized. This does not prove secrecy or random generation; a predictable generator can produce ordinary-looking words."
     };
   }
 
@@ -5135,23 +5242,23 @@ zoo`.split("\n"));
       knownPublic: known.has(normalized)
     };
   }
-  function assessSource(source2, knownPublic, generatedHere2 = false) {
-    if (knownPublic || source2 === "public") return {
+  function assessSource(source, knownPublic, generatedHere2 = false) {
+    if (knownPublic || source === "public") return {
       kind: "public",
       title: "Public phrase · never use for funds",
       detail: "These words are publicly known or reported as public. A valid checksum does not make them secret. A passphrase does not restore secrecy to the words."
     };
-    if (source2 === "human") return {
+    if (source === "human") return {
       kind: "caution",
       title: "Human-chosen · strength unknown",
       detail: "Self-reported source. Memorable choices can be predictable even when the checksum is valid. Their effective entropy cannot be measured from this phrase. The random-search model below does not assess this phrase."
     };
-    if (source2 === "unknown") return {
+    if (source === "unknown") return {
       kind: "neutral",
       title: "Origin unverified",
       detail: "The words cannot reveal whether their source was random, biased, predictable, or exposed. Not recognizing a public example does not establish secrecy."
     };
-    if (source2 === "browser" && generatedHere2) return {
+    if (source === "browser" && generatedHere2) return {
       kind: "neutral",
       title: "Browser randomness requested",
       detail: "Generated in this session using crypto.getRandomValues. Strength depends on the browser, operating system, device, and secrecy. This tool cannot certify those conditions."
@@ -5161,7 +5268,7 @@ zoo`.split("\n"));
       browser: "Self-reported browser generation. The theoretical strength assumes a correctly implemented cryptographic random generator and a secret phrase.",
       physical: "Self-reported physical randomness. Strength depends on independent, unbiased outcomes, enough observations, and a correct conversion. This phrase cannot verify those conditions."
     };
-    return { kind: "neutral", title: "Source reported · not verified", detail: descriptions[source2] };
+    return { kind: "neutral", title: "Source reported · not verified", detail: descriptions[source] };
   }
 
   // src/core/strength.ts
@@ -5221,6 +5328,24 @@ zoo`.split("\n"));
   }
 
   // src/core/generation.ts
+  function validateBinaryEntropy(raw) {
+    const binary = raw.replace(/\s/g, "");
+    const bitCount = binary.length;
+    const wordCount = bitCount / 32 * 3;
+    const error = /[^01]/.test(binary) ? "Use only 0 and 1, with optional spaces or line breaks." : !isWordCount(wordCount) ? `Enter exactly 128, 160, 192, 224, or 256 bits without checksum bits; found ${bitCount}.` : null;
+    return { binary, bitCount, wordCount: error ? null : wordCount, error };
+  }
+  function importBinaryEntropy(raw) {
+    const { binary, error } = validateBinaryEntropy(raw);
+    if (error) throw new Error(error);
+    const entropy = new Uint8Array(binary.length / 8);
+    try {
+      for (let i = 0; i < entropy.length; i++) entropy[i] = Number.parseInt(binary.slice(i * 8, i * 8 + 8), 2);
+      return entropyToMnemonic(entropy, wordlist);
+    } finally {
+      entropy.fill(0);
+    }
+  }
   function generatePhrase(count, provider = globalThis.crypto) {
     if (!isWordCount(count)) throw new Error("Choose 12, 15, 18, 21, or 24 words.");
     if (typeof provider?.getRandomValues !== "function") throw new Error("Secure browser randomness is unavailable. Generation is disabled.");
@@ -10627,7 +10752,7 @@ zoo`.split("\n"));
     return result;
   }
   var input = element("mnemonic");
-  var source = element("source");
+  var entropyInput = element("entropy-input");
   var passphrase = element("passphrase");
   var deriveButton = element("derive");
   var analysis = analyzeMnemonic("");
@@ -10635,6 +10760,20 @@ zoo`.split("\n"));
   var analysisRuns = 0;
   var addressResults = [];
   var activeDerivation;
+  var inputMode = "generate";
+  function setInputMode(mode) {
+    inputMode = mode;
+    for (const name of ["generate", "phrase", "binary"]) {
+      const selected = name === mode;
+      const tab = element(`tab-${name}`);
+      tab.setAttribute("aria-selected", String(selected));
+      tab.tabIndex = selected ? 0 : -1;
+      element(`panel-${name}`).hidden = !selected;
+    }
+    element("generated-result").hidden = !generatedHere;
+    text("generated-phrase", generatedHere ? input.value : "");
+    element("generation-replaces").hidden = !input.value;
+  }
   function text(id, value2) {
     element(id).textContent = value2;
   }
@@ -10656,13 +10795,19 @@ zoo`.split("\n"));
     deriveButton.textContent = "Derive addresses →";
   }
   function renderSource() {
-    const assessment = assessSource(source.value, analysis.knownPublic, generatedHere);
+    const assessment = assessSource(generatedHere ? "browser" : "unknown", analysis.knownPublic, generatedHere);
     element("source-assessment").dataset.kind = assessment.kind;
     text("source-title", assessment.title);
     text("source-detail", assessment.detail);
   }
   function renderAssessment() {
-    const risk = assessPhrase(analysis, source.value, generatedHere);
+    for (const id of ["assessment", "technical-details", "understand", "addresses", "nav-understand", "nav-addresses"]) {
+      element(id).hidden = !analysis.valid;
+    }
+    element("analysis-grid").classList.toggle("has-results", analysis.valid);
+    element("results-placeholder").hidden = analysis.valid;
+    if (!analysis.valid) element("technical-details").open = false;
+    const risk = assessPhrase(analysis, generatedHere ? "browser" : "unknown", generatedHere);
     element("risk-summary").dataset.kind = risk.kind;
     element("phrase-perspective").dataset.kind = risk.kind;
     text("risk-title", risk.title);
@@ -10670,9 +10815,14 @@ zoo`.split("\n"));
     text("phrase-quantity", risk.quantity);
     text("phrase-quantity-label", risk.quantityLabel);
     text("phrase-interpretation", risk.interpretation);
-    text("phrase-analogy", risk.analogy);
+    element("simple-analogy").hidden = !analysis.valid;
+    const random = risk.kind === "unverified";
+    element("analogy-coins").hidden = !random;
+    text("analogy-title", random ? `Guess ${analysis.encodedEntropyBits} coin flips` : risk.candidates === 1n ? "The answer is already known" : "A smaller list to try");
+    text("phrase-analogy", random ? "Call heads or tails correctly every time, in the right order. One wrong flip means a different phrase." : risk.candidates === 1n ? "Like a lock with its combination written beside it. An attacker can try the exact words." : "Like a lock whose combination follows a pattern. An attacker can work through the matching combinations.");
+    text("analogy-condition", random ? "Same chance as one guess, only if the phrase was generated uniformly at random and kept secret. The page cannot prove this." : "More words do not undo a known answer or a recognizable pattern.");
     renderCrackTime();
-    element("ideal-model").open = false;
+    element("report-details").open = false;
     invalidateAddresses();
     text("word-counter", `${analysis.wordCount} ${analysis.wordCount === 1 ? "word" : "words"}`);
     text("normalization", analysis.normalizationChanged ? "Analysis uses lowercase words and single spaces. Capitalization and extra whitespace are normalized; words are never replaced." : "");
@@ -10729,6 +10879,10 @@ zoo`.split("\n"));
     }
   }
   function analyze(reason = "Analysis complete") {
+    acceptedPhrase = input.value;
+    text("phrase-input-feedback", "");
+    text("phrase-copy-feedback", "");
+    setInputMode(inputMode);
     analysis = analyzeMnemonic(input.value);
     renderAssessment();
     renderInputValidation(analysis, true);
@@ -10738,6 +10892,8 @@ zoo`.split("\n"));
     text("analysis-feedback", `${reason} · check ${analysisRuns}. ${analysis.valid ? "Structure valid; review the phrase assessment." : "Review the validation findings."}`);
   }
   function markPending() {
+    setInputMode(inputMode);
+    text("phrase-copy-feedback", "");
     analysis = analyzeMnemonic("");
     renderAssessment();
     const live = validateMnemonicStructure(input.value);
@@ -10748,12 +10904,12 @@ zoo`.split("\n"));
     text("word-counter", `${count} ${count === 1 ? "word" : "words"}`);
     if (count) {
       text("risk-title", "Changes not analyzed");
-      text("risk-explanation", "Click Analyze phrase to check the current words and generation context.");
+      text("risk-explanation", "Click Analyze phrase to check the current words.");
       text("validity", "Analysis required");
-      text("source-title", "Context awaiting analysis");
-      text("source-detail", "The selected source will be considered when you analyze this phrase.");
+      text("source-title", "Origin unverified");
+      text("source-detail", "The words cannot prove how they were generated or whether they are secret.");
     }
-    text("analysis-feedback", count ? "Phrase or context changed. Click Analyze phrase." : "");
+    text("analysis-feedback", count ? "Phrase changed. Click Analyze phrase." : "");
   }
   function renderInputValidation(result, completed = false) {
     const hasInput = result.wordCount > 0;
@@ -10763,14 +10919,27 @@ zoo`.split("\n"));
     text("input-validation", !hasInput ? "Enter a phrase to check its structure." : invalid ? `Invalid BIP39 phrase. ${validationFindings(result).join(" ")}` : completed ? "Structure valid. Review the security assessment." : "Structure valid. Click Analyze phrase for the security assessment.");
     text("normalization", result.normalizationChanged ? "Validation uses lowercase words and single spaces. Capitalization and extra whitespace are normalized; words are never replaced." : "");
   }
+  function renderEntropyValidation() {
+    const result = validateBinaryEntropy(entropyInput.value);
+    const empty = result.bitCount === 0;
+    entropyInput.setAttribute("aria-invalid", String(!empty && result.error !== null));
+    element("entropy-input-box").dataset.state = empty ? "empty" : result.error ? "invalid" : "valid";
+    element("import-entropy").disabled = result.error !== null;
+    text("entropy-validation", empty ? "Enter binary entropy to create a phrase." : result.error ?? `${result.bitCount} bits → ${result.wordCount} words. Ready to import; checksum will be added automatically.`);
+  }
+  function clearEntropyInput() {
+    entropyInput.value = "";
+    acceptedEntropy = "";
+    text("entropy-input-feedback", "");
+    renderEntropyValidation();
+  }
   function renderCrackTime() {
-    const risk = assessPhrase(analysis, source.value, generatedHere);
+    const risk = assessPhrase(analysis, generatedHere ? "browser" : "unknown", generatedHere);
     const randomModel = risk.kind === "unverified";
     const available = risk.candidates !== null || randomModel;
     element("crack-controls").hidden = !available;
     element("crack-math").hidden = !available;
     element("random-perspective").hidden = !randomModel;
-    element("crack-math").open = false;
     text("crack-formula", "");
     text("crack-maximum", "");
     text("crack-passphrase", "");
@@ -10813,8 +10982,8 @@ zoo`.split("\n"));
     text("exact-possibilities", model.possibilities.toString());
     text("one-guess", `1 / ${model.possibilities} ≈ ${scientific(model.oneGuessProbability)}`);
     text("exact-time", `${model.averageSecondsNumerator} / ${model.averageSecondsDenominator} seconds ≈ ${scientific(model.averageYears)} years`);
-    text("coin-analogy", `Imagine guessing the exact outcome of ${model.bits} independent, fair coin flips. All of them, in order. That’s the chance of one correct guess.`);
-    text("lottery-analogy", `A lottery with one winner among approximately ${scientific(model.possibilities)} equally likely tickets. Each extra random bit doubles the number of tickets.`);
+    text("coin-analogy", `${model.bits} fair coin flips. Guess every result in order, with no mistakes. That is one correct phrase guess under this model.`);
+    text("lottery-analogy", "One winning ticket in a huge draw. Each extra random bit doubles the tickets; your one guess still picks just one.");
   }
   async function copyText(content) {
     try {
@@ -10887,10 +11056,13 @@ zoo`.split("\n"));
     }
   }
   function clearAll() {
+    clearEntropyInput();
     input.value = "";
+    acceptedPhrase = "";
     passphrase.value = "";
-    source.value = "unknown";
     generatedHere = false;
+    text("phrase-input-feedback", "");
+    setInputMode("generate");
     passphrase.type = "password";
     element("show-passphrase").setAttribute("aria-pressed", "false");
     text("show-passphrase", "Show");
@@ -10921,26 +11093,129 @@ zoo`.split("\n"));
     });
   });
   element("address-type").addEventListener("change", renderAddressSelection);
+  var inputModes = ["generate", "phrase", "binary"];
+  for (const [index, mode] of inputModes.entries()) {
+    const tab = element(`tab-${mode}`);
+    tab.addEventListener("click", () => setInputMode(mode));
+    tab.addEventListener("keydown", (event) => {
+      const next = event.key === "ArrowRight" ? (index + 1) % 3 : event.key === "ArrowLeft" ? (index + 2) % 3 : event.key === "Home" ? 0 : event.key === "End" ? 2 : null;
+      if (next === null) return;
+      event.preventDefault();
+      setInputMode(inputModes[next]);
+      element(`tab-${inputModes[next]}`).focus();
+    });
+  }
+  element("edit-phrase").addEventListener("click", () => {
+    setInputMode("phrase");
+    input.focus();
+  });
+  element("copy-phrase").addEventListener("click", async () => {
+    await copyText(element("generated-phrase").textContent ?? "");
+    text("phrase-copy-feedback", element("copy-status").textContent ?? "");
+  });
+  var acceptedPhrase = "";
+  function rejectPhraseInput() {
+    text("phrase-input-feedback", "Use English letters and spaces only. Nothing was inserted.");
+  }
+  input.addEventListener("keydown", (event) => {
+    if (!event.ctrlKey && !event.metaKey && !event.altKey && event.key.length === 1 && !/^[a-z\s]$/i.test(event.key)) {
+      event.preventDefault();
+      rejectPhraseInput();
+    }
+  });
+  input.addEventListener("beforeinput", (event) => {
+    if (event.data && /[^a-z\s]/i.test(event.data)) {
+      event.preventDefault();
+      rejectPhraseInput();
+    }
+  });
+  input.addEventListener("paste", (event) => {
+    if (event.clipboardData && /[^a-z\s]/i.test(event.clipboardData.getData("text/plain"))) {
+      event.preventDefault();
+      rejectPhraseInput();
+    }
+  });
   input.addEventListener("input", () => {
+    if (/[^a-z\s]/i.test(input.value)) {
+      input.value = acceptedPhrase;
+      rejectPhraseInput();
+      return;
+    }
+    acceptedPhrase = input.value;
+    text("phrase-input-feedback", "");
     generatedHere = false;
     markPending();
   });
-  source.addEventListener("change", markPending);
+  var acceptedEntropy = "";
+  function rejectEntropyInput() {
+    text("entropy-input-feedback", "Only 0 and 1 are accepted. Nothing was inserted.");
+  }
+  entropyInput.addEventListener("keydown", (event) => {
+    if (!event.ctrlKey && !event.metaKey && !event.altKey && (event.key.length === 1 && !/^[01]$/.test(event.key) || event.key === "Enter")) {
+      event.preventDefault();
+      rejectEntropyInput();
+    }
+  });
+  entropyInput.addEventListener("beforeinput", (event) => {
+    if (event.data && /[^01\s]/.test(event.data)) {
+      event.preventDefault();
+      rejectEntropyInput();
+    }
+  });
+  entropyInput.addEventListener("paste", (event) => {
+    if (!event.clipboardData) return;
+    const pasted = event.clipboardData.getData("text/plain");
+    if (/[^01\s]/.test(pasted)) {
+      event.preventDefault();
+      rejectEntropyInput();
+    }
+  });
+  entropyInput.addEventListener("input", () => {
+    if (/[^01\s]/.test(entropyInput.value)) {
+      entropyInput.value = acceptedEntropy;
+      rejectEntropyInput();
+    } else {
+      const caret = entropyInput.value.slice(0, entropyInput.selectionStart).replace(/\s/g, "").length;
+      entropyInput.value = entropyInput.value.replace(/\s/g, "");
+      entropyInput.setSelectionRange(caret, caret);
+      acceptedEntropy = entropyInput.value;
+      text("entropy-input-feedback", "");
+    }
+    renderEntropyValidation();
+  });
+  element("import-entropy").addEventListener("click", () => {
+    let phrase;
+    try {
+      phrase = importBinaryEntropy(entropyInput.value);
+    } catch {
+      renderEntropyValidation();
+      return;
+    }
+    input.value = phrase;
+    passphrase.value = "";
+    generatedHere = false;
+    text("generation-error", "");
+    clearEntropyInput();
+    setInputMode("phrase");
+    analyze("Entropy imported and analyzed");
+    input.focus();
+  });
   element("analyze-button").addEventListener("click", () => {
     analyze();
-    element("assessment").focus();
-    element("assessment").scrollIntoView({ block: "nearest" });
+    const target = analysis.valid ? element("assessment") : input;
+    target.focus();
+    target.scrollIntoView({ block: "nearest" });
   });
   element("clear-all").addEventListener("click", () => {
     clearAll();
-    input.focus();
+    element("tab-generate").focus();
   });
   element("generate").addEventListener("click", () => {
     try {
       const phrase = generatePhrase(Number(value("generate-length")));
+      clearEntropyInput();
       passphrase.value = "";
       input.value = phrase;
-      source.value = "browser";
       generatedHere = true;
       text("generation-error", "");
       analyze("Generated and analyzed");
@@ -10949,9 +11224,9 @@ zoo`.split("\n"));
     }
   });
   element("load-example").addEventListener("click", () => {
+    clearEntropyInput();
     input.value = public_phrases_default.find((phrase) => phrase.split(" ").length === Number(value("example-length")));
     passphrase.value = "";
-    source.value = "public";
     generatedHere = false;
     text("generation-error", "");
     analyze("Public example loaded and analyzed");
@@ -10977,23 +11252,12 @@ zoo`.split("\n"));
     element("show-passphrase").setAttribute("aria-pressed", String(show));
     text("show-passphrase", show ? "Hide" : "Show");
   });
-  function renderConnectionNotice() {
-    const local = location.protocol === "file:";
-    const online = navigator.onLine;
-    element("usage-notice").dataset.connection = online ? "online" : "offline";
-    text("environment", `${local ? "LOCAL FILE" : "HOSTED DEMO"} · BROWSER REPORTS ${online ? "ONLINE" : "OFFLINE"}`);
-    text("notice-title", online ? "You appear to be online. Don’t use a real seed phrase." : "Your browser reports offline.");
-    text("notice-copy", online ? "Use test phrases only. Download and verify this page, then open it on a trusted, disconnected device, such as an air-gapped computer. A local file can still be online." : "This is not proof of an air gap. Before using a real seed phrase, verify the downloaded file and use a trusted, disconnected device.");
-  }
+  text("environment", `${location.protocol === "file:" ? "LOCAL FILE" : "HOSTED DEMO"} · COMPUTES IN YOUR BROWSER`);
   if (location.protocol === "file:") {
     document.querySelectorAll(".download-link").forEach((link) => {
       link.href = location.href.split("#")[0];
     });
   }
-  window.addEventListener("online", renderConnectionNotice);
-  window.addEventListener("offline", renderConnectionNotice);
-  window.addEventListener("pageshow", renderConnectionNotice);
-  renderConnectionNotice();
   clearAll();
   if (typeof globalThis.crypto?.getRandomValues !== "function") {
     element("generate").disabled = true;
