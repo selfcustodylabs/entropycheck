@@ -4,7 +4,6 @@ import { assessPhrase } from './core/risk.ts';
 import { modelStrength, scientific, readableYears } from './core/strength.ts';
 import { generatePhrase, importBinaryEntropy, validateBinaryEntropy } from './core/generation.ts';
 import { deriveAddresses, accountPath, ADDRESS_TYPES, type AddressType, type AddressResult, type DerivationOptions } from './core/derivation.ts';
-import publicPhrases from './public-phrases.json' with { type: 'json' };
 
 function element<T extends HTMLElement = HTMLElement>(id: string): T {
   const result = document.getElementById(id);
@@ -17,14 +16,55 @@ const passphrase = element<HTMLInputElement>('passphrase');
 const deriveButton = element<HTMLButtonElement>('derive');
 let analysis = analyzeMnemonic('');
 let generatedHere = false;
-let analysisRuns = 0;
 let addressResults: AddressResult[] = [];
 let activeDerivation: AbortController | undefined;
 type InputMode = 'generate' | 'phrase' | 'binary';
 let inputMode: InputMode = 'generate';
 
+const settingDefaults = { network: 'mainnet', 'address-type': 'native', account: '0', branch: '0', 'start-index': '0', 'address-count': '20', 'check-rate': '1000000000000', 'crack-rate': '1000000' };
+function emptyWorkspace() {
+  return { phrase: '', analysis: analyzeMnemonic(''), passphrase: '', settings: { ...settingDefaults }, addresses: [] as AddressResult[] };
+}
+const workspaces = { generate: emptyWorkspace(), phrase: emptyWorkspace(), binary: emptyWorkspace() };
+function currentPhrase() { return inputMode === 'phrase' ? input.value : workspaces[inputMode].phrase; }
+
+function renderPhraseResults() {
+  for (const [mode, result, phrase] of [['generate', 'generated-result', 'generated-phrase'], ['binary', 'binary-result', 'binary-phrase']] as const) {
+    element(result).hidden = !workspaces[mode].phrase;
+    text(phrase, workspaces[mode].phrase);
+  }
+}
+
 function setInputMode(mode: InputMode) {
-  inputMode = mode;
+  if (mode !== inputMode) {
+    const previous = workspaces[inputMode];
+    previous.analysis = analysis;
+    previous.passphrase = passphrase.value;
+    previous.addresses = addressResults;
+    for (const id of Object.keys(settingDefaults) as (keyof typeof settingDefaults)[]) previous.settings[id] = value(id);
+    inputMode = mode;
+    const next = workspaces[mode];
+    analysis = next.analysis;
+    generatedHere = mode === 'generate' && !!next.phrase;
+    passphrase.value = next.passphrase;
+    passphrase.type = 'password';
+    element('show-passphrase').setAttribute('aria-pressed', 'false');
+    text('show-passphrase', 'Show');
+    for (const [id, setting] of Object.entries(next.settings)) setValue(id, setting);
+    renderAssessment();
+    addressResults = next.addresses;
+    if (addressResults.length) renderAddresses(addressResults, getOptions());
+    renderAddressSelection();
+    if (mode === 'phrase') {
+      if (!analysis.wordCount) markPending();
+      else {
+        renderInputValidation(analysis, true);
+        text('analyze-label', 'Analyze again');
+        element<HTMLButtonElement>('analyze-button').disabled = false;
+      }
+    }
+    text('copy-status', '');
+  }
   for (const name of ['generate', 'phrase', 'binary'] as const) {
     const selected = name === mode;
     const tab = element<HTMLButtonElement>(`tab-${name}`);
@@ -32,10 +72,7 @@ function setInputMode(mode: InputMode) {
     tab.tabIndex = selected ? 0 : -1;
     element(`panel-${name}`).hidden = !selected;
   }
-  // Draft words stay in the phrase tab; only generated words have a separate display.
-  element('generated-result').hidden = !generatedHere;
-  text('generated-phrase', generatedHere ? input.value : '');
-  element('generation-replaces').hidden = !input.value;
+  renderPhraseResults();
 }
 
 function text(id: string, value: string) { element(id).textContent = value; }
@@ -62,17 +99,24 @@ function renderSource() {
 }
 
 function renderAssessment() {
-  for (const id of ['assessment', 'technical-details', 'understand', 'addresses', 'nav-understand', 'nav-addresses']) {
+  for (const id of ['assessment', 'technical-details', 'understand', 'addresses']) {
     element(id).hidden = !analysis.valid;
   }
+  for (const id of ['nav-understand', 'nav-addresses']) {
+    element(id).setAttribute('aria-disabled', String(!analysis.valid));
+    element(id).setAttribute('title', analysis.valid ? 'View this phrase’s results' : 'Available after analyzing a valid phrase');
+  }
+  text('navigation-status', '');
   element('analysis-grid').classList.toggle('has-results', analysis.valid);
   element('results-placeholder').hidden = analysis.valid;
   if (!analysis.valid) element<HTMLDetailsElement>('technical-details').open = false;
   const risk = assessPhrase(analysis, generatedHere ? 'browser' : 'unknown', generatedHere);
   element('risk-summary').dataset.kind = risk.kind;
   element('phrase-perspective').dataset.kind = risk.kind;
-  text('risk-title', risk.title);
+  text('risk-title', risk.title.replace(' · not a safety certificate', ''));
   text('risk-explanation', risk.explanation);
+  text('assessment-context', inputMode === 'generate' ? 'Generated seed' : inputMode === 'binary' ? 'Imported binary entropy' : 'Imported seed phrase');
+  text('assessment-verdict', risk.kind === 'unsafe' || risk.kind === 'weak' ? 'Do not use this phrase to protect funds.' : 'Only known public phrases and a limited set of simple patterns are checked.');
   text('phrase-quantity', risk.quantity);
   text('phrase-quantity-label', risk.quantityLabel);
   text('phrase-interpretation', risk.interpretation);
@@ -90,7 +134,7 @@ function renderAssessment() {
   const hasInput = analysis.wordCount > 0;
   text('validity', !hasInput ? 'Waiting for a phrase' : analysis.valid ? 'Valid BIP39 structure' : 'Not valid English BIP39');
   const findings = validationFindings(analysis);
-  text('validation-detail', !hasInput ? 'Enter words to check their length, wordlist, and checksum.' : analysis.valid ? 'Word count, English wordlist, and checksum pass. This establishes structure, not randomness or secrecy.' : findings.join(' '));
+  text('validation-detail', !hasInput ? 'Enter words to check their length, wordlist, and checksum.' : analysis.valid ? 'Word count, English wordlist, and checksum all pass.' : findings.join(' '));
   for (const [id, amount] of [['entropy-bits', analysis.encodedEntropyBits], ['checksum-bits', hasInput ? analysis.checksumBits : null]] as const) {
     const small = document.createElement('small'); small.textContent = ' bits';
     element(id).replaceChildren(document.createTextNode(amount === null ? 'N/A' : String(amount)), small);
@@ -130,25 +174,30 @@ function renderAssessment() {
   }
 }
 
-function analyze(reason = 'Analysis complete') {
-  acceptedPhrase = input.value;
-  text('phrase-input-feedback', '');
+function analyze() {
+  if (inputMode === 'phrase') {
+    acceptedPhrase = input.value;
+    text('phrase-input-feedback', '');
+  }
   text('phrase-copy-feedback', '');
-  setInputMode(inputMode);
-  analysis = analyzeMnemonic(input.value);
+  text('binary-copy-feedback', '');
+  analysis = analyzeMnemonic(currentPhrase());
+  renderPhraseResults();
   renderAssessment();
-  renderInputValidation(analysis, true);
-  analysisRuns++;
-  text('analyze-label', 'Analyze again');
-  element<HTMLButtonElement>('analyze-button').disabled = false;
-  text('analysis-feedback', `${reason} · check ${analysisRuns}. ${analysis.valid ? 'Structure valid; review the phrase assessment.' : 'Review the validation findings.'}`);
+  if (inputMode === 'phrase') {
+    renderInputValidation(analysis, true);
+    text('analyze-label', 'Analyze again');
+    element<HTMLButtonElement>('analyze-button').disabled = false;
+  }
 }
 
 function markPending() {
-  setInputMode(inputMode);
+  renderPhraseResults();
   text('phrase-copy-feedback', '');
+  text('binary-copy-feedback', '');
   analysis = analyzeMnemonic('');
   renderAssessment();
+  if (inputMode !== 'phrase') return;
   const live = validateMnemonicStructure(input.value);
   renderInputValidation(live);
   const count = live.wordCount;
@@ -162,7 +211,6 @@ function markPending() {
     text('source-title', 'Origin unverified');
     text('source-detail', 'The words cannot prove how they were generated or whether they are secret.');
   }
-  text('analysis-feedback', count ? 'Phrase changed. Click Analyze phrase.' : '');
 }
 
 function renderInputValidation(result: MnemonicValidation, completed = false) {
@@ -249,6 +297,7 @@ function renderModel() {
 }
 
 async function copyText(content: string) {
+  text('copy-status', '');
   try {
     if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(content);
     else throw new Error('Use selection fallback.');
@@ -280,26 +329,10 @@ async function derive() {
   text('derivation-status', 'Computing locally…');
   try {
     const options = getOptions();
-    const results = await deriveAddresses(input.value, passphrase.value, options, controller.signal);
+    const results = await deriveAddresses(currentPhrase(), passphrase.value, options, controller.signal);
     if (activeDerivation !== controller || controller.signal.aborted) return;
     addressResults = results;
-    const rows = document.createDocumentFragment();
-    for (const result of results) {
-      const row = document.createElement('tr');
-      for (const item of [String(result.index), result.path, result.address]) {
-        const cell = document.createElement('td'); cell.textContent = item; row.append(cell);
-      }
-      const action = document.createElement('td');
-      const button = document.createElement('button');
-      button.type = 'button'; button.className = 'text-button'; button.textContent = 'Copy';
-      button.setAttribute('aria-label', `Copy address and path at index ${result.index}`);
-      button.addEventListener('click', () => { void copyText(`${result.path}\t${result.address}`); });
-      action.append(button); row.append(action); rows.append(row);
-    }
-    element('address-rows').replaceChildren(rows);
-    element('address-results').hidden = false;
-    text('results-title', `${results.length} ${options.network} ${ADDRESS_TYPES[options.addressType].name} addresses`);
-    text('derivation-status', `${accountPath(options)}/${options.change}/… · ${options.change === 0 ? 'Receiving' : 'Change'} · No balances are checked.`);
+    renderAddresses(results, options);
   } catch (error) {
     if (controller.signal.aborted || activeDerivation !== controller) return;
     element('derivation-status').dataset.error = 'true';
@@ -313,18 +346,45 @@ async function derive() {
   }
 }
 
+function renderAddresses(results: AddressResult[], options: DerivationOptions) {
+  const rows = document.createDocumentFragment();
+  for (const result of results) {
+    const row = document.createElement('tr');
+    for (const item of [String(result.index), result.path, result.address]) {
+      const cell = document.createElement('td'); cell.textContent = item; row.append(cell);
+    }
+    const action = document.createElement('td');
+    const button = document.createElement('button');
+    button.type = 'button'; button.className = 'text-button'; button.textContent = 'Copy';
+    button.setAttribute('aria-label', `Copy address and path at index ${result.index}`);
+    button.addEventListener('click', () => { void copyText(`${result.path}\t${result.address}`); });
+    action.append(button); row.append(action); rows.append(row);
+  }
+  element('address-rows').replaceChildren(rows);
+  element('address-results').hidden = false;
+  text('results-title', `${results.length} ${options.network} ${ADDRESS_TYPES[options.addressType].name} addresses`);
+  text('derivation-status', `${accountPath(options)}/${options.change}/… · ${options.change === 0 ? 'Receiving' : 'Change'} · No balances are checked.`);
+}
+
 function clearAll() {
+  for (const mode of inputModes) workspaces[mode] = emptyWorkspace();
+  inputMode = 'generate';
+  analysis = analyzeMnemonic('');
+  addressResults = [];
   clearEntropyInput();
   input.value = ''; acceptedPhrase = ''; passphrase.value = ''; generatedHere = false;
   text('phrase-input-feedback', '');
   setInputMode('generate');
   passphrase.type = 'password';
   element('show-passphrase').setAttribute('aria-pressed', 'false'); text('show-passphrase', 'Show');
-  for (const [id, val] of Object.entries({ 'generate-length': '12', 'example-length': '12', network: 'mainnet', 'address-type': 'native', account: '0', branch: '0', 'start-index': '0', 'address-count': '20', 'check-rate': '1000000000000', 'crack-rate': '1000000' })) setValue(id, val);
+  for (const [id, val] of Object.entries({ 'generate-length': '12', ...settingDefaults })) setValue(id, val);
   document.querySelector<HTMLInputElement>('input[name="model-words"][value="12"]')!.checked = true;
   document.querySelectorAll<HTMLDetailsElement>('details').forEach(details => { details.open = false; });
   text('generation-error', typeof globalThis.crypto?.getRandomValues === 'function' ? '' : 'Secure browser randomness is unavailable. Generation is disabled. Analysis of test phrases remains available.'); text('copy-status', '');
-  analysisRuns = 0; markPending(); renderModel(); renderAddressSelection();
+  markPending(); renderModel(); renderAddressSelection();
+  renderInputValidation(validateMnemonicStructure(''));
+  text('analyze-label', 'Analyze phrase');
+  element<HTMLButtonElement>('analyze-button').disabled = true;
 }
 
 function renderAddressSelection() {
@@ -356,11 +416,25 @@ for (const [index, mode] of inputModes.entries()) {
     element(`tab-${inputModes[next]}`).focus();
   });
 }
-element('edit-phrase').addEventListener('click', () => { setInputMode('phrase'); input.focus(); });
 element('copy-phrase').addEventListener('click', async () => {
   await copyText(element('generated-phrase').textContent ?? '');
   text('phrase-copy-feedback', element('copy-status').textContent ?? '');
 });
+element('copy-binary-phrase').addEventListener('click', async () => {
+  await copyText(workspaces.binary.phrase);
+  text('binary-copy-feedback', element('copy-status').textContent ?? '');
+});
+for (const id of ['raw-entropy', 'raw-binary', 'checksum-binary', 'mnemonic-binary']) {
+  element(`copy-${id}`).addEventListener('click', () => { if (analysis.valid) void copyText(element(id).textContent ?? ''); });
+}
+for (const id of ['nav-understand', 'nav-addresses']) {
+  element(id).addEventListener('click', event => {
+    if (!analysis.valid) {
+      event.preventDefault();
+      text('navigation-status', 'Analyze a valid phrase in the selected tab to open its results.');
+    }
+  });
+}
 let acceptedPhrase = '';
 function rejectPhraseInput() {
   text('phrase-input-feedback', 'Use English letters and spaces only. Nothing was inserted.');
@@ -426,6 +500,8 @@ entropyInput.addEventListener('input', () => {
   if (/[^01\s]/.test(entropyInput.value)) {
     entropyInput.value = acceptedEntropy;
     rejectEntropyInput();
+    renderEntropyValidation();
+    return;
   } else {
     const caret = entropyInput.value.slice(0, entropyInput.selectionStart).replace(/\s/g, '').length;
     entropyInput.value = entropyInput.value.replace(/\s/g, '');
@@ -433,6 +509,8 @@ entropyInput.addEventListener('input', () => {
     acceptedEntropy = entropyInput.value;
     text('entropy-input-feedback', '');
   }
+  workspaces.binary.phrase = '';
+  markPending();
   renderEntropyValidation();
 });
 element('import-entropy').addEventListener('click', () => {
@@ -440,12 +518,9 @@ element('import-entropy').addEventListener('click', () => {
   let phrase: string;
   try { phrase = importBinaryEntropy(entropyInput.value); }
   catch { renderEntropyValidation(); return; }
-  input.value = phrase; passphrase.value = ''; generatedHere = false;
-  text('generation-error', '');
-  clearEntropyInput();
-  setInputMode('phrase');
-  analyze('Entropy imported and analyzed');
-  input.focus();
+  workspaces.binary.phrase = phrase; passphrase.value = ''; generatedHere = false;
+  analyze();
+  element('binary-result').focus();
 });
 element('analyze-button').addEventListener('click', () => {
   analyze();
@@ -457,16 +532,10 @@ element('clear-all').addEventListener('click', () => { clearAll(); element('tab-
 element('generate').addEventListener('click', () => {
   try {
     const phrase = generatePhrase(Number(value('generate-length')));
-    clearEntropyInput();
     // A passphrase from a previous phrase must not be carried into a newly generated one.
-    passphrase.value = ''; input.value = phrase; generatedHere = true;
-    text('generation-error', ''); analyze('Generated and analyzed');
+    passphrase.value = ''; workspaces.generate.phrase = phrase; generatedHere = true;
+    text('generation-error', ''); analyze();
   } catch (error) { text('generation-error', error instanceof Error ? error.message : 'Secure generation failed.'); }
-});
-element('load-example').addEventListener('click', () => {
-  clearEntropyInput();
-  input.value = publicPhrases.find(phrase => phrase.split(' ').length === Number(value('example-length')))!;
-  passphrase.value = ''; generatedHere = false; text('generation-error', ''); analyze('Public example loaded and analyzed');
 });
 for (const id of ['network', 'address-type', 'account', 'branch', 'start-index', 'address-count', 'passphrase']) {
   element(id).addEventListener('input', invalidateAddresses);

@@ -14,7 +14,7 @@
   <a class="skip-link" href="#analyze">Skip to tool</a>
   <header class="site-header">
     <a class="brand" href="#top" aria-label="EntropyCheck home"><span class="brand-mark" aria-hidden="true">E<span>·</span></span>EntropyCheck<span class="version">v1.0</span></a>
-    <nav aria-label="Main navigation"><a href="#analyze"><span aria-hidden="true">01</span> Analyze</a><a id="nav-understand" href="#understand" hidden><span aria-hidden="true">02</span> Understand</a><a id="nav-addresses" href="#addresses" hidden><span aria-hidden="true">03</span> Addresses</a></nav>
+    <nav aria-label="Main navigation"><a href="#analyze"><span aria-hidden="true">01</span> Analyze</a><a id="nav-understand" href="#understand" aria-disabled="true" title="Available after analyzing a valid phrase"><span aria-hidden="true">02</span> Understand</a><a id="nav-addresses" href="#addresses" aria-disabled="true" title="Available after analyzing a valid phrase"><span aria-hidden="true">03</span> Addresses</a></nav><p id="navigation-status" class="sr-only" role="status"></p>
     <a class="button small download-link" href="./entropycheck.html" download="entropycheck.html">Download offline <span aria-hidden="true">↗</span></a>
   </header>
   <main id="top">
@@ -40,7 +40,7 @@
                 <h3>Explore a fresh seed.</h3>
                 <p id="generate-help">Create a test phrase and explore its words, entropy, and Bitcoin addresses.</p>
                 <label for="generate-length">Phrase length</label>
-                <div class="generate-row"><select id="generate-length"><option value="12">12 words</option><option value="15">15 words</option><option value="18">18 words</option><option value="21">21 words</option><option value="24">24 words</option></select><button class="button primary" id="generate" type="button" aria-describedby="generate-help generation-replaces">Generate <span aria-hidden="true">→</span></button></div>
+                <div class="generate-row"><select id="generate-length"><option value="12">12 words</option><option value="15">15 words</option><option value="18">18 words</option><option value="21">21 words</option><option value="24">24 words</option></select><button class="button primary" id="generate" type="button" aria-describedby="generate-help">Generate <span aria-hidden="true">→</span></button></div>
                 <p class="field-help generation-note">Browser-generated randomness. Analyzed automatically.</p>
               </div>
               <div class="seed-preview" aria-hidden="true">
@@ -49,18 +49,16 @@
                 <p>Small words. A world of possibilities.</p>
               </div>
             </div>
-            <p id="generation-replaces" class="field-help" hidden>Generating again replaces the current phrase and clears its passphrase and addresses.</p>
             <div id="generated-result" class="generated-result" hidden>
               <div class="label-row"><h3>Your generated phrase</h3><button id="copy-phrase" class="copy-icon" type="button" aria-label="Copy generated seed phrase" title="Copy seed phrase"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="8" y="8" width="12" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg></button></div>
               <p id="generated-phrase" class="generated-phrase"></p>
               <p id="phrase-copy-feedback" class="field-help" role="status"></p>
-              <button id="edit-phrase" type="button" class="text-button">Edit in Import seed phrase →</button>
             </div>
             <p id="generation-error" class="field-error" role="status"></p>
           </div>
           <div id="panel-phrase" class="seed-panel" role="tabpanel" aria-labelledby="tab-phrase" hidden>
             <div class="import-intro">
-              <div><h3>Explore your words.</h3><p class="field-help">Check an existing phrase, or load a public example to explore.</p></div>
+              <div><h3>Explore your words.</h3><p class="field-help">Check the format and recognized weaknesses of an existing phrase.</p></div>
               <svg class="workflow-art" viewBox="0 0 220 150" fill="none" aria-hidden="true">
                 <rect x="26" y="20" width="139" height="112" rx="12" fill="#f0f1e9" transform="rotate(-6 26 20)"/>
                 <rect x="42" y="14" width="139" height="112" rx="12" fill="#faf6ec" stroke="#e4dccb"/>
@@ -68,7 +66,6 @@
                 <circle cx="167" cy="104" r="26" fill="#fffdf8" stroke="#b7461c" stroke-width="2"/><path d="m185 123 18 18M157 104l7 7 13-15" stroke="#b7461c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
             </div>
-            <div class="example-row"><button class="text-button" id="load-example" type="button">Load a public example <span aria-hidden="true">→</span></button><select id="example-length" aria-label="Public example length"><option value="12">12 words</option><option value="24">24 words</option></select></div>
             <div id="phrase-workspace">
               <div class="label-row"><label id="phrase-label" for="mnemonic">BIP39 recovery phrase</label><span id="word-counter" class="muted">0 words</span></div>
               <div id="phrase-input" class="phrase-input"><textarea id="mnemonic" rows="4" placeholder="Paste your English BIP39 recovery phrase." spellcheck="false" autocomplete="off" autocapitalize="off" autocorrect="off" aria-describedby="input-validation phrase-help normalization phrase-input-feedback" aria-invalid="false"></textarea><p id="input-validation" class="input-validation" role="status" aria-live="polite">Enter a phrase to check its structure.</p></div>
@@ -92,21 +89,34 @@
             <label for="entropy-input">Raw entropy bits</label>
             <div id="entropy-input-box" class="phrase-input"><textarea id="entropy-input" rows="4" inputmode="numeric" placeholder="Paste your bits here: 01001011…" spellcheck="false" autocomplete="off" autocapitalize="off" autocorrect="off" aria-describedby="entropy-help entropy-validation entropy-input-feedback" aria-invalid="false"></textarea><p id="entropy-validation" class="input-validation" role="status" aria-live="polite">Enter binary entropy to create a phrase.</p></div>
             <p id="entropy-input-feedback" class="field-error" role="status"></p>
-            <details class="dice-help"><summary>Using dice or coins?</summary><p>For each independent roll of a fair six-sided die, record 0 for 1–3 or 1 for 4–6. Each roll gives one bit, so collect exactly the number of bits you need. For a fair coin, choose heads = 0 and tails = 1 before you start. Keep every outcome in order; do not choose or rearrange bits.</p><p>This assumes fair, independent outcomes. Conversion cannot remove bias or prove randomness.</p></details>
-            <p class="field-help">Import replaces the current phrase and clears its passphrase and addresses. These bits reveal the same secret as the words.</p>
             <button id="import-entropy" type="button" class="button primary" disabled>Import &amp; analyze</button>
+            <div id="binary-result" class="generated-result" tabindex="-1" aria-labelledby="binary-result-title" hidden>
+              <div class="label-row"><h3 id="binary-result-title">Your seed phrase</h3><button id="copy-binary-phrase" class="copy-icon" type="button" aria-label="Copy imported binary seed phrase" title="Copy imported binary seed phrase"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="8" y="8" width="12" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg></button></div>
+              <p id="binary-phrase" class="generated-phrase"></p>
+              <p id="binary-copy-feedback" class="field-help" role="status"></p>
+            </div>
           </div>
-          <p id="analysis-feedback" class="field-help" role="status"></p>
         </div>
         <div class="panel assessment-panel" id="assessment" hidden tabindex="-1" aria-labelledby="assessment-title">
-          <div class="label-row"><h3 id="assessment-title">What we can tell you</h3><span class="status-dot" aria-hidden="true"></span></div>
-          <div id="risk-summary" class="risk-summary"><p class="assessment-kicker">PHRASE ASSESSMENT</p><h3 class="assessment-status" id="risk-title">Analyze a phrase to see its risk</h3><p id="risk-explanation"></p></div>
-          <div id="assessment-summary"><p class="structure-status" id="validity">Waiting for a phrase</p><p class="muted" id="validation-detail">Enter words to check their length, wordlist, and checksum.</p></div>
-          <div class="metrics"><div><span class="metric-label">BIP39 capacity</span><strong id="entropy-bits">N/A<small> bits</small></strong></div><div><span class="metric-label">Checksum</span><strong id="checksum-bits">N/A<small> bits</small></strong></div></div>
-          <p class="field-help">Capacity is the encoded entropy length, not a measurement of actual randomness.</p>
-          <div id="source-assessment" class="source-assessment"><h4 id="source-title">Randomness has a backstory.</h4><p id="source-detail">A valid phrase tells us how many bits it encodes. It doesn’t tell us how unpredictably those bits were chosen.</p></div>
-          <p class="field-help" id="repetition"></p>
-          <div id="assessment-next" class="assessment-next" hidden><a href="#understand">Understand the guessing time <span aria-hidden="true">↓</span></a><a href="#addresses">Explore Bitcoin addresses <span aria-hidden="true">↓</span></a></div>
+          <div class="assessment-heading">
+            <div><p class="assessment-kicker" id="assessment-context">CURRENT PHRASE</p><h3 id="assessment-title">What we can tell you</h3><p class="field-help">A format check. A search for known weaknesses.</p></div>
+            <svg class="assessment-art" viewBox="0 0 140 120" fill="none" role="img" aria-labelledby="assessment-art-title">
+              <title id="assessment-art-title">A magnifying glass examining a seed report</title>
+              <rect x="18" y="12" width="82" height="98" rx="12" fill="#f0f1e9" transform="rotate(-7 18 12)"/>
+              <rect x="28" y="8" width="82" height="98" rx="12" fill="#faf6ec" stroke="#d8ccb5"/>
+              <path d="M43 29h38M53 47h30M53 64h20M43 84h21" stroke="#c6b893" stroke-width="4" stroke-linecap="round"/>
+              <circle cx="43" cy="47" r="3" fill="#967c54"/><circle cx="43" cy="64" r="3" fill="#967c54"/>
+              <circle cx="98" cy="80" r="23" fill="#fffdf8" stroke="#b7461c" stroke-width="2.5"/>
+              <path d="m115 97 15 15M88 75h20M88 84h13" stroke="#b7461c" stroke-width="3" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div id="risk-summary" class="risk-summary"><p class="assessment-kicker">THE FINDING</p><h4 class="assessment-status" id="risk-title">Analyze a phrase to see its risk</h4><p id="assessment-verdict"></p><details class="finding-details"><summary>Why this result?</summary><p id="risk-explanation"></p></details></div>
+          <div id="assessment-summary" class="assessment-facts"><h4 id="validity">Waiting for a phrase</h4><p id="validation-detail">Enter words to check their length, wordlist, and checksum.</p>
+            <div class="metrics"><div><span class="metric-label">Encoded entropy</span><strong id="entropy-bits">N/A<small> bits</small></strong><p>Capacity for randomness</p></div><div><span class="metric-label">Checksum</span><strong id="checksum-bits">N/A<small> bits</small></strong><p>Helps detect input errors</p></div></div>
+          </div>
+          <div class="assessment-limits"><h4>What this cannot prove</h4><p>That your words were chosen randomly or that only you know them. Bit length describes capacity, not measured security.</p></div>
+          <details class="assessment-method"><summary>Generation source &amp; check limits</summary><div id="source-assessment" class="source-assessment"><h4 id="source-title">Origin unverified</h4><p id="source-detail"></p></div><p class="field-help">We check public test phrases and a limited set of simple patterns. Other weaknesses can go undetected.</p><p class="field-help" id="repetition"></p></details>
+          <div id="assessment-next" class="assessment-next" hidden><a href="#understand">Explore guessing time <span aria-hidden="true">↓</span></a><a href="#addresses">View address tools <span aria-hidden="true">↓</span></a></div>
         </div>
       </div>
       <p id="results-placeholder" class="results-placeholder">Your assessment, entropy details, and address tools will appear after a valid phrase is analyzed.</p>
@@ -118,8 +128,8 @@
         <ol id="word-indices" class="word-indices" aria-label="Seed words and zero-based BIP39 indices"></ol>
         <p class="field-help">These numbers and binary digits reveal the same secret as the recovery phrase. Treat them with the same care.</p>
         <div class="entropy-raw-grid">
-          <div><h4>Entropy</h4><p class="small-label">HEXADECIMAL</p><code id="raw-entropy" class="break-code">No valid phrase loaded.</code><p class="small-label">RAW BINARY · ENTROPY BITS ONLY</p><code id="raw-binary" class="break-code">No valid phrase loaded.</code></div>
-          <div><h4>Checksum &amp; full encoding</h4><p class="small-label">CHECKSUM BITS · NOT ADDITIONAL ENTROPY</p><code id="checksum-binary" class="break-code">No valid phrase loaded.</code><p class="small-label">FULL MNEMONIC BINARY · ENTROPY + CHECKSUM</p><code id="mnemonic-binary" class="break-code">No valid phrase loaded.</code></div>
+          <div><h4>Entropy</h4><div class="encoding-label"><p class="small-label">HEXADECIMAL</p><button id="copy-raw-entropy" class="copy-icon" type="button" aria-label="Copy hexadecimal entropy" title="Copy hexadecimal entropy"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="8" y="8" width="12" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg></button></div><code id="raw-entropy" class="break-code">No valid phrase loaded.</code><div class="encoding-label"><p class="small-label">RAW BINARY · ENTROPY BITS ONLY</p><button id="copy-raw-binary" class="copy-icon" type="button" aria-label="Copy raw binary entropy" title="Copy raw binary entropy"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="8" y="8" width="12" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg></button></div><code id="raw-binary" class="break-code">No valid phrase loaded.</code></div>
+          <div><h4>Checksum &amp; full encoding</h4><div class="encoding-label"><p class="small-label">CHECKSUM BITS · NOT ADDITIONAL ENTROPY</p><button id="copy-checksum-binary" class="copy-icon" type="button" aria-label="Copy checksum bits" title="Copy checksum bits"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="8" y="8" width="12" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg></button></div><code id="checksum-binary" class="break-code">No valid phrase loaded.</code><div class="encoding-label"><p class="small-label">FULL MNEMONIC BINARY · ENTROPY + CHECKSUM</p><button id="copy-mnemonic-binary" class="copy-icon" type="button" aria-label="Copy full mnemonic binary" title="Copy full mnemonic binary"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="8" y="8" width="12" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg></button></div><code id="mnemonic-binary" class="break-code">No valid phrase loaded.</code></div>
         </div>
         <div class="structure-checks"><div><h4>Structure checks</h4><dl class="technical-list"><dt>Word count</dt><dd id="check-length">Waiting</dd><dt>English wordlist</dt><dd id="check-words">Waiting</dd><dt>Checksum</dt><dd id="check-checksum">Waiting</dd></dl></div><div><h4>Pattern checks</h4><p class="field-help">These checks recognize a limited set of simple constructions. Passing them cannot certify a generator or establish secrecy. The checksum detects some mistakes; it does not add randomness.</p><ul id="pattern-findings"></ul></div></div>
       </details>

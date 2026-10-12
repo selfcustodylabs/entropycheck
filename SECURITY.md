@@ -6,7 +6,7 @@ EntropyCheck is an educational BIP39 inspector and Bitcoin address derivation to
 
 A valid English BIP39 mnemonic encodes 128, 160, 192, 224, or 256 bits plus a checksum. This is an encoding length, not a measurement of the source's unpredictability. Validity cannot establish secrecy, sound generation, or a secure device. A short list of recognizable public test phrases is not a leak database; a nonmatch proves nothing.
 
-Generation-source context is self-reported, except when the page itself just requested random bytes. Editing that phrase removes the in-session provenance. Even in-session generation cannot certify the browser's random generator. Repeated words are allowed; word diversity is not a cryptographic entropy estimator.
+Generation-source context is unverified for imports. The generation tab records when the page itself requested random bytes; copying those words into the phrase-import tab does not transfer that provenance. Even in-session generation cannot certify the browser's random generator. Repeated words are allowed; word diversity is not a cryptographic entropy estimator.
 
 The conditional random-generation report and collapsed comparison numbers model uniformly random phrases, with a known/fixed passphrase and a target that allows candidate verification. The average of an exhaustive, nonrepeating search is `(N + 1) / (2R)` seconds, where `N = 2^ENT`. Rates are hypothetical complete candidate checks, not mining hashes or benchmarks. The model is not a measure of total Bitcoin wallet security: other cryptographic attacks, compromised devices, backups, and disclosure have different costs. The BIP39 512-bit PBKDF2 output and checksum do not add randomness.
 
@@ -19,11 +19,11 @@ These checks are intentionally limited. They do not recognize arbitrary predicta
 ## Secret handling
 
 - All computation occurs locally. The app has no network clients, analytics, storage, service workers, or automatic online/offline probes.
-- Mnemonics, passphrases, decoded entropy, and intermediate keys exist in browser memory. Raw hexadecimal and binary entropy are equivalent to the phrase and appears only in the expandable technical presentation.
+- Mnemonics, passphrases, decoded entropy, and intermediate keys exist in browser memory. Raw hexadecimal and binary entropy are equivalent to the phrase. Decoded representations appear in the expandable technical presentation; imported bits remain in their input tab.
 - The application does not export extended/private keys. It explicitly maps address results into public-only fields, never serializing HDKey objects.
 - Generation buffers, seed buffers, and owned HDKey private data are cleared on their normal and error paths. JavaScript strings, garbage collection, library intermediates, and operating-system copies prevent a guarantee of erasure.
-- Clear All clears fields/results, cancels pending work, and resets context. Page navigation clears application state where browser lifecycle events allow. Clipboard history, undo buffers, swap, crash dumps, and screenshots are outside the application's control.
-- Copy actions concern public addresses/paths only and require a click. Browsers without clipboard API support use a temporary selection fallback.
+- Each tab retains its own phrase, passphrase, settings, and results in memory. Clear All clears every tab, cancels pending work, and resets context. Page navigation clears application state where browser lifecycle events allow. Clipboard history, undo buffers, swap, crash dumps, and screenshots are outside the application's control.
+- Copy actions require an explicit click and can copy seed phrases, entropy encodings, or public addresses/paths. Browsers without clipboard API support use a temporary selection fallback.
 - Phrase input disables autocomplete/spelling/case correction. Browser behavior and extensions may override these preferences. Print styling hides entered secret fields, raw entropy, and derived addresses.
 
 ## Environment and distribution
@@ -36,6 +36,6 @@ SHA-256 checksums detect changes only relative to a trusted checksum. Initial re
 
 ## Deliberate boundaries
 
-English BIP39 only. An invalid English BIP39 result does not establish that a phrase from another wallet scheme is corrupt. Passphrases retain case and spaces, use NFKD normalization, and cannot be checked for correctness without an expected target. A new generated or loaded example phrase clears a previously entered passphrase to avoid accidental carryover.
+English BIP39 only. An invalid English BIP39 result does not establish that a phrase from another wallet scheme is corrupt. Passphrases retain case and spaces, use NFKD normalization, and cannot be checked for correctness without an expected target. Generating or importing new binary entropy clears the passphrase and addresses for that tab. Other tabs retain their own state.
 
 Derivation is single-signature only: mainnet/testnet, BIP44/49/84/86, fixed standard path layout, indices below `2^31`, at most 100 rows. Changes invalidate old results immediately. No funds, balance queries, signing, recovery scanning, custom paths, or network broadcasting are supported.
